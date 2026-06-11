@@ -164,7 +164,6 @@ async function attemptLogin(pin) {
   const errorEl = document.getElementById('login-error');
   const overlay = document.getElementById('login-overlay');
   const card = document.querySelector('.login-card');
-  const inputs = document.querySelectorAll('.pin-box');
   
   errorEl.textContent = 'Authenticating...';
   
@@ -188,8 +187,8 @@ async function attemptLogin(pin) {
     } else {
       // Failed!
       errorEl.textContent = data.error || 'Invalid PIN';
-      inputs.forEach(i => i.value = '');
-      inputs[0].focus();
+      currentPin = '';
+      updatePinDots();
       card.classList.add('shake');
       setTimeout(() => card.classList.remove('shake'), 400);
     }
