@@ -725,8 +725,8 @@ def api_login():
         body = request.get_json()
         pin = body.get("pin")
         
-        # Hardcoded master PIN based on user request (333)
-        if pin == "333":
+        # Hardcoded master PIN based on user request (3333)
+        if pin == "3333":
             return jsonify({"ok": True})
         else:
             return jsonify({"ok": False, "error": "Invalid PIN"}), 401

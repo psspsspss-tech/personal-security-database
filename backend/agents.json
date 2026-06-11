@@ -41,30 +41,30 @@
     "platform_version": "10.0.26200",
     "python_version": "3.14.5",
     "ip": "192.168.1.3",
-    "cpu_percent": 33.1,
-    "memory_percent": 90.7,
-    "memory_used_gb": 7.03,
+    "cpu_percent": 48.8,
+    "memory_percent": 93.4,
+    "memory_used_gb": 7.23,
     "memory_total_gb": 7.75,
     "disk_percent": 93.5,
-    "disk_free_gb": 8.9,
+    "disk_free_gb": 8.8,
     "listening_ports": 40,
     "wifi_ssid": "vijay",
     "battery": {
-      "percent": 72,
+      "percent": 71,
       "plugged": false,
       "charging": false
     },
     "network_io": {
-      "bytes_sent_mb": 2146.5,
-      "bytes_recv_mb": 15143.0
+      "bytes_sent_mb": 2153.7,
+      "bytes_recv_mb": 15180.4
     },
     "uptime_hours": 166.5,
-    "timestamp": "2026-06-12T00:26:41.355474",
+    "timestamp": "2026-06-12T00:27:44.281921",
     "agent_version": "1.0.1",
     "security": {
       "firewall_on": true
     },
-    "last_seen": "2026-06-12T00:26:41.571911",
+    "last_seen": "2026-06-12T00:27:44.441070",
     "status": "online",
     "registered_at": "2026-06-11T21:10:48.532526"
   }
