@@ -34,9 +34,15 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 # Add parent dir to path so we can import sibling modules
-BASE_DIR = Path(__file__).parent
-ROOT_DIR = BASE_DIR.parent
+if getattr(sys, 'frozen', False):
+    ROOT_DIR = Path(sys._MEIPASS)
+    BASE_DIR = ROOT_DIR / "backend"
+else:
+    BASE_DIR = Path(__file__).parent
+    ROOT_DIR = BASE_DIR.parent
+
 sys.path.insert(0, str(BASE_DIR))
+sys.path.insert(0, str(ROOT_DIR))
 
 import system_monitor as sysmon
 import network_scanner as netscanner

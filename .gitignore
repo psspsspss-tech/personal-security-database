@@ -46,3 +46,7 @@ backend/logs.json
 # Keep the data folder but ignore contents
 backend/data/*
 !backend/data/.gitkeep
+
+build/
+dist/
+*.spec
