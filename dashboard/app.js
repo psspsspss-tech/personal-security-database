@@ -602,6 +602,16 @@ function getScoreLabel(score) {
 // ──────────────────────────────────────────────────────
 // Main Status Fetch (polls every 10s)
 // ──────────────────────────────────────────────────────
+async function fetchAll() {
+  await Promise.all([
+    fetchSystemStatus(),
+    fetchPorts(),
+    fetchAgents(),
+    fetchAlerts(),
+    fetchBluetoothData()
+  ]);
+}
+
 async function fetchStatus() {
   try {
     const res = await fetch(`${API}/status`);
@@ -1261,3 +1271,49 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {}
   }, 3000);
 });
+
+// ─── BLUETOOTH RADAR LOGIC ───
+
+async function fetchBluetoothData() {
+  try {
+    const res = await fetch(`${API}/bluetooth`);
+    const json = await res.json();
+    if (!json.ok) return;
+
+    const data = json.data;
+    const tbody = document.getElementById('bt-tbody');
+    const badge = document.getElementById('bt-sensor-status');
+    if(!tbody || !badge) return;
+
+    if (!data.last_updated) {
+      tbody.innerHTML = `<tr><td colspan="2" class="table-loading">No NetHunter node detected yet...</td></tr>`;
+      return;
+    }
+
+    // Check if stale (older than 2 minutes)
+    const lastUpdateMs = new Date(data.last_updated).getTime();
+    const nowMs = Date.now();
+    if (nowMs - lastUpdateMs > 120000) {
+      badge.textContent = "Sensor Offline";
+      badge.style.background = "var(--danger-color)";
+    } else {
+      badge.textContent = `Sensor: ${data.reporter}`;
+      badge.style.background = "var(--success-color)";
+    }
+
+    if (!data.devices || data.devices.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="2" class="table-loading">Scanning... No devices found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.devices.map(d => `
+      <tr>
+        <td><strong>${d.name || "Unknown Device"}</strong></td>
+        <td style="font-family:monospace; color:var(--text-secondary)">${d.mac}</td>
+      </tr>
+    `).join('');
+
+  } catch(e) {
+    console.warn("BT fetch failed", e);
+  }
+}

@@ -105,6 +105,9 @@ CACHE_TTL = {
     "alerts": 5,
 }
 
+_bluetooth_cache = {"last_updated": None, "devices": [], "reporter": None}
+_bt_lock = threading.Lock()
+
 
 def get_cached(key, ttl, fetch_fn):
     with _cache_lock:
@@ -610,6 +613,30 @@ def api_telegram_get_chatid():
         return jsonify({"ok": False, "error": err})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+# Bluetooth Surveillance (NetHunter)
+# ─────────────────────────────────────────────
+
+@app.route("/api/bluetooth/update", methods=["POST"])
+def api_bt_update():
+    """Receive BT radar data from NetHunter agent."""
+    try:
+        body = request.get_json()
+        with _bt_lock:
+            _bluetooth_cache["devices"] = body.get("devices", [])
+            _bluetooth_cache["reporter"] = body.get("reporter", "Unknown")
+            import datetime
+            _bluetooth_cache["last_updated"] = datetime.datetime.now().isoformat()
+        return jsonify({"ok": True})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/bluetooth", methods=["GET"])
+def api_bt_get():
+    """Serve BT radar data to the dashboard."""
+    with _bt_lock:
+        return jsonify({"ok": True, "data": _bluetooth_cache})
 
 # ─────────────────────────────────────────────
 # Mobile Toolkit (Offensive/Diagnostic)
