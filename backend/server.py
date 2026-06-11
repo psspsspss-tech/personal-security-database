@@ -715,7 +715,64 @@ def api_toolkit_sqlmap():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+# ─────────────────────────────────────────────
+# Authentication
+# ─────────────────────────────────────────────
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    """Simple lock screen authentication."""
+    try:
+        body = request.get_json()
+        pin = body.get("pin")
+        
+        # Hardcoded master PIN based on user request (333)
+        if pin == "333":
+            return jsonify({"ok": True})
+        else:
+            return jsonify({"ok": False, "error": "Invalid PIN"}), 401
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
+# ─────────────────────────────────────────────
+# Data Breach Scanner
+# ─────────────────────────────────────────────
+@app.route("/api/breach/password", methods=["POST"])
+def api_breach_password():
+    """Check if a password has been leaked using HaveIBeenPwned API (K-Anonymity model)."""
+    try:
+        body = request.get_json()
+        password = body.get("password")
+        if not password:
+            return jsonify({"ok": False, "error": "Password required"}), 400
+            
+        import hashlib
+        import requests
+        
+        # Securely hash the password (SHA-1)
+        sha1_hash = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+        prefix, suffix = sha1_hash[:5], sha1_hash[5:]
+        
+        # We ONLY send the first 5 characters of the hash to the API.
+        # This is the K-Anonymity model - they never receive the password or full hash.
+        url = f"https://api.pwnedpasswords.com/range/{prefix}"
+        response = requests.get(url, timeout=5)
+        
+        if response.status_code != 200:
+            return jsonify({"ok": False, "error": "Failed to query breach database"}), 502
+            
+        # The API returns a list of matching suffixes and their breach count
+        hashes = (line.split(':') for line in response.text.splitlines())
+        count = next((int(count) for hash_suffix, count in hashes if hash_suffix == suffix), 0)
+        
+        return jsonify({
+            "ok": True, 
+            "pwned": count > 0, 
+            "count": count,
+            "message": f"This password has been seen {count} times in data breaches." if count > 0 else "Good news! This password has not been found in any known breaches."
+        })
+        
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 # ─────────────────────────────────────────────
 # Startup
 # ─────────────────────────────────────────────

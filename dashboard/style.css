@@ -944,30 +944,89 @@ code { font-family: var(--font-mono); font-size: 12px; background: rgba(0, 212, 
 .toggle-switch input:checked + .toggle-slider { background: rgba(0,212,255,0.2); border-color: var(--cyan); }
 .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--cyan); }
 
-/* DNS & VPN Cards */
-.dns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
-.dns-server-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; }
-.dns-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.dns-dot.safe { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.dns-dot.unsafe { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
-.dns-addr { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
-.dns-provider { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+/* Lock Screen */
+#login-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.5s ease;
+}
+.login-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: var(--shadow-glow);
+}
+.login-icon svg {
+  width: 48px; height: 48px;
+  color: var(--cyan);
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 12px rgba(0,212,255,0.4));
+}
+.login-card h2 { font-size: 18px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+.login-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; }
+.login-inputs { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; }
+.pin-box {
+  width: 50px; height: 60px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 24px;
+  color: #fff;
+  text-align: center;
+  font-family: var(--font-mono);
+  transition: 0.2s;
+}
+.pin-box:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 2px rgba(0,212,255,0.2); }
+.login-error { color: var(--red); font-size: 13px; height: 20px; }
+.shake { animation: shake 0.4s; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-10px);} 40%,80%{transform:translateX(10px);} }
 
-/* VPN status */
-.vpn-status { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px; margin-bottom: 16px; }
-.vpn-status.active { background: rgba(0,255,136,0.07); border: 1px solid rgba(0,255,136,0.2); }
-.vpn-status.inactive { background: rgba(255,153,68,0.07); border: 1px solid rgba(255,153,68,0.2); }
-.vpn-icon { font-size: 32px; }
-.vpn-label { font-size: 16px; font-weight: 700; }
-.vpn-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+/* Mobile Bottom Nav */
+.nav-tabs { display: none; } /* hide old top nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(70px + env(safe-area-inset-bottom));
+  background: rgba(15,15,26,0.85);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav .nav-tab {
+  background: none; border: none;
+  color: var(--text-muted);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  width: 25%; height: 100%;
+  font-size: 10px; font-weight: 600;
+  cursor: pointer; transition: 0.2s;
+}
+.bottom-nav .nav-tab svg { width: 24px; height: 24px; margin-bottom: 4px; transition: 0.2s; }
+.bottom-nav .nav-tab.active { color: var(--cyan); }
+.bottom-nav .nav-tab.active svg { filter: drop-shadow(0 0 8px rgba(0,212,255,0.6)); transform: translateY(-2px); }
 
-/* Event log severity */
-.sev-high   { color: var(--red); }
-.sev-medium { color: var(--orange); }
-.sev-low    { color: var(--green); }
+main.main { padding-bottom: 100px; } /* room for bottom nav */
 
-/* Rec box */
-.rec-box { background: rgba(0,212,255,0.05); border: 1px solid rgba(0,212,255,0.15); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); }
-.rec-box::before { content: '\21E2  '; color: var(--cyan); }
-
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+/* Drawer */
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+.drawer { position: absolute; bottom: 0; left: 0; right: 0; background: #11111a; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.drawer-overlay.open .drawer { transform: translateY(0); }
+.drawer-header { font-size: 16px; font-weight: 700; margin-bottom: 20px; text-align: center; color: #fff; }
+.drawer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.drawer-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px 5px; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; font-size: 11px; cursor: pointer; transition: 0.2s; position: relative; }
+.drawer-btn svg { width: 22px; height: 22px; margin-bottom: 8px; }
+.drawer-btn:hover { background: rgba(0,212,255,0.1); color: #fff; border-color: var(--cyan); }
+.drawer-btn .badge { position: absolute; top: 5px; right: 5px; }

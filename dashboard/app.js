@@ -11,6 +11,8 @@ const API = `${_origin}/api`;
 const POLL_INTERVAL = 10000;
 let _currentTab = 'overview';
 let _pollingTimer = null;
+let _drawerOpen = false;
+let _isAuthenticated = false;
 
 // ──────────────────────────────────────────────────────
 // AUTO-UPDATE SYSTEM
@@ -114,6 +116,73 @@ function dismissUpdate() {
 // Poll for updates every 30 seconds
 checkForUpdates();
 setInterval(checkForUpdates, 30000);
+
+// ──────────────────────────────────────────────────────
+// AUTHENTICATION (LOCK SCREEN)
+// ──────────────────────────────────────────────────────
+function initLockScreen() {
+  const inputs = document.querySelectorAll('.pin-box');
+  const errorEl = document.getElementById('login-error');
+  
+  inputs.forEach((input, index) => {
+    input.addEventListener('input', (e) => {
+      if (e.target.value.length === 1) {
+        if (index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        } else {
+          // Last digit entered, attempt login
+          const pin = Array.from(inputs).map(i => i.value).join('');
+          attemptLogin(pin);
+        }
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && index > 0) {
+        inputs[index - 1].focus();
+      }
+    });
+  });
+}
+
+async function attemptLogin(pin) {
+  const errorEl = document.getElementById('login-error');
+  const overlay = document.getElementById('login-overlay');
+  const card = document.querySelector('.login-card');
+  const inputs = document.querySelectorAll('.pin-box');
+  
+  errorEl.textContent = 'Authenticating...';
+  
+  try {
+    const res = await fetch(`${API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin })
+    });
+    const data = await res.json();
+    
+    if (data.ok) {
+      // Success! Hide lock screen and start app
+      _isAuthenticated = true;
+      errorEl.textContent = '';
+      overlay.style.opacity = '0';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        startApp(); // Now load the real data
+      }, 500);
+    } else {
+      // Failed!
+      errorEl.textContent = data.error || 'Invalid PIN';
+      inputs.forEach(i => i.value = '');
+      inputs[0].focus();
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 400);
+    }
+  } catch (err) {
+    errorEl.textContent = 'Server unreachable';
+  }
+}
+
 
 // ──────────────────────────────────────────────────────
 // SERVICE WORKER REGISTRATION
@@ -1255,8 +1324,14 @@ function startPolling() {
 // Init
 // ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  initLockScreen();
+  // Do NOT start polling or showing tabs yet. Wait for auth.
+});
+
+function startApp() {
   showTab('overview');
   startPolling();
+  
   // Load alerts badge on start
   setTimeout(async () => {
     try {
@@ -1393,4 +1468,79 @@ document.addEventListener('DOMContentLoaded', () => {
     if(el) el.textContent = window.location.protocol + '//' + window.location.hostname + ':8080/nethunter_bt_agent.py';
   }, 2000);
 });
+
+// --- BREACH CHECK LOGIC ---
+async function checkBreach() {
+  const pwdInput = document.getElementById('breach-pwd');
+  const resultDiv = document.getElementById('breach-result');
+  const btn = document.getElementById('btn-breach');
+  const pwd = pwdInput.value;
+  
+  if (!pwd) {
+    showToast('Please enter a password', 'error');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = 'Checking...';
+  resultDiv.style.display = 'none';
+  resultDiv.className = 'breach-result';
+  
+  try {
+    const res = await fetch(`${API}/breach/password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    
+    const data = await res.json();
+    
+    if (!data.ok) {
+      throw new Error(data.error);
+    }
+    
+    resultDiv.style.display = 'block';
+    if (data.pwned) {
+      resultDiv.classList.add('breach-danger');
+      resultDiv.innerHTML = `
+        <div style="font-size: 24px; margin-bottom: 8px;">🚨</div>
+        <h3 style="margin-bottom: 4px; color: var(--red);">DANGER! Password Leaked</h3>
+        <p>${data.message}</p>
+        <p style="font-size: 11px; margin-top: 8px; color: var(--text-muted);">You should immediately change this password anywhere you use it.</p>
+      `;
+    } else {
+      resultDiv.classList.add('breach-safe');
+      resultDiv.innerHTML = `
+        <div style="font-size: 24px; margin-bottom: 8px;">✅</div>
+        <h3 style="margin-bottom: 4px; color: var(--green);">Safe Password</h3>
+        <p>${data.message}</p>
+        <p style="font-size: 11px; margin-top: 8px; color: var(--text-muted);">This password hasn't been found in any known public database breaches.</p>
+      `;
+    }
+  } catch (err) {
+    showToast('Error checking password: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Check Dark Web Databases';
+  }
+}
+
+// --- DRAWER NAVIGATION ---
+function toggleDrawer() {
+  const drawer = document.getElementById('more-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+  _drawerOpen = !_drawerOpen;
+  
+  if (_drawerOpen) {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+  } else {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+  }
+}
+
+function closeDrawer() {
+  if (_drawerOpen) toggleDrawer();
+}
 

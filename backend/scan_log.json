@@ -1,5 +1,29 @@
 [
   {
+    "timestamp": "2026-06-12T00:27:09.210901",
+    "total_devices": 7,
+    "approved": 5,
+    "unknown": 2
+  },
+  {
+    "timestamp": "2026-06-12T00:24:56.028263",
+    "total_devices": 7,
+    "approved": 5,
+    "unknown": 2
+  },
+  {
+    "timestamp": "2026-06-12T00:22:44.039099",
+    "total_devices": 8,
+    "approved": 8,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-12T00:22:42.356156",
+    "total_devices": 8,
+    "approved": 8,
+    "unknown": 0
+  },
+  {
     "timestamp": "2026-06-11T21:08:04.372476",
     "total_devices": 8,
     "approved": 8,
@@ -2974,29 +2998,5 @@
     "total_devices": 5,
     "approved": 0,
     "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:35:25.228382",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:33:25.609182",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:31:25.817477",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:29:26.289191",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
   }
 ]
