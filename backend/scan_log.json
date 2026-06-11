@@ -1,5 +1,11 @@
 [
   {
+    "timestamp": "2026-06-11T20:28:32.053529",
+    "total_devices": 8,
+    "approved": 8,
+    "unknown": 0
+  },
+  {
     "timestamp": "2026-06-11T20:26:21.259015",
     "total_devices": 8,
     "approved": 8,
@@ -2989,12 +2995,6 @@
   },
   {
     "timestamp": "2026-06-11T03:47:54.125283",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T03:45:49.429939",
     "total_devices": 6,
     "approved": 0,
     "unknown": 6
