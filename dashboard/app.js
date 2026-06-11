@@ -1318,15 +1318,56 @@ async function fetchBluetoothData() {
   }
 }
 
-// --- TOOLKIT LOGIC ---
+let toolkitTypingInterval = null;
+
+function typeMatrixEffect(element, text) {
+  if (toolkitTypingInterval) clearInterval(toolkitTypingInterval);
+  element.innerHTML = '';
+  element.style.position = 'relative';
+  element.style.fontFamily = '"JetBrains Mono", monospace';
+  
+  let i = 0;
+  // create cursor span
+  const cursor = document.createElement('span');
+  cursor.className = 'matrix-cursor';
+  cursor.textContent = '█';
+  cursor.style.animation = 'blink 1s step-end infinite';
+  
+  element.appendChild(cursor);
+  
+  // Clean up text slightly for HTML
+  const lines = text.split('\n');
+  let cleanText = text;
+  
+  toolkitTypingInterval = setInterval(() => {
+    if (i < cleanText.length) {
+      const char = cleanText.charAt(i);
+      if (char === '\n') {
+        const br = document.createElement('br');
+        element.insertBefore(br, cursor);
+      } else {
+        const textNode = document.createTextNode(char);
+        element.insertBefore(textNode, cursor);
+      }
+      i++;
+      // Auto scroll to bottom
+      element.scrollTop = element.scrollHeight;
+    } else {
+      clearInterval(toolkitTypingInterval);
+    }
+  }, 10); // Super fast typing
+}
+
 async function runToolkitCommand(cmd) {
   const target = document.getElementById('toolkit-target').value.trim();
   const out = document.getElementById('toolkit-output');
   if (!target) {
-    out.textContent = 'Please enter a target IP or domain.';
+    typeMatrixEffect(out, 'ERROR: Please enter a target IP or domain.\n');
     return;
   }
-  out.textContent = 'Running ' + cmd + ' on ' + target + '... Please wait.';
+  
+  typeMatrixEffect(out, `Initiating [${cmd.toUpperCase()}] sequence on target: ${target}\nBypassing mainframe... Standby for output...\n`);
+  
   try {
     const res = await fetch(API + '/toolkit/' + cmd, {
       method: 'POST',
@@ -1335,12 +1376,12 @@ async function runToolkitCommand(cmd) {
     });
     const data = await res.json();
     if (data.ok) {
-      out.textContent = data.output;
+      typeMatrixEffect(out, data.output);
     } else {
-      out.textContent = 'Error: ' + data.error;
+      typeMatrixEffect(out, 'CRITICAL ERROR:\n' + data.error);
     }
   } catch (e) {
-    out.textContent = 'Network Error: ' + e.message;
+    typeMatrixEffect(out, 'NETWORK FAILURE:\n' + e.message);
   }
 }
 
