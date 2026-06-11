@@ -1359,7 +1359,7 @@ function startApp() {
       }
     } catch (_) {}
   }, 3000);
-});
+}
 
 // ─── BLUETOOTH RADAR LOGIC ───
 
