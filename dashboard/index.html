@@ -628,6 +628,37 @@
     </div>
   </section>
 
+  <!-- ──────────── BT RADAR TAB ──────────── -->
+  <section id="panel-bluetooth" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Bluetooth Radar</h1>
+        <span class="panel-sub">Live physical surveillance from your NetHunter device</span>
+      </div>
+      <div class="toolbar-actions">
+        <div class="legend">
+          <span class="legend-dot" style="background:var(--success-color)"></span>Active Sensor
+        </div>
+        <button class="btn-primary" onclick="loadBluetooth()">🔄 Refresh</button>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h2 class="card-title">Nearby Devices</h2>
+        <span class="card-badge" id="bt-reporter-badge" style="background:var(--bg-lighter)">Sensor: Offline</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Device Name</th><th>MAC Address</th></tr></thead>
+          <tbody id="bt-tbody">
+            <tr><td colspan="2" class="table-loading">Waiting for sensor data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- ──────────── TOOLKIT TAB ──────────── -->
   <section id="panel-toolkit" class="panel">
     <div class="panel-toolbar">
