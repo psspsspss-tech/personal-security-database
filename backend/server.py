@@ -666,6 +666,49 @@ def api_toolkit_traceroute():
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
+@app.route("/api/toolkit/nmap", methods=["POST"])
+def api_toolkit_nmap():
+    try:
+        ip = request.get_json().get("ip")
+        if not ip: return jsonify({"ok": False, "error": "IP required"}), 400
+        # Fast scan without ping to bypass firewalls
+        cmd = ["nmap", "-T4", "-F", "-Pn", ip]
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({"ok": True, "output": r.stdout if r.stdout else r.stderr})
+    except FileNotFoundError:
+        return jsonify({"ok": False, "error": "nmap is not installed or not in PATH."}), 404
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/toolkit/nikto", methods=["POST"])
+def api_toolkit_nikto():
+    try:
+        ip = request.get_json().get("ip")
+        if not ip: return jsonify({"ok": False, "error": "Target required"}), 400
+        cmd = ["nikto", "-h", ip, "-maxtime", "30s"] # Limit to 30s for demo
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({"ok": True, "output": r.stdout if r.stdout else r.stderr})
+    except FileNotFoundError:
+        return jsonify({"ok": False, "error": "nikto is not installed or not in PATH."}), 404
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/toolkit/sqlmap", methods=["POST"])
+def api_toolkit_sqlmap():
+    try:
+        ip = request.get_json().get("ip")
+        if not ip: return jsonify({"ok": False, "error": "Target URL required"}), 400
+        # Add http if missing to prevent sqlmap from complaining
+        if not ip.startswith("http"):
+            ip = "http://" + ip
+        cmd = ["sqlmap", "-u", ip, "--batch", "--level=1", "--risk=1"]
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({"ok": True, "output": r.stdout if r.stdout else r.stderr})
+    except FileNotFoundError:
+        return jsonify({"ok": False, "error": "sqlmap is not installed or not in PATH."}), 404
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
 
 # ─────────────────────────────────────────────
 # Startup

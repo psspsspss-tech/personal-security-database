@@ -638,12 +638,21 @@
     </div>
     
     <div class="card" style="margin-bottom:20px;">
-      <div class="card-header"><h2 class="card-title">Network Diagnostics</h2></div>
+      <div class="card-header"><h2 class="card-title">Diagnostic & Attack Tools</h2></div>
       <div style="padding: 16px;">
         <input type="text" id="toolkit-target" placeholder="Target IP or Domain (e.g. 192.168.1.1)" class="form-input" style="width: 100%; max-width: 400px; margin-bottom: 12px;">
-        <div style="display: flex; gap: 8px;">
+        
+        <h4 style="margin-bottom: 8px; color: var(--text-secondary);">Reconnaissance</h4>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
           <button class="btn-primary" onclick="runToolkitCommand('ping')">Ping</button>
           <button class="btn-primary" onclick="runToolkitCommand('traceroute')">Traceroute</button>
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('nmap')">Nmap Scan</button>
+        </div>
+
+        <h4 style="margin-bottom: 8px; color: var(--text-secondary);">Vulnerability Scanners</h4>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('nikto')">Nikto Web Scan</button>
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('sqlmap')">SQLMap Test</button>
         </div>
       </div>
     </div>
