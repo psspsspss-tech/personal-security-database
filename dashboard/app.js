@@ -120,29 +120,44 @@ setInterval(checkForUpdates, 30000);
 // ──────────────────────────────────────────────────────
 // AUTHENTICATION (LOCK SCREEN)
 // ──────────────────────────────────────────────────────
-function initLockScreen() {
-  const inputs = document.querySelectorAll('.pin-box');
-  const errorEl = document.getElementById('login-error');
-  
-  inputs.forEach((input, index) => {
-    input.addEventListener('input', (e) => {
-      if (e.target.value.length === 1) {
-        if (index < inputs.length - 1) {
-          inputs[index + 1].focus();
-        } else {
-          // Last digit entered, attempt login
-          const pin = Array.from(inputs).map(i => i.value).join('');
-          attemptLogin(pin);
-        }
-      }
-    });
+let currentPin = '';
 
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && index > 0) {
-        inputs[index - 1].focus();
+function initLockScreen() {
+  // Clear any existing pin state
+  currentPin = '';
+  updatePinDots();
+  document.getElementById('login-error').textContent = '';
+}
+
+function addPin(num) {
+  if (currentPin.length < 4) {
+    currentPin += num;
+    updatePinDots();
+    if (currentPin.length === 4) {
+      attemptLogin(currentPin);
+    }
+  }
+}
+
+function removePin() {
+  if (currentPin.length > 0) {
+    currentPin = currentPin.slice(0, -1);
+    updatePinDots();
+    document.getElementById('login-error').textContent = '';
+  }
+}
+
+function updatePinDots() {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    if (dot) {
+      if (i <= currentPin.length) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
       }
-    });
-  });
+    }
+  }
 }
 
 async function attemptLogin(pin) {

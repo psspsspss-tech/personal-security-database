@@ -97,10 +97,27 @@
     <h2>SECURE ACCESS</h2>
     <p>Enter Master PIN to authenticate</p>
     <div class="login-inputs" id="login-inputs">
-      <input type="password" maxlength="1" class="pin-box" autofocus>
-      <input type="password" maxlength="1" class="pin-box">
-      <input type="password" maxlength="1" class="pin-box">
-      <input type="password" maxlength="1" class="pin-box">
+      <div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div>
+      <div class="pin-dot" id="dot-3"></div>
+      <div class="pin-dot" id="dot-4"></div>
+    </div>
+    
+    <div class="numpad">
+      <button class="num-btn" onclick="addPin('1')">1</button>
+      <button class="num-btn" onclick="addPin('2')">2</button>
+      <button class="num-btn" onclick="addPin('3')">3</button>
+      <button class="num-btn" onclick="addPin('4')">4</button>
+      <button class="num-btn" onclick="addPin('5')">5</button>
+      <button class="num-btn" onclick="addPin('6')">6</button>
+      <button class="num-btn" onclick="addPin('7')">7</button>
+      <button class="num-btn" onclick="addPin('8')">8</button>
+      <button class="num-btn" onclick="addPin('9')">9</button>
+      <div class="num-spacer"></div>
+      <button class="num-btn" onclick="addPin('0')">0</button>
+      <button class="num-btn action-btn" onclick="removePin()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+      </button>
     </div>
     <div id="login-error" class="login-error"></div>
   </div>
