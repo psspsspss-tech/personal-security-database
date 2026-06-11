@@ -23,7 +23,7 @@ import sys
 # ─────────────────────────────────────────────────────────
 # CONFIGURATION
 # ─────────────────────────────────────────────────────────
-SERVER_URL = "http://192.168.1.4:8765"   # Edit this to your PC's IP
+SERVER_URL = "http://192.168.1.3:8765"   # Edit this to your PC's IP
 SCAN_DURATION = 10                       # Seconds to actively scan
 REPORT_INTERVAL = 15                     # Seconds between scans
 # ─────────────────────────────────────────────────────────

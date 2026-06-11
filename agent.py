@@ -43,7 +43,7 @@ except ImportError:
 # ─────────────────────────────────────────────────────────
 # CONFIGURATION — Edit SERVER_URL to your PC's local IP
 # ─────────────────────────────────────────────────────────
-SERVER_URL = "http://192.168.1.4:8765"   # Your PC's IP (change if IP changes)
+SERVER_URL = "http://192.168.1.3:8765"   # Your PC's IP (change if IP changes)
 REPORT_INTERVAL = 30    # seconds between heartbeats
 DEVICE_NAME = socket.gethostname()       # auto-detected
 # Optional: override with a friendly name
@@ -65,9 +65,6 @@ def get_battery():
                     "plugged": b.power_plugged,
                     "charging": b.power_plugged and b.percent < 100
                 }
-
-                "charging": b.power_plugged and b.percent < 100
-            }
         
         # Android Termux fallback
         if os.path.exists("/sys/class/power_supply/battery/capacity"):
@@ -140,26 +137,33 @@ def get_local_ip():
 
 def get_mem_info():
     if HAS_PSUTIL:
-        mem = psutil.virtual_memory()
-        return round(mem.percent, 1), round(mem.used / 1024**3, 2), round(mem.total / 1024**3, 2)
+        try:
+            mem = psutil.virtual_memory()
+            return round(mem.percent, 1), round(mem.used / 1024**3, 2), round(mem.total / 1024**3, 2)
+        except Exception:
+            pass
     try:
-        with open("/proc/meminfo", "r") as f:
-            lines = f.readlines()
-        total = free = buffers = cached = 0
-        for line in lines:
-            if line.startswith("MemTotal:"): total = int(line.split()[1])
-            elif line.startswith("MemFree:"): free = int(line.split()[1])
-            elif line.startswith("Buffers:"): buffers = int(line.split()[1])
-            elif line.startswith("Cached:"): cached = int(line.split()[1])
-        used = total - free - buffers - cached
-        if total > 0: return round((used/total)*100, 1), round(used/1048576, 2), round(total/1048576, 2)
+        if os.path.exists("/proc/meminfo"):
+            with open("/proc/meminfo", "r") as f:
+                lines = f.readlines()
+            total = free = buffers = cached = 0
+            for line in lines:
+                if line.startswith("MemTotal:"): total = int(line.split()[1])
+                elif line.startswith("MemFree:"): free = int(line.split()[1])
+                elif line.startswith("Buffers:"): buffers = int(line.split()[1])
+                elif line.startswith("Cached:"): cached = int(line.split()[1])
+            used = total - free - buffers - cached
+            if total > 0: return round((used/total)*100, 1), round(used/1048576, 2), round(total/1048576, 2)
     except Exception: pass
     return 0, 0, 0
 
 def get_disk_info():
     if HAS_PSUTIL:
-        disk = psutil.disk_usage("/")
-        return round(disk.percent, 1), round(disk.free / 1024**3, 1)
+        try:
+            disk = psutil.disk_usage("/")
+            return round(disk.percent, 1), round(disk.free / 1024**3, 1)
+        except Exception:
+            pass
     try:
         st = os.statvfs("/")
         free = st.f_bavail * st.f_frsize
@@ -171,7 +175,11 @@ def get_disk_info():
         return 0, 0
 
 def get_uptime():
-    if HAS_PSUTIL: return round((time.time() - psutil.boot_time()) / 3600, 1)
+    if HAS_PSUTIL:
+        try:
+            return round((time.time() - psutil.boot_time()) / 3600, 1)
+        except Exception:
+            pass
     try:
         with open("/proc/uptime", "r") as f: return round(float(f.read().split()[0]) / 3600, 1)
     except Exception: return 0.0
@@ -180,7 +188,12 @@ def build_report():
     """Build a complete status report for this device."""
     mem_pct, mem_used, mem_total = get_mem_info()
     disk_pct, disk_free = get_disk_info()
-    cpu_pct = psutil.cpu_percent(interval=1) if HAS_PSUTIL else 0.0
+    cpu_pct = 0.0
+    if HAS_PSUTIL:
+        try:
+            cpu_pct = psutil.cpu_percent(interval=1)
+        except Exception:
+            pass
 
     # Detect Android Termux specifically
     plat_system = platform.system()

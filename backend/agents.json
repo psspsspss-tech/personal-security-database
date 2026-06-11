@@ -9,5 +9,29 @@
     "last_seen": "2026-06-11T03:30:19.051946",
     "status": "online",
     "registered_at": "2026-06-11T03:30:19.051946"
+  },
+  "cd8f5f9f-e3e8-569f-87ef-f03c6cfc29bc": {
+    "device_id": "cd8f5f9f-e3e8-569f-87ef-f03c6cfc29bc",
+    "hostname": "localhost",
+    "platform": "Linux",
+    "platform_version": "#1 SMP PREEMPT Fri Dec 9 20:59:46 CET 2022",
+    "python_version": "3.13.12",
+    "ip": "192.168.1.2",
+    "cpu_percent": 0.0,
+    "memory_percent": 0,
+    "memory_used_gb": 0,
+    "memory_total_gb": 0,
+    "disk_percent": 41.4,
+    "disk_free_gb": 62.7,
+    "listening_ports": 0,
+    "wifi_ssid": null,
+    "battery": null,
+    "network_io": {},
+    "uptime_hours": 0.0,
+    "timestamp": "2026-06-11T11:24:45.044272",
+    "agent_version": "1.0.1",
+    "last_seen": "2026-06-11T16:54:44.111314",
+    "status": "online",
+    "registered_at": "2026-06-11T16:53:43.944267"
   }
 }

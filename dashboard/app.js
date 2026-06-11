@@ -1317,3 +1317,39 @@ async function fetchBluetoothData() {
     console.warn("BT fetch failed", e);
   }
 }
+
+// --- TOOLKIT LOGIC ---
+async function runToolkitCommand(cmd) {
+  const target = document.getElementById('toolkit-target').value.trim();
+  const out = document.getElementById('toolkit-output');
+  if (!target) {
+    out.textContent = 'Please enter a target IP or domain.';
+    return;
+  }
+  out.textContent = 'Running ' + cmd + ' on ' + target + '... Please wait.';
+  try {
+    const res = await fetch(API + '/toolkit/' + cmd, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ip: target})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      out.textContent = data.output;
+    } else {
+      out.textContent = 'Error: ' + data.error;
+    }
+  } catch (e) {
+    out.textContent = 'Network Error: ' + e.message;
+  }
+}
+
+
+// --- UPDATE NETHUNTER URL ---
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const el = document.getElementById('nethunter-agent-url');
+    if(el) el.textContent = window.location.protocol + '//' + window.location.hostname + ':8080/nethunter_bt_agent.py';
+  }, 2000);
+});
+

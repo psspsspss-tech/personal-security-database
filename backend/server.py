@@ -12,6 +12,8 @@ import threading
 import time
 import datetime
 import hashlib
+import platform
+import subprocess
 
 # ─────────────────────────────────────────────
 # Server version — changes every restart.
