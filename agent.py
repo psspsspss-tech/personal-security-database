@@ -34,8 +34,12 @@ import platform
 import datetime
 import threading
 import requests
-import psutil
 
+HAS_PSUTIL = True
+try:
+    import psutil
+except ImportError:
+    HAS_PSUTIL = False
 # ─────────────────────────────────────────────────────────
 # CONFIGURATION — Edit SERVER_URL to your PC's local IP
 # ─────────────────────────────────────────────────────────
@@ -53,11 +57,15 @@ def get_battery():
     """Get battery info if available (laptops, phones)."""
     try:
         # Standard psutil
-        b = psutil.sensors_battery()
-        if b:
-            return {
-                "percent": round(b.percent, 1),
-                "plugged": b.power_plugged,
+        if HAS_PSUTIL:
+            b = psutil.sensors_battery()
+            if b:
+                return {
+                    "percent": round(b.percent, 1),
+                    "plugged": b.power_plugged,
+                    "charging": b.power_plugged and b.percent < 100
+                }
+
                 "charging": b.power_plugged and b.percent < 100
             }
         
@@ -97,6 +105,7 @@ def get_wifi_ssid():
 
 def get_open_ports_count():
     """Count listening ports quickly."""
+    if not HAS_PSUTIL: return 0
     try:
         return len([c for c in psutil.net_connections() if c.status == "LISTEN"])
     except Exception:
@@ -105,6 +114,7 @@ def get_open_ports_count():
 
 def get_network_io():
     """Get network bytes sent/received."""
+    if not HAS_PSUTIL: return {}
     try:
         io = psutil.net_io_counters()
         return {
@@ -113,6 +123,7 @@ def get_network_io():
         }
     except Exception:
         return {}
+
 
 
 def get_local_ip():
@@ -127,10 +138,49 @@ def get_local_ip():
         return "unknown"
 
 
+def get_mem_info():
+    if HAS_PSUTIL:
+        mem = psutil.virtual_memory()
+        return round(mem.percent, 1), round(mem.used / 1024**3, 2), round(mem.total / 1024**3, 2)
+    try:
+        with open("/proc/meminfo", "r") as f:
+            lines = f.readlines()
+        total = free = buffers = cached = 0
+        for line in lines:
+            if line.startswith("MemTotal:"): total = int(line.split()[1])
+            elif line.startswith("MemFree:"): free = int(line.split()[1])
+            elif line.startswith("Buffers:"): buffers = int(line.split()[1])
+            elif line.startswith("Cached:"): cached = int(line.split()[1])
+        used = total - free - buffers - cached
+        if total > 0: return round((used/total)*100, 1), round(used/1048576, 2), round(total/1048576, 2)
+    except Exception: pass
+    return 0, 0, 0
+
+def get_disk_info():
+    if HAS_PSUTIL:
+        disk = psutil.disk_usage("/")
+        return round(disk.percent, 1), round(disk.free / 1024**3, 1)
+    try:
+        st = os.statvfs("/")
+        free = st.f_bavail * st.f_frsize
+        total = st.f_blocks * st.f_frsize
+        used = (st.f_blocks - st.f_bfree) * st.f_frsize
+        percent = (used / total) * 100 if total > 0 else 0
+        return round(percent, 1), round(free / 1024**3, 1)
+    except Exception:
+        return 0, 0
+
+def get_uptime():
+    if HAS_PSUTIL: return round((time.time() - psutil.boot_time()) / 3600, 1)
+    try:
+        with open("/proc/uptime", "r") as f: return round(float(f.read().split()[0]) / 3600, 1)
+    except Exception: return 0.0
+
 def build_report():
     """Build a complete status report for this device."""
-    mem = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
+    mem_pct, mem_used, mem_total = get_mem_info()
+    disk_pct, disk_free = get_disk_info()
+    cpu_pct = psutil.cpu_percent(interval=1) if HAS_PSUTIL else 0.0
 
     # Detect Android Termux specifically
     plat_system = platform.system()
@@ -144,19 +194,19 @@ def build_report():
         "platform_version": platform.version()[:50],
         "python_version": platform.python_version(),
         "ip": get_local_ip(),
-        "cpu_percent": psutil.cpu_percent(interval=1),
-        "memory_percent": round(mem.percent, 1),
-        "memory_used_gb": round(mem.used / 1024**3, 2),
-        "memory_total_gb": round(mem.total / 1024**3, 2),
-        "disk_percent": round(disk.percent, 1),
-        "disk_free_gb": round(disk.free / 1024**3, 1),
+        "cpu_percent": cpu_pct,
+        "memory_percent": mem_pct,
+        "memory_used_gb": mem_used,
+        "memory_total_gb": mem_total,
+        "disk_percent": disk_pct,
+        "disk_free_gb": disk_free,
         "listening_ports": get_open_ports_count(),
         "wifi_ssid": get_wifi_ssid(),
         "battery": get_battery(),
         "network_io": get_network_io(),
-        "uptime_hours": round((time.time() - psutil.boot_time()) / 3600, 1),
+        "uptime_hours": get_uptime(),
         "timestamp": datetime.datetime.now().isoformat(),
-        "agent_version": "1.0.0"
+        "agent_version": "1.0.1"
     }
 
     # Quick security checks

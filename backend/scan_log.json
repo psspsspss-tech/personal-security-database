@@ -1,5 +1,59 @@
 [
   {
+    "timestamp": "2026-06-11T14:53:59.925130",
+    "total_devices": 7,
+    "approved": 7,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:51:50.572912",
+    "total_devices": 7,
+    "approved": 7,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:49:41.660789",
+    "total_devices": 7,
+    "approved": 7,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:47:32.399187",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:45:29.781133",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:43:27.197924",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:41:24.623134",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:39:21.648423",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-06-11T14:37:19.028737",
+    "total_devices": 6,
+    "approved": 6,
+    "unknown": 0
+  },
+  {
     "timestamp": "2026-06-11T14:35:28.186772",
     "total_devices": 6,
     "approved": 6,
@@ -2941,60 +2995,6 @@
   },
   {
     "timestamp": "2026-06-10T22:15:28.862739",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:13:12.737444",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:10:55.534578",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:08:26.305520",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:05:54.623441",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:03:23.927118",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T22:01:04.300214",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T21:58:46.504029",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T21:56:23.885201",
-    "total_devices": 9,
-    "approved": 0,
-    "unknown": 9
-  },
-  {
-    "timestamp": "2026-06-10T21:54:06.201953",
     "total_devices": 9,
     "approved": 0,
     "unknown": 9
