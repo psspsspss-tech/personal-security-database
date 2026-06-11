@@ -225,17 +225,57 @@ def resolve_hostname(ip):
 
 # ─── ACTIVE CONTROL ACTIONS ───
 
+def grab_banner(ip, port):
+    """Attempt to grab the service banner from an open port."""
+    try:
+        with socket.create_connection((ip, port), timeout=0.5) as s:
+            if port in [80, 443, 8080, 8443]:
+                s.sendall(b"HEAD / HTTP/1.0\r\n\r\n")
+            banner = s.recv(1024).decode('utf-8', errors='ignore').strip()
+            # Clean up the banner for display (just take the first line)
+            if banner:
+                return banner.split('\n')[0][:100] 
+    except Exception:
+        pass
+    return None
+
+def assess_port_risk(port):
+    """Categorize the risk level of an open port."""
+    high_risk = {21: "FTP (Unencrypted)", 23: "Telnet (Unencrypted)", 135: "RPC", 139: "NetBIOS", 445: "SMB (Ransomware target)"}
+    medium_risk = {22: "SSH", 3389: "RDP", 5900: "VNC"}
+    
+    if port in high_risk:
+        return "high", high_risk[port]
+    elif port in medium_risk:
+        return "medium", medium_risk[port]
+    else:
+        return "low", "Standard/Unknown Service"
+
 def action_deep_scan(ip):
-    """Aggressively scan top 100 common ports on a target IP."""
+    """Aggressively scan top ports and grab banners for vulnerability assessment."""
     top_ports = [21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080,8443,5555,62078,8009]
-    open_ports = []
+    open_ports_details = []
+    
     for p in top_ports:
         try:
             with socket.create_connection((ip, p), timeout=0.2):
-                open_ports.append(p)
+                banner = grab_banner(ip, p)
+                risk_level, service_desc = assess_port_risk(p)
+                
+                open_ports_details.append({
+                    "port": p,
+                    "service": service_desc,
+                    "banner": banner if banner else "No banner returned",
+                    "risk": risk_level
+                })
         except Exception:
             pass
-    return open_ports
+            
+    # Sort by risk (high first)
+    risk_order = {"high": 0, "medium": 1, "low": 2}
+    open_ports_details.sort(key=lambda x: risk_order[x["risk"]])
+    
+    return open_ports_details
 
 def action_block_ip(ip):
     """Instantly block an IP address from communicating with this PC via Windows Firewall."""

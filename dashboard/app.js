@@ -799,13 +799,45 @@ async function actionDeepScan(ip) {
     });
     const data = await res.json();
     if (data.ok) {
-      if (data.open_ports.length > 0) {
-        showToast(`Open ports on ${ip}: ${data.open_ports.join(', ')}`, 'success', 10000);
-      } else {
-        showToast(`No common ports open on ${ip}`, 'info', 5000);
-      }
+      showVulnerabilityModal(ip, data.open_ports);
     } else throw new Error(data.error);
   } catch(e) { showToast(`Deep scan failed: ${e.message}`, 'error'); }
+}
+
+function showVulnerabilityModal(ip, ports) {
+  let html = `<p>Vulnerability Assessment for <strong>${ip}</strong></p>`;
+  
+  if (ports.length === 0) {
+    html += `<div style="padding:15px;background:rgba(0,255,0,0.1);border:1px solid var(--success);border-radius:6px;margin-top:10px;">
+      ✅ No highly common vulnerable ports exposed.
+    </div>`;
+  } else {
+    html += `<div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">`;
+    ports.forEach(p => {
+      let color = 'var(--text-secondary)';
+      let bg = 'var(--card-bg)';
+      if (p.risk === 'high') { color = 'var(--danger)'; bg = 'rgba(255,0,0,0.1)'; }
+      else if (p.risk === 'medium') { color = 'var(--warning)'; bg = 'rgba(255,165,0,0.1)'; }
+      
+      html += `
+        <div style="padding:12px; border-left: 4px solid ${color}; background: ${bg}; border-radius: 4px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+            <strong style="color:${color}">Port ${p.port} - ${p.service}</strong>
+            <span style="font-size:11px; text-transform:uppercase; padding:2px 6px; background:var(--bg); border-radius:10px;">${p.risk} risk</span>
+          </div>
+          <div style="font-family:monospace; font-size:12px; color:var(--text-secondary); background:rgba(0,0,0,0.2); padding:6px; border-radius:4px; overflow-x:auto;">
+            ${p.banner}
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('modal-title').innerText = 'Vulnerability Report';
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">Close</button>`;
+  document.getElementById('modal-overlay').style.display = 'flex';
 }
 
 async function actionBlockIp(ip) {
