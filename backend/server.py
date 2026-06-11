@@ -155,7 +155,8 @@ def service_worker():
 
 @app.route("/manifest.json")
 def manifest():
-    """PWA manifest so iOS/Android can install the dashboard as an app."""
+    svg_icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='512' height='512'%3E%3Crect width='24' height='24' fill='%23070711'/%3E%3Cpath fill='%2300d4ff' d='M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z'/%3E%3C/svg%3E"
+    
     return jsonify({
         "name": "Security Command Center",
         "short_name": "SecCenter",
@@ -165,8 +166,7 @@ def manifest():
         "background_color": "#070711",
         "theme_color": "#00d4ff",
         "icons": [
-            {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
-            {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"}
+            {"src": svg_icon, "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "any maskable"}
         ]
     })
 
@@ -608,6 +608,32 @@ def api_telegram_get_chatid():
         if chat_id:
             return jsonify({"ok": True, "chat_id": chat_id})
         return jsonify({"ok": False, "error": err})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ─────────────────────────────────────────────
+# Mobile Toolkit (Offensive/Diagnostic)
+# ─────────────────────────────────────────────
+
+@app.route("/api/toolkit/ping", methods=["POST"])
+def api_toolkit_ping():
+    try:
+        ip = request.get_json().get("ip")
+        if not ip: return jsonify({"ok": False, "error": "IP required"}), 400
+        cmd = ["ping", "-n", "4", "-w", "1000", ip] if platform.system() == "Windows" else ["ping", "-c", "4", "-W", "1", ip]
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({"ok": True, "output": r.stdout})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+@app.route("/api/toolkit/traceroute", methods=["POST"])
+def api_toolkit_traceroute():
+    try:
+        ip = request.get_json().get("ip")
+        if not ip: return jsonify({"ok": False, "error": "IP required"}), 400
+        cmd = ["tracert", "-d", "-h", "15", "-w", "500", ip] if platform.system() == "Windows" else ["traceroute", "-n", "-m", "15", "-w", "1", ip]
+        r = subprocess.run(cmd, capture_output=True, text=True)
+        return jsonify({"ok": True, "output": r.stdout})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 

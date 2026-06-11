@@ -52,6 +52,7 @@ DEVICE_ID = str(uuid.uuid5(uuid.NAMESPACE_DNS, socket.gethostname()))
 def get_battery():
     """Get battery info if available (laptops, phones)."""
     try:
+        # Standard psutil
         b = psutil.sensors_battery()
         if b:
             return {
@@ -59,6 +60,17 @@ def get_battery():
                 "plugged": b.power_plugged,
                 "charging": b.power_plugged and b.percent < 100
             }
+        
+        # Android Termux fallback
+        if os.path.exists("/sys/class/power_supply/battery/capacity"):
+            with open("/sys/class/power_supply/battery/capacity", "r") as f:
+                cap = int(f.read().strip())
+            plugged = False
+            if os.path.exists("/sys/class/power_supply/battery/status"):
+                with open("/sys/class/power_supply/battery/status", "r") as f:
+                    status = f.read().strip()
+                    plugged = status in ["Charging", "Full"]
+            return {"percent": cap, "plugged": plugged, "charging": status == "Charging"}
     except Exception:
         pass
     return None
@@ -120,10 +132,15 @@ def build_report():
     mem = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
 
+    # Detect Android Termux specifically
+    plat_system = platform.system()
+    if 'ANDROID_ROOT' in os.environ or 'PREFIX' in os.environ and 'termux' in os.environ['PREFIX']:
+        plat_system = "Android (Termux)"
+        
     report = {
         "device_id": DEVICE_ID,
         "hostname": DEVICE_NAME,
-        "platform": platform.system(),
+        "platform": plat_system,
         "platform_version": platform.version()[:50],
         "python_version": platform.python_version(),
         "ip": get_local_ip(),
