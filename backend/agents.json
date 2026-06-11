@@ -1,0 +1,13 @@
+{
+  "test-001": {
+    "device_id": "test-001",
+    "hostname": "TestPhone",
+    "platform": "Android",
+    "ip": "192.168.1.99",
+    "cpu_percent": 12,
+    "memory_percent": 54,
+    "last_seen": "2026-06-11T03:30:19.051946",
+    "status": "online",
+    "registered_at": "2026-06-11T03:30:19.051946"
+  }
+}

@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+env/
+.env
+.venv
+
+# VS Code / IDE
+.vscode/
+.idea/
+*.swp
+
+# Application Data (Private)
+backend/whitelist.json
+backend/alerts.json
+backend/config.json
+backend/dashboard_config.json
+backend/logs.json
+
+# Keep the data folder but ignore contents
+backend/data/*
+!backend/data/.gitkeep
