@@ -7,17 +7,28 @@
  * - This means every restart of the server delivers fresh dashboard to all devices
  */
 
-const CACHE_NAME = 'security-dashboard-v3';
+const CACHE_NAME = 'security-dashboard-v185';
 
 // Files to pre-cache for offline fallback
 const PRECACHE_URLS = [
   '/',
-  '/style.css?v=3',
-  '/app.js?v=3',
-  '/manifest.json'
+  '/index.html',
+  '/style.css?v=154',
+  '/app.js?v=154',
+  '/blackjack.js',
+  '/casino_engine.js',
+  '/crash.js',
+  '/gamba_plus.js',
+  '/tetris.js',
+  '/offline_tv.js',
+  '/offline_tv_games.js',
+  '/radio_comm.js',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
-// ── Install: cache core files ──
+// â”€â”€ Install: cache core files â”€â”€
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS))
@@ -25,7 +36,7 @@ self.addEventListener('install', event => {
   self.skipWaiting(); // Activate immediately, don't wait for old SW
 });
 
-// ── Activate: clean up old caches ──
+// â”€â”€ Activate: clean up old caches â”€â”€
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -37,7 +48,7 @@ self.addEventListener('activate', event => {
   self.clients.claim(); // Take control of all open tabs immediately
 });
 
-// ── Fetch: Network First strategy ──
+// â”€â”€ Fetch: Network First strategy â”€â”€
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -51,7 +62,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
-        // Got fresh response — update the cache
+        // Got fresh response â€” update the cache
         if (networkResponse && networkResponse.status === 200) {
           const cloned = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
@@ -59,15 +70,28 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // Network failed (offline) — serve from cache
+        // Network failed (offline) â€” serve from cache
         return caches.match(event.request);
       })
   );
 });
 
-// ── Listen for "SKIP_WAITING" message (sent by app.js on update) ──
+// â”€â”€ Listen for "SKIP_WAITING" message (sent by app.js on update) â”€â”€
 self.addEventListener('message', event => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+

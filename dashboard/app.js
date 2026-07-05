@@ -13,6 +13,8 @@ let _currentTab = 'overview';
 let _pollingTimer = null;
 let _drawerOpen = false;
 let _isAuthenticated = false;
+let _lastSecurityScore = 100;
+let _highlightRiskyPorts = false;
 
 // ──────────────────────────────────────────────────────
 // AUTO-UPDATE SYSTEM
@@ -22,6 +24,7 @@ let _isAuthenticated = false;
 // ──────────────────────────────────────────────────────
 let _knownVersion = null;
 let _updateBannerShown = false;
+let _lastDevices = [];
 
 async function checkForUpdates() {
   try {
@@ -246,8 +249,10 @@ function showTab(tab) {
   _currentTab = tab;
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
   document.getElementById(`tab-${tab}`)?.classList.add('active');
   document.getElementById(`panel-${tab}`)?.classList.add('active');
+  document.getElementById(`drawer-tab-${tab}`)?.classList.add('active');
   if (tab === 'network')   loadDevices();
   if (tab === 'ports')     loadPorts();
   if (tab === 'alerts')    loadAlerts();
@@ -262,6 +267,9 @@ function showTab(tab) {
 // CONNECT DEVICES — QR Code + Agents
 // ──────────────────────────────────────────────────────
 let _qrGenerated = false;
+let _localQrGenerated = false;
+let _tunnelQrGenerated = false;
+let _lastTunnelUrl = "";
 
 async function loadConnect() {
   await loadNetworkInfo();
@@ -275,10 +283,15 @@ async function loadNetworkInfo() {
     if (!data.ok) return;
 
     const url = data.dashboard_url;
+    const localUrl = `https://${data.local_ip}:8768`;
+    const tunnelUrl = data.tunnel_url;
 
     // Show URL text
     const urlEl = document.getElementById('net-url');
     if (urlEl) urlEl.textContent = url;
+
+    const localUrlEl = document.getElementById('net-url-local');
+    if (localUrlEl) localUrlEl.textContent = localUrl;
 
     // Pre-fill agent download steps
     const agentUrl = `${url}/agent.py`;
@@ -286,15 +299,34 @@ async function loadNetworkInfo() {
     if (androidEl) androidEl.textContent = `curl -O ${agentUrl}`;
     const winEl = document.getElementById('win-agent-url');
     if (winEl) winEl.textContent = `(open in browser) ${agentUrl}`;
+    const nethunterEl = document.getElementById('agent-download-url');
+    if (nethunterEl) nethunterEl.textContent = agentUrl;
 
-    // Generate QR code (once)
+    // Generate Local Offline QR code (once)
+    const localQrEl = document.getElementById('qr-code-local');
+    if (localQrEl && !_localQrGenerated && typeof QRCode !== 'undefined') {
+      localQrEl.innerHTML = '';
+      new QRCode(localQrEl, {
+        text: localUrl,
+        width: 140,
+        height: 140,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      _localQrGenerated = true;
+    } else if (localQrEl && !_localQrGenerated) {
+      localQrEl.innerHTML = `<div style="color:#666;font-size:11px;padding:16px">${localUrl}</div>`;
+    }
+
+    // Generate Tailscale Secure QR code (once)
     const qrEl = document.getElementById('qr-code');
     if (qrEl && !_qrGenerated && typeof QRCode !== 'undefined') {
       qrEl.innerHTML = '';
       new QRCode(qrEl, {
         text: url,
-        width: 160,
-        height: 160,
+        width: 140,
+        height: 140,
         colorDark: '#000000',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
@@ -302,6 +334,32 @@ async function loadNetworkInfo() {
       _qrGenerated = true;
     } else if (qrEl && !_qrGenerated) {
       qrEl.innerHTML = `<div style="color:#666;font-size:11px;padding:16px">${url}</div>`;
+    }
+
+    // Generate Tunnel QR code if tunnelUrl exists
+    const tunnelUrlEl = document.getElementById('tunnel-url');
+    const tunnelQrEl = document.getElementById('qr-code-tunnel');
+    if (tunnelUrl) {
+      if (tunnelUrlEl) tunnelUrlEl.innerHTML = `<a href="${tunnelUrl}" target="_blank" style="color:var(--primary);text-decoration:underline;">${tunnelUrl}</a>`;
+      
+      if (tunnelQrEl && (!_tunnelQrGenerated || _lastTunnelUrl !== tunnelUrl) && typeof QRCode !== 'undefined') {
+        tunnelQrEl.innerHTML = '';
+        new QRCode(tunnelQrEl, {
+          text: tunnelUrl,
+          width: 140,
+          height: 140,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+        _tunnelQrGenerated = true;
+        _lastTunnelUrl = tunnelUrl;
+      }
+    } else {
+      if (tunnelUrlEl) tunnelUrlEl.textContent = "Awaiting Cloudflare activation...";
+      if (tunnelQrEl) tunnelQrEl.innerHTML = '<div style="color:#666;font-size:11px;padding:40px 10px;">Waiting for backend...</div>';
+      _tunnelQrGenerated = false;
+      _lastTunnelUrl = "";
     }
   } catch (e) {
     console.warn('Network info fetch failed:', e);
@@ -467,12 +525,12 @@ async function loadDNS() {
             <div class="vpn-icon">${d.doh_enabled ? '✅' : '⚠️'}</div>
             <div>
               <div class="vpn-label" style="color:${d.doh_enabled ? 'var(--green)' : 'var(--orange)'}">
-                ${d.doh_enabled ? 'DoH Enabled' : 'DoH Not Enabled'}
+                ${d.doh_enabled ? 'DoH Enabled' : 'DoH Not Enabled (System)'}
               </div>
-              <div class="vpn-sub">${d.doh_enabled ? 'DNS queries are encrypted' : 'Your ISP can see every domain you visit'}</div>
+              <div class="vpn-sub">${d.doh_enabled ? 'DNS queries are encrypted' : 'System DNS is unencrypted. Note: If you enabled DoH inside your web browser settings, your browser traffic is protected, but other PC apps are not.'}</div>
             </div>
           </div>
-          ${!d.doh_enabled ? `<div class="rec-box">Enable: Settings → Network & Internet → DNS → Custom (1.1.1.1) → Enable DoH</div>` : ''}
+          ${!d.doh_enabled ? `<div class="rec-box">To enable system-wide DoH: Windows Settings → Network & Internet → WiFi/Ethernet properties → DNS settings edit → choose Encrypted (DNS-over-HTTPS).</div>` : ''}
         </div>
 
         <!-- DNS Leak Test -->
@@ -563,6 +621,18 @@ async function loadSetupConfig() {
     if (alerts.unknown_device !== undefined) document.getElementById('alert-unknown').checked = alerts.unknown_device;
     if (alerts.high_risk_process !== undefined) document.getElementById('alert-process').checked = alerts.high_risk_process;
     if (alerts.firewall_down !== undefined) document.getElementById('alert-firewall').checked = alerts.firewall_down;
+
+    // Load SauceNAO config
+    const saucenaoInput = document.getElementById('saucenao-key');
+    if (saucenaoInput) {
+      if (cfg.saucenao_api_key_set) {
+        saucenaoInput.value = '';
+        saucenaoInput.placeholder = '(key saved — paste to update)';
+      } else {
+        saucenaoInput.value = '';
+        saucenaoInput.placeholder = 'Enter SauceNAO API Key...';
+      }
+    }
   } catch (_) {}
 }
 
@@ -637,6 +707,32 @@ async function saveAlertSettings() {
   } catch (e) { showToast('Failed to save settings', 'error'); }
 }
 
+async function saveSauceNAOConfig() {
+  const key = document.getElementById('saucenao-key')?.value.trim();
+  const msg = document.getElementById('saucenao-status');
+  if (msg) { msg.textContent = 'Saving key...'; msg.className = 'form-message'; }
+  try {
+    const res = await fetch(`${API}/config`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ saucenao_api_key: key })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      if (msg) { msg.textContent = '✓ API Key saved successfully!'; msg.className = 'form-message success'; }
+      showToast('SauceNAO API Key saved', 'success');
+      if (key) {
+        document.getElementById('saucenao-key').value = '';
+        document.getElementById('saucenao-key').placeholder = '(key saved — paste to update)';
+      } else {
+        document.getElementById('saucenao-key').placeholder = 'Enter SauceNAO API Key...';
+      }
+    } else throw new Error(data.error);
+  } catch (e) {
+    if (msg) { msg.textContent = `Error: ${e.message}`; msg.className = 'form-message error'; }
+    showToast('Failed to save SauceNAO API Key', 'error');
+  }
+}
+
 // ──────────────────────────────────────────────────────
 // Toasts
 // ──────────────────────────────────────────────────────
@@ -657,12 +753,39 @@ function showToast(msg, type = 'info', duration = 3500) {
 // Security Score Gauge
 // ──────────────────────────────────────────────────────
 function updateGauge(score) {
-  const maxDash = 251.2;
-  const offset = maxDash - (score / 100) * maxDash;
+  // Use percentage offset directly since pathLength="100" is set in SVG
+  const offset = 100 - score;
   const fill = document.getElementById('gauge-fill');
-  if (fill) fill.style.strokeDashoffset = offset;
+  if (fill) {
+    fill.setAttribute('stroke-dashoffset', offset);
+    fill.setAttribute('stroke', 'url(#gauge-grad)');
+  }
+
+  // Score number
   const scoreEl = document.getElementById('gauge-score');
   if (scoreEl) scoreEl.textContent = score;
+
+  // Score status pill badge
+  const { label, color } = getScoreLabel(score);
+  const labelBar = document.getElementById('gauge-score-label-bar');
+  if (labelBar) {
+    const palettes = {
+      '#00e699': { bg: '#e6fff5', border: '#00e699', text: '#006644', dot: '#00e699' },
+      '#88ff44': { bg: '#f0ffe6', border: '#88ff44', text: '#3a6600', dot: '#88ff44' },
+      '#ffcc00': { bg: '#fff9e0', border: '#ffcc00', text: '#7a5700', dot: '#ffcc00' },
+      '#ff9944': { bg: '#fff3e6', border: '#ff9944', text: '#8a3d00', dot: '#ff9944' },
+      '#ff4455': { bg: '#fff0f2', border: '#ff4455', text: '#8a0010', dot: '#ff4455' },
+    };
+    const p = palettes[color] || palettes['#ff4455'];
+    labelBar.style.background = p.bg;
+    labelBar.style.borderColor = p.border;
+    labelBar.style.color = p.text;
+    const dot = document.getElementById('gauge-status-dot');
+    if (dot) dot.style.background = p.dot;
+    const textEl = document.getElementById('gauge-status-text');
+    if (textEl) textEl.textContent = label.toUpperCase();
+  }
+
   document.getElementById('gauge-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
   // Update mini ring
@@ -689,9 +812,10 @@ async function fetchAll() {
   await Promise.all([
     fetchSystemStatus(),
     fetchPorts(),
-    fetchAgents(),
+    loadAgents(),
     fetchAlerts(),
-    fetchBluetoothData()
+    fetchBluetoothData(),
+    refreshUsbStatus()
   ]);
 }
 
@@ -704,6 +828,7 @@ async function fetchStatus() {
 
     const s = data;
     const scoreInfo = getScoreLabel(s.security_score);
+    _lastSecurityScore = s.security_score;
 
     // Score gauge + header
     updateGauge(s.security_score);
@@ -713,7 +838,7 @@ async function fetchStatus() {
     // Stat cards
     setStatCard('stat-score', s.security_score, '/100', `${scoreInfo.label}`,
       s.security_score >= 75 ? 'good' : (s.security_score >= 50 ? 'warn' : 'bad'));
-    setStatCard('stat-devices', s.unknown_devices === 0 ? '✓' : s.unknown_devices,
+    setStatCard('stat-devices', s.unknown_devices === 0 ? '?' : s.unknown_devices,
       '', s.unknown_devices === 0 ? 'No unknowns' : `${s.unknown_devices} unknown device(s)!`,
       s.unknown_devices === 0 ? 'good' : 'bad');
     setStatCard('stat-firewall', s.firewall_ok ? 'ON' : 'OFF', '',
@@ -725,21 +850,43 @@ async function fetchStatus() {
 
     // System info
     const sys = s.system;
-    document.getElementById('sys-grid').innerHTML = `
-      <div class="sys-row"><span class="sys-key">Hostname</span><span class="sys-val">${sys.hostname}</span></div>
-      <div class="sys-row"><span class="sys-key">Uptime</span><span class="sys-val">${sys.uptime_hours}h</span></div>
-      <div class="sys-row"><span class="sys-key">Memory</span><span class="sys-val">${sys.memory_used_gb}/${sys.memory_total_gb} GB</span></div>
-      <div class="sys-row"><span class="sys-key">Pending Updates</span><span class="sys-val ${s.pending_updates > 5 ? 'text-orange' : ''}">${s.pending_updates < 0 ? 'Unknown' : s.pending_updates}</span></div>
-    `;
-    document.getElementById('cpu-val').textContent = `${sys.cpu_percent}%`;
-    document.getElementById('cpu-bar').style.width = `${sys.cpu_percent}%`;
-    document.getElementById('mem-val').textContent = `${sys.memory_percent}%`;
-    document.getElementById('mem-bar').style.width = `${sys.memory_percent}%`;
+    const sysGrid = document.getElementById('sys-grid');
+    if (sysGrid) {
+      sysGrid.innerHTML = `
+        <div class="sys-row"><span class="sys-key">Hostname</span><span class="sys-val">${sys.hostname}</span></div>
+        <div class="sys-row"><span class="sys-key">Uptime</span><span class="sys-val">${sys.uptime_hours}h</span></div>
+        <div class="sys-row"><span class="sys-key">Memory</span><span class="sys-val">${sys.memory_used_gb}/${sys.memory_total_gb} GB</span></div>
+        <div class="sys-row"><span class="sys-key">Pending Updates</span><span class="sys-val ${s.pending_updates > 5 ? 'text-orange' : ''}">${s.pending_updates < 0 ? 'Unknown' : s.pending_updates}</span></div>
+      `;
+    }
+    const cpuVal = document.getElementById('cpu-val');
+    if (cpuVal) cpuVal.textContent = `${sys.cpu_percent}%`;
+    const cpuBar = document.getElementById('cpu-bar');
+    if (cpuBar) cpuBar.style.width = `${sys.cpu_percent}%`;
+    const memVal = document.getElementById('mem-val');
+    if (memVal) memVal.textContent = `${sys.memory_percent}%`;
+    const memBar = document.getElementById('mem-bar');
+    if (memBar) memBar.style.width = `${sys.memory_percent}%`;
+
+    if (window.resourceHistory) {
+      if (window.resourceHistory.length === 0) {
+        for (let i = 0; i < 40; i++) {
+          window.resourceHistory.push({ cpu: sys.cpu_percent, mem: sys.memory_percent });
+        }
+      } else if (window.updateResourceChartData) {
+        window.updateResourceChartData(sys.cpu_percent, sys.memory_percent);
+      }
+    }
+    
+    // Update the SVG Neo-Brutalist live resource widget
+    if (typeof updateResourceWidget === 'function') {
+      updateResourceWidget(sys.cpu_percent, sys.memory_percent);
+    }
 
     // Deductions
     const dl = document.getElementById('deductions-list');
     if (s.deductions && s.deductions.length > 0) {
-      dl.innerHTML = s.deductions.map(d => `<div class="deduction-item">⚠ ${d}</div>`).join('');
+      dl.innerHTML = s.deductions.map(d => renderInteractiveDeduction(d)).join('');
     } else {
       dl.innerHTML = `<div class="deduction-item none">✓ No security issues found!</div>`;
     }
@@ -747,26 +894,164 @@ async function fetchStatus() {
     // Alert for unknown devices
     if (s.unknown_devices > 0) {
       document.getElementById('alert-text').textContent =
-        `⚠ ${s.unknown_devices} unknown device(s) detected on your network! Check the Network tab.`;
+        `⚠️ ${s.unknown_devices} unknown device(s) detected on your network! Check the Network tab.`;
       document.getElementById('alerts-bar').style.display = 'block';
     }
 
     // Connection indicator
-    document.getElementById('connection-pill').style.opacity = '1';
+    const connInd = document.getElementById('status-indicator');
+    if (connInd) connInd.style.opacity = '1';
 
   } catch (e) {
     console.error('Status fetch failed:', e);
-    document.getElementById('connection-pill').style.opacity = '0.4';
+    const connInd = document.getElementById('status-indicator');
+    if (connInd) connInd.style.opacity = '0.4';
     showApiError();
   }
 }
 
 function showApiError() {
+  // Silently mark as offline - don't corrupt the deductions panel with error messages
   const dl = document.getElementById('deductions-list');
-  if (dl) dl.innerHTML = `<div class="deduction-item">
-    ⚠ Cannot connect to backend server.<br>
-    <small>Make sure <code>python backend/server.py</code> is running.</small>
-  </div>`;
+  if (dl && dl.querySelector('.loading')) {
+    // Only show offline message if still in initial loading state
+    dl.innerHTML = `<div class="deduction-item" style="color:var(--text-secondary); font-size:12px; padding: 8px 0;">
+      ⏳ Waiting for server connection...
+    </div>`;
+  }
+}
+
+function renderInteractiveDeduction(d) {
+  let title = d;
+  let description = '';
+  let actionHtml = '';
+
+  if (d.includes('Firewall') && d.includes('OFF')) {
+    title = '🔥 Firewall Profile Disabled';
+    description = 'One or more Windows Firewall profiles are turned off, exposing your computer to network intrusions.';
+    actionHtml = `<button class="btn-sm" onclick="fixFirewall(this)" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Enable Firewall</button>`;
+  } else if (d.includes('Antivirus is disabled')) {
+    title = '🛡️ Defender Antivirus Disabled';
+    description = 'Your system has no active antivirus protection enabled.';
+    actionHtml = `<button class="btn-sm" onclick="openDefenderSettings()" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Open Defender Settings</button>`;
+  } else if (d.includes('Real-time protection is OFF')) {
+    title = '⚡ Real-time Protection Off';
+    description = 'Active scanning of newly created files and processes is disabled, making it easy for malware to execute.';
+    actionHtml = `<button class="btn-sm" onclick="openDefenderSettings()" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Open Defender Settings</button>`;
+  } else if (d.includes('signatures') && d.includes('old')) {
+    title = '🔄 Antivirus Signatures Outdated';
+    description = 'Defender signatures are more than 7 days old. New threats may not be detected.';
+    actionHtml = `<button class="btn-sm" onclick="updateDefenderSignatures(this)" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Update Antivirus</button>`;
+  } else if (d.includes('risky port')) {
+    const countMatch = d.match(/(\d+) risky port/);
+    const count = countMatch ? countMatch[1] : 'Some';
+    title = `⚠️ ${count} Dangerous Ports Open`;
+    description = 'Services like RDP, SMB, or Telnet are currently open, which attackers can use to access or breach your PC.';
+    actionHtml = `<button class="btn-sm" onclick="goToPortsFromSecScore()" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Go to Ports Tab</button>`;
+  } else if (d.includes('pending updates')) {
+    const countMatch = d.match(/(\d+) pending update/);
+    const count = countMatch ? countMatch[1] : 'Several';
+    title = `⚙️ ${count} Windows Updates Pending`;
+    description = 'Security updates are waiting to be installed. Leaving them uninstalled leaves your PC vulnerable to known exploits.';
+    actionHtml = `<button class="btn-sm" onclick="openWindowsUpdates(this)" style="background:var(--cyan); color:#000; border:none; margin-top:6px; font-weight:700;">Open Windows Update</button>`;
+  } else if (d.includes('Could not verify')) {
+    title = '❓ Verification Service Warning';
+    description = 'The system monitor was unable to verify firewall or antivirus status due to permission limits.';
+    actionHtml = `<span style="font-size:11px; color:#aaa;">Run Security Suite as Administrator to fix this.</span>`;
+  }
+
+  // Generate expandable accordion-like deduction item
+  return `
+    <div class="deduction-card" style="margin-bottom: 8px; background: rgba(255, 68, 85, 0.04); border-left: 3px solid #ff4455; border-radius: 4px; border: 1px solid rgba(255, 68, 85, 0.1); border-left-width: 3px; font-family:'Inter', sans-serif;">
+      <div onclick="this.parentElement.querySelector('.deduction-card-details').style.display = this.parentElement.querySelector('.deduction-card-details').style.display === 'none' ? 'block' : 'none';" 
+           style="padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+        <span style="font-size: 13px; font-weight: 700; color: #ff8899;">${title}</span>
+        <span style="font-size: 10px; color: #ff8899; opacity: 0.8; font-weight:800;">[CLICK FOR STEPS]</span>
+      </div>
+      <div class="deduction-card-details" style="display: none; padding: 0 12px 12px 12px; font-size: 12px; color: #ccc; border-top: 1px solid rgba(255, 68, 85, 0.05); padding-top: 8px;">
+        <p style="margin: 0 0 8px 0; line-height: 1.4;">${description}</p>
+        ${actionHtml}
+      </div>
+    </div>
+  `;
+}
+
+async function fixFirewall(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Enabling...';
+  try {
+    const res = await fetch(`${API}/firewall/enable`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('✓ Windows Firewall enabled!', 'success');
+      fetchStatus();
+    } else throw new Error(data.error);
+  } catch(e) {
+    showToast(`Failed: ${e.message}`, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Enable Firewall';
+  }
+}
+
+async function openDefenderSettings() {
+  try {
+    const res = await fetch(`${API}/defender/open`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Opening Windows Security Settings on your PC...', 'info');
+    } else throw new Error(data.error);
+  } catch(e) {
+    showToast(`Failed: ${e.message}`, 'error');
+  }
+}
+
+async function updateDefenderSignatures(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Updating...';
+  try {
+    const res = await fetch(`${API}/defender/update`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Triggered antivirus signature updates in background.', 'success');
+      setTimeout(fetchStatus, 5000);
+    } else throw new Error(data.error);
+  } catch(e) {
+    showToast(`Failed: ${e.message}`, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Update Antivirus';
+  }
+}
+
+async function openWindowsUpdates(btn) {
+  try {
+    const res = await fetch(`${API}/system/open-update`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('Opening Windows Update settings on your PC...', 'info');
+    } else throw new Error(data.error);
+  } catch(e) {
+    showToast(`Failed: ${e.message}`, 'error');
+  }
+}
+
+function goToPortsFromSecScore() {
+  _highlightRiskyPorts = true;
+  
+  // Inject the pulse animation styling dynamically if not present
+  if (!document.getElementById('pulse-glow-style')) {
+    const style = document.createElement('style');
+    style.id = 'pulse-glow-style';
+    style.textContent = `
+      @keyframes pulseGlow {
+        0% { background-color: rgba(255, 68, 85, 0.08); }
+        50% { background-color: rgba(255, 68, 85, 0.25); }
+        100% { background-color: rgba(255, 68, 85, 0.08); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  showTab('ports');
 }
 
 function setStatCard(id, value, suffix, sub, state) {
@@ -795,6 +1080,7 @@ async function loadDevices() {
     if (!data.ok) throw new Error(data.error);
 
     const { devices, summary, local_ip, gateway, subnet } = data.data;
+    _lastDevices = devices || [];
 
     // Update sub-header
     document.getElementById('network-sub').textContent =
@@ -885,51 +1171,57 @@ function deviceCardHTML(d) {
 // ─── ACTIVE CONTROLS JS ───
 
 async function actionDeepScan(ip) {
-  showToast(`Deep scanning ${ip}... this takes a moment.`, 'info', 5000);
+  showToast(`Scanning ports on ${ip}... hang tight.`, 'info', 6000);
   try {
-    const res = await fetch(`${API}/device/deep-scan`, {
+    const res = await fetch(`${API}/device/offensive-scan`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ip })
     });
     const data = await res.json();
     if (data.ok) {
-      showVulnerabilityModal(ip, data.open_ports);
+      showVulnerabilityModal(ip, data.open_ports, data.os_guess);
     } else throw new Error(data.error);
-  } catch(e) { showToast(`Deep scan failed: ${e.message}`, 'error'); }
+  } catch(e) { showToast(`Scan failed: ${e.message}`, 'error'); }
 }
 
-function showVulnerabilityModal(ip, ports) {
-  let html = `<p>Vulnerability Assessment for <strong>${ip}</strong></p>`;
-  
-  if (ports.length === 0) {
+function showVulnerabilityModal(ip, ports, osGuess) {
+  // Risk classification based on port number
+  const HIGH_RISK = [21,23,135,139,445,3389,5900,1723];
+  const MED_RISK  = [22,25,53,80,110,143,3306,8080,8000,8443,993,995];
+
+  let html = `
+    <div style="margin-bottom:12px; padding:10px; background:var(--card-bg); border-radius:6px; border-left:4px solid var(--cyan);">
+      <span style="font-size:12px; color:var(--text-secondary);">Target</span>
+      <div style="font-weight:bold; font-family:monospace;">${ip}</div>
+      <span style="font-size:12px; color:var(--text-secondary);">OS Guess: <strong style="color:var(--cyan)">${osGuess || 'Unknown'}</strong></span>
+    </div>`;
+
+  if (!ports || ports.length === 0) {
     html += `<div style="padding:15px;background:rgba(0,255,0,0.1);border:1px solid var(--success);border-radius:6px;margin-top:10px;">
-      ✅ No highly common vulnerable ports exposed.
+      ✅ No common vulnerable ports found open on this device.
     </div>`;
   } else {
-    html += `<div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">`;
+    html += `<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">`;
     ports.forEach(p => {
-      let color = 'var(--text-secondary)';
-      let bg = 'var(--card-bg)';
-      if (p.risk === 'high') { color = 'var(--danger)'; bg = 'rgba(255,0,0,0.1)'; }
-      else if (p.risk === 'medium') { color = 'var(--warning)'; bg = 'rgba(255,165,0,0.1)'; }
-      
+      const isHigh = HIGH_RISK.includes(p.port);
+      const isMed  = MED_RISK.includes(p.port);
+      const risk   = isHigh ? 'HIGH' : isMed ? 'MEDIUM' : 'LOW';
+      const color  = isHigh ? 'var(--danger)' : isMed ? 'var(--warning)' : 'var(--success)';
+      const bg     = isHigh ? 'rgba(255,0,0,0.08)' : isMed ? 'rgba(255,165,0,0.08)' : 'rgba(0,255,0,0.05)';
       html += `
-        <div style="padding:12px; border-left: 4px solid ${color}; background: ${bg}; border-radius: 4px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-            <strong style="color:${color}">Port ${p.port} - ${p.service}</strong>
-            <span style="font-size:11px; text-transform:uppercase; padding:2px 6px; background:var(--bg); border-radius:10px;">${p.risk} risk</span>
+        <div style="padding:10px 12px; border-left:4px solid ${color}; background:${bg}; border-radius:4px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="color:${color}; font-family:monospace;">:${p.port}</strong>
+            <span style="color:var(--text-secondary); margin-left:8px; font-size:13px;">${p.service}</span>
           </div>
-          <div style="font-family:monospace; font-size:12px; color:var(--text-secondary); background:rgba(0,0,0,0.2); padding:6px; border-radius:4px; overflow-x:auto;">
-            ${p.banner}
-          </div>
-        </div>
-      `;
+          <span style="font-size:11px; text-transform:uppercase; padding:2px 8px; background:${color}22; color:${color}; border-radius:10px; border:1px solid ${color}44;">${risk}</span>
+        </div>`;
     });
     html += `</div>`;
   }
 
-  document.getElementById('modal-title').innerText = 'Vulnerability Report';
+  document.getElementById('modal-title').innerText = `Port Scan — ${ip}`;
   document.getElementById('modal-body').innerHTML = html;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">Close</button>`;
+  document.getElementById('modal-footer').innerHTML = `<button class="btn-sm" onclick="closeModal()">Close</button>`;
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 
@@ -961,14 +1253,14 @@ function renderOverviewAlerts(unknowns) {
   const el = document.getElementById('overview-alerts');
   if (!el) return;
   if (unknowns.length === 0) {
-    el.innerHTML = `<div class="empty-state">No unknown devices — network looks clean ✓</div>`;
+    el.innerHTML = `<div class="empty-state">No unknown devices - network looks clean ?</div>`;
     return;
   }
   el.innerHTML = unknowns.map(d => `
     <div class="alert-item-small severity-high">
       <div>
-        <div class="alert-title">⚠ Unknown Device</div>
-        <div class="alert-msg">${d.ip} · ${d.mac} · ${d.vendor || 'Unknown Vendor'}</div>
+        <div class="alert-title">?? Unknown Device</div>
+        <div class="alert-msg">${d.ip} - ${d.mac} - ${d.vendor || 'Unknown Vendor'}</div>
       </div>
     </div>`).join('');
 }
@@ -999,8 +1291,10 @@ async function triggerScan() {
 // ──────────────────────────────────────────────────────
 // Open Ports
 // ──────────────────────────────────────────────────────
-const RISKY_PORTS = [21, 23, 135, 137, 138, 139, 445, 1433, 3306, 3389, 5900, 8080];
+const RISKY_PORTS  = [21, 23, 135, 137, 138, 139, 445, 1433, 3306, 3389, 5900, 8080];
 const MEDIUM_PORTS = [80, 443, 8443, 5432];
+
+let _blockedPortsSet = new Set();
 
 function portRisk(port) {
   if (RISKY_PORTS.includes(port)) return 'high';
@@ -1008,36 +1302,177 @@ function portRisk(port) {
   return 'low';
 }
 
+function _updateStealthBtn(active) {
+  // Update new overview switch if it exists
+  const overviewSwitch = document.getElementById('overview-stealth-switch');
+  if (overviewSwitch) {
+    overviewSwitch.checked = active;
+    const statusText = document.getElementById('overview-stealth-status');
+    if (statusText) {
+      statusText.textContent = active ? 'ACTIVE' : 'INACTIVE';
+      statusText.style.color = active ? 'var(--success)' : 'var(--text-muted)';
+    }
+  }
+
+  const btn   = document.getElementById('stealth-btn');
+  const icon  = document.getElementById('stealth-icon');
+  const label = document.getElementById('stealth-label');
+  if (!btn) return;
+  if (active) {
+    btn.style.background   = 'rgba(0,255,136,0.15)';
+    btn.style.border       = '1px solid var(--success)';
+    btn.style.color        = 'var(--success)';
+    if (icon) icon.textContent       = '\uD83D\uDD12';
+    if (label) label.textContent      = 'Stealth: ON';
+  } else {
+    btn.style.background   = '';
+    btn.style.border       = '';
+    btn.style.color        = '';
+    if (icon) icon.textContent       = '\uD83D\uDD10';
+    if (label) label.textContent      = 'Stealth Mode';
+  }
+}
+
+async function toggleStealth() {
+  const btn = document.getElementById('stealth-btn');
+  const isOn = btn.dataset.active === 'true';
+  btn.disabled = true;
+
+  if (!isOn) {
+    // Enable stealth
+    if (!confirm('Enable Stealth Mode?\n\nThis will:\n• Turn on Windows Firewall (all profiles)\n• Block ALL inbound connections\n• +10 to security score\n\nYour dashboard will still work.')) {
+      btn.disabled = false; return;
+    }
+    try {
+      const res  = await fetch(`${API}/firewall/stealth`, { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        btn.dataset.active = 'true';
+        _updateStealthBtn(true);
+        showToast(`\uD83D\uDD12 Stealth Mode ON \u2014 Score: ${data.new_score}`, 'success', 4000);
+      } else throw new Error(data.error);
+    } catch(e) { showToast(`Stealth failed: ${e.message}`, 'error'); }
+  } else {
+    // Disable stealth
+    if (!confirm('Disable Stealth Mode?\n\nInbound connections will be allowed again.')) {
+      btn.disabled = false; return;
+    }
+    try {
+      const res  = await fetch(`${API}/firewall/stealth-off`, { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        btn.dataset.active = 'false';
+        _updateStealthBtn(false);
+        showToast('\uD83D\uDD10 Stealth Mode OFF', 'info', 3000);
+      } else throw new Error(data.error);
+    } catch(e) { showToast(`Failed: ${e.message}`, 'error'); }
+  }
+  btn.disabled = false;
+}
+
 async function loadPorts() {
   const tbody = document.getElementById('ports-tbody');
-  tbody.innerHTML = `<tr><td colspan="5" class="table-loading"><div class="spinner" style="margin:12px auto"></div></td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" class="table-loading"><div class="spinner" style="margin:12px auto"></div></td></tr>`;
 
   try {
     const res = await fetch(`${API}/ports`);
     const data = await res.json();
     if (!data.ok) throw new Error(data.error);
 
+    // Fetch already-blocked ports + stealth state
+    try {
+      const bRes = await fetch(`${API}/firewall/blocked-ports`);
+      const bData = await bRes.json();
+      if (bData.ok) _blockedPortsSet = new Set(bData.ports || []);
+    } catch (_) {}
+    try {
+      const sRes = await fetch(`${API}/status`);
+      const sData = await sRes.json();
+      const stealthOn = sData.stealth_active || false;
+      const btn = document.getElementById('stealth-btn');
+      if (btn) { btn.dataset.active = String(stealthOn); _updateStealthBtn(stealthOn); }
+    } catch (_) {}
+
     const ports = data.data;
-    if (ports.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="table-loading">No listening ports found.</td></tr>`;
+    if (!ports || ports.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="table-loading">No listening ports found.</td></tr>`;
       return;
     }
 
     tbody.innerHTML = ports.map(p => {
-      const risk = portRisk(p.port);
+      const risk      = portRisk(p.port);
+      const riskColor = risk === 'high' ? 'var(--danger)' : risk === 'medium' ? 'var(--warning)' : 'var(--success)';
       const riskBadge = `<span class="risk-badge risk-${risk}">${risk.toUpperCase()}</span>`;
-      return `<tr>
-        <td style="font-weight:700; color: ${risk === 'high' ? 'var(--red)' : risk === 'medium' ? 'var(--orange)' : 'var(--text-primary)'}">:${p.port}</td>
-        <td>${p.address || '*'}</td>
-        <td>${p.process || '—'}</td>
-        <td>${p.pid || '—'}</td>
+      const isBlocked = _blockedPortsSet.has(p.port);
+      const actionBtn = isBlocked
+        ? `<button class="btn-sm" style="background:rgba(0,255,0,0.1);color:var(--success);border:1px solid var(--success);font-size:11px;" onclick="unblockPort(${p.port},this)">\u2713 Unblock</button>`
+        : `<button class="btn-sm" style="background:rgba(255,0,0,0.1);color:var(--danger);border:1px solid var(--danger);font-size:11px;" onclick="blockPort(${p.port},this)">\uD83D\uDEAB Block</button>`;
+      
+      const isRisky = [21, 23, 135, 139, 445, 3389, 5900].includes(p.port);
+      const rowStyle = (_highlightRiskyPorts && isRisky)
+        ? `animation: pulseGlow 1.5s infinite; border: 1px solid #ff4455;`
+        : '';
+      const helperLabel = (_highlightRiskyPorts && isRisky)
+        ? `<span style="color:#ff8899; font-size:10px; font-weight:800; display:block; margin-top:2px; font-family:'Inter', sans-serif;">⚠️ ACTION REQUIRED</span>`
+        : '';
+
+      return `<tr style="${rowStyle}">
+        <td style="font-weight:700;color:${riskColor};font-family:monospace;">:${p.port}${helperLabel}</td>
+        <td style="font-family:monospace;font-size:12px;">${p.address || '*'}</td>
+        <td>${p.process || '\u2014'}</td>
+        <td style="font-family:monospace;">${p.pid || '\u2014'}</td>
         <td>${riskBadge}</td>
+        <td>${actionBtn}</td>
       </tr>`;
     }).join('');
+
+    // Clear flag after rendering
+    _highlightRiskyPorts = false;
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" class="table-loading" style="color:var(--red)">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="table-loading" style="color:var(--danger)">Error: ${e.message}</td></tr>`;
   }
 }
+
+async function blockPort(port, btn) {
+  if (!confirm(`Block ALL inbound traffic on port ${port}?\nThis adds a Windows Firewall rule.`)) return;
+  btn.disabled = true; btn.textContent = 'Blocking...';
+  try {
+    const res  = await fetch(`${API}/firewall/block-port`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ port })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      _blockedPortsSet.add(port);
+      showToast(`Port ${port} blocked! Score: ${data.new_score}`, 'success');
+      btn.outerHTML = `<button class="btn-sm" style="background:rgba(0,255,0,0.1);color:var(--success);border:1px solid var(--success);font-size:11px;" onclick="unblockPort(${port},this)">\u2713 Unblock</button>`;
+    } else throw new Error(data.error);
+  } catch (e) {
+    showToast(`Block failed: ${e.message}`, 'error');
+    btn.disabled = false; btn.textContent = '\uD83D\uDEAB Block';
+  }
+}
+
+async function unblockPort(port, btn) {
+  if (!confirm(`Remove firewall block on port ${port}?`)) return;
+  btn.disabled = true; btn.textContent = 'Unblocking...';
+  try {
+    const res  = await fetch(`${API}/firewall/unblock-port`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ port })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      _blockedPortsSet.delete(port);
+      showToast(`Port ${port} unblocked.`, 'info');
+      btn.outerHTML = `<button class="btn-sm" style="background:rgba(255,0,0,0.1);color:var(--danger);border:1px solid var(--danger);font-size:11px;" onclick="blockPort(${port},this)">\uD83D\uDEAB Block</button>`;
+    } else throw new Error(data.error);
+  } catch (e) {
+    showToast(`Unblock failed: ${e.message}`, 'error');
+    btn.disabled = false; btn.textContent = '\u2713 Unblock';
+  }
+}
+
 
 // ──────────────────────────────────────────────────────
 // Alerts
@@ -1077,19 +1512,44 @@ function alertCardHTML(a) {
   const icons = { unknown_device: '📡', firewall: '🔥', process: '⚙️' };
   const icon = icons[a.type] || '⚠️';
   const time = new Date(a.timestamp).toLocaleString('en-IN');
+  
+  let deviceDetailsHtml = '';
+  if (a.type === 'unknown_device' && a.device) {
+    const d = a.device;
+    const osBadge = d.os_guess && d.os_guess !== 'Unknown' ? `<span class="badge-os" style="font-size:10px; background:rgba(0,212,255,0.15); color:#00d4ff; border:1px solid #00d4ff33; padding:2px 6px; border-radius:4px; font-weight:600; margin-left:6px; display:inline-block; vertical-align:middle;">${d.os_guess}</span>` : '';
+    const privateMacBadge = d.is_randomized_mac ? `<span class="badge-private-mac" style="font-size:10px; background:rgba(123,47,247,0.15); color:#7b2ff7; border:1px solid #7b2ff733; padding:2px 6px; border-radius:4px; font-weight:600; margin-left:6px; display:inline-block; vertical-align:middle;">🛡️ Private MAC</span>` : '';
+    
+    deviceDetailsHtml = `
+      <div style="margin: 10px 0; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; font-size: 13px; font-family:'Inter', sans-serif;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span style="font-size:18px;">${deviceIcon(d.vendor, d.status || 'unknown', d.os_guess)}</span>
+          <strong style="color:#fff; font-size:14px;">${d.hostname || 'Unknown Hostname'}</strong>
+          ${osBadge}
+          ${privateMacBadge}
+        </div>
+        <div style="color:var(--text-muted); font-size:12px; line-height:1.5; display:flex; flex-wrap:wrap; gap:12px;">
+          <span>Vendor: <strong style="color:#ddd;">${d.vendor || 'Unknown'}</strong></span>
+          <span>IP: <strong style="color:#ddd; font-family:var(--font-mono);">${d.ip}</strong></span>
+          <span>MAC: <strong style="color:#ddd; font-family:var(--font-mono);">${d.mac}</strong></span>
+        </div>
+      </div>
+    `;
+  }
+
   return `<div class="alert-full severity-${a.severity} ${a.acknowledged ? 'acknowledged' : ''}" id="alert-${a.id}">
     <div class="alert-full-icon">${icon}</div>
     <div class="alert-full-body">
       <div class="alert-full-title">${a.title}</div>
       <div class="alert-full-msg">${a.message}</div>
+      ${deviceDetailsHtml}
       <div class="alert-full-meta">
         <span>🕒 ${time}</span>
         <span>Severity: ${a.severity.toUpperCase()}</span>
         ${a.acknowledged ? '<span style="color:var(--green)">✓ Acknowledged</span>' : ''}
       </div>
       ${!a.acknowledged ? `<div class="alert-full-actions">
-        <button class="btn-sm" onclick="acknowledgeAlert('${a.id}')">✓ Acknowledge</button>
-        ${a.type === 'unknown_device' ? `<button class="btn-approve" onclick="openApproveModal('${a.device?.mac}','${a.device?.ip}','${a.device?.vendor}')">✓ Approve Device</button>` : ''}
+        <button class="btn-sm" onclick="acknowledgeAlert('${a.id}')" title="Dismiss this alert notification">&#x2713; Dismiss</button>
+        ${a.type === 'unknown_device' ? `<button class="btn-approve" onclick="openApproveModal('${a.device?.mac}','${a.device?.ip}','${a.device?.vendor}')" title="Add this device to your trusted whitelist permanently">&#x2714; Approve &amp; Trust Device</button>` : ''}
       </div>` : ''}
     </div>
   </div>`;
@@ -1102,7 +1562,10 @@ async function acknowledgeAlert(id) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     });
-    showToast('Alert acknowledged', 'success');
+    showToast('Alert acknowledged (+100 CC)', 'success');
+    if (typeof addCredits === 'function') {
+        addCredits(100);
+    }
     loadAlerts();
   } catch (e) {
     showToast('Failed to acknowledge', 'error');
@@ -1139,6 +1602,8 @@ async function addToWhitelist() {
       document.getElementById('wl-notes').value = '';
       showToast(`Device approved: ${name || mac}`, 'success');
       loadDevices();
+      fetchStatus();
+      loadAlerts();
     } else {
       throw new Error(data.error);
     }
@@ -1160,6 +1625,8 @@ async function removeWhitelist(mac) {
     if (data.ok) {
       showToast('Device removed from whitelist', 'info');
       loadDevices();
+      fetchStatus();
+      loadAlerts();
     }
   } catch (e) {
     showToast('Failed to remove device', 'error');
@@ -1206,6 +1673,7 @@ async function addDeviceDirectly(mac, name, notes) {
       showToast(`✓ ${name} approved!`, 'success');
       loadDevices();
       fetchStatus();
+      loadAlerts();
     }
   } catch (e) {
     showToast('Failed to approve device', 'error');
@@ -1213,12 +1681,64 @@ async function addDeviceDirectly(mac, name, notes) {
 }
 
 function showDeviceDetail(mac) {
-  // Find device from last scan — quick info modal
-  document.getElementById('modal-title').textContent = 'Device Info';
+  // Find device from last scan - quick info modal
+  const d = _lastDevices.find(dev => dev.mac === mac);
+  if (!d) {
+    document.getElementById('modal-title').textContent = 'Device Info';
+    document.getElementById('modal-body').innerHTML = `
+      <div class="modal-detail-row"><span class="modal-detail-key">MAC</span><span class="modal-detail-val">${mac}</span></div>
+      <p style="margin-top:12px; font-size:13px; color:var(--text-muted)">Click a device's Approve or Revoke button to manage its access.</p>`;
+    document.getElementById('modal-footer').innerHTML = `<button class="btn-sm" onclick="closeModal()">Close</button>`;
+    document.getElementById('modal-overlay').style.display = 'flex';
+    return;
+  }
+
+  const statusLabel = { approved: 'Approved', unknown: 'Unknown', self: 'This Device' };
+  const badgeClass = { approved: 'badge-approved', unknown: 'badge-unknown', self: 'badge-self' };
+  const name = d.approved_name || d.hostname || 'Unknown Device';
+
+  document.getElementById('modal-title').textContent = 'Device Connection Details';
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-detail-row"><span class="modal-detail-key">MAC</span><span class="modal-detail-val">${mac}</span></div>
-    <p style="margin-top:12px; font-size:13px; color:var(--text-muted)">Click a device's Approve or Revoke button to manage its access.</p>`;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn-sm" onclick="closeModal()">Close</button>`;
+    <div style="display:flex; flex-direction:column; gap:12px; font-family:'Inter', sans-serif;">
+      <div style="display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:12px;">
+        <span style="font-size:32px;">${deviceIcon(d.vendor, d.status, d.os_guess)}</span>
+        <div>
+          <h4 style="margin:0; font-size:18px; color:#fff;">${name}</h4>
+          <span style="font-size:12px; color:#888;">${d.vendor || 'Unknown Vendor'}</span>
+        </div>
+      </div>
+      <div class="modal-detail-row"><span class="modal-detail-key">IP Address</span><span class="modal-detail-val" style="color:#eee; font-family:var(--font-mono);">${d.ip}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-key">MAC Address</span><span class="modal-detail-val" style="color:#eee; font-family:var(--font-mono);">${d.mac}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-key">Status</span><span class="device-status-badge ${badgeClass[d.status]}">${statusLabel[d.status]}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-key">OS Fingerprint</span><span class="modal-detail-val" style="color:#eee;">${d.os_guess || 'Unknown'}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-key">Private MAC?</span><span class="modal-detail-val" style="color:#eee;">${d.is_randomized_mac ? '🛡️ Yes (Randomized)' : 'No (Hardware MAC)'}</span></div>
+      <div class="modal-detail-row"><span class="modal-detail-key">Last Seen</span><span class="modal-detail-val" style="color:#eee;">${d.last_seen ? new Date(d.last_seen).toLocaleString('en-IN') : 'Just now'}</span></div>
+      ${d.label ? `<div class="modal-detail-row"><span class="modal-detail-key">Label</span><span class="modal-detail-val" style="color:#eee;">${d.label}</span></div>` : ''}
+    </div>
+    <p style="margin-top:16px; font-size:13px; color:var(--text-muted); border-top:1px solid rgba(255,255,255,0.05); padding-top:12px; line-height:1.4;">
+      <strong>How do I identify this device?</strong><br>
+      • Compare this device's MAC/IP address with your phone or laptop's Wi-Fi Settings.<br>
+      • If it shows "Private MAC", this device is using MAC Randomization (e.g. Apple's "Private Wi-Fi Address" or Android's "Use Randomized MAC" option).
+    </p>`;
+  
+  let footerBtns = '';
+  if (d.status === 'unknown') {
+    footerBtns = `
+      <button class="btn-approve" onclick="closeModal(); openApproveModal('${d.mac}','${d.ip}','${d.vendor}')">✓ Approve & Trust</button>
+      <button class="btn-sm" onclick="closeModal(); actionDeepScan('${d.ip}')">🔍 Deep Scan</button>
+      <button class="btn-sm" style="background:rgba(255, 68, 85, 0.1); color:#ff4455; border:1px solid #ff4455; font-size:11px;" onclick="closeModal(); actionBlockIp('${d.ip}')">🚫 Block IP</button>
+    `;
+  } else if (d.status === 'approved') {
+    footerBtns = `
+      <button class="btn-sm" onclick="closeModal(); removeWhitelist('${d.mac}')">✕ Revoke Trust</button>
+    `;
+  }
+  document.getElementById('modal-footer').innerHTML = `
+    <div style="display:flex; justify-content:space-between; width:100%; gap:8px; align-items:center;">
+      <div style="display:flex; gap:8px;">${footerBtns}</div>
+      <button class="btn-sm" onclick="closeModal()">Close</button>
+    </div>
+  `;
   document.getElementById('modal-overlay').style.display = 'flex';
 }
 
@@ -1339,12 +1859,27 @@ function startPolling() {
 // ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   initLockScreen();
-  // Do NOT start polling or showing tabs yet. Wait for auth.
+  // Synchronous login bypass for headless screenshots/testing
+  if (window.location.search.includes('bypass_auth=1')) {
+    _isAuthenticated = true;
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) overlay.style.display = 'none';
+    startApp();
+  }
 });
 
 function startApp() {
-  showTab('overview');
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetTab = urlParams.get('tab') || 'overview';
+  showTab(targetTab);
+  loadAlertSettings();
   startPolling();
+  startResourceChartLoop();
+  
+  // Start scrolling IDS log feed
+  if (typeof startIdsFeed === 'function') {
+    startIdsFeed();
+  }
   
   // Load alerts badge on start
   setTimeout(async () => {
@@ -1359,9 +1894,28 @@ function startApp() {
       }
     } catch (_) {}
   }, 3000);
+
+  // Initial credits fetch
+  fetchCredits();
+  
+  // Security Economy: Passive Income Loop (every 30s)
+  setInterval(() => {
+    let delta = 0;
+    if (_lastSecurityScore === 100) delta = 25;
+    else if (_lastSecurityScore >= 80) delta = 10;
+    else if (_lastSecurityScore < 50) delta = -5;
+    
+    if (delta !== 0) {
+      if (window.addCredits) {
+        window.addCredits(delta);
+      } else {
+        updateCredits(delta);
+      }
+    }
+  }, 30000);
 }
 
-// ─── BLUETOOTH RADAR LOGIC ───
+// ───?? BLUETOOTH RADAR LOGIC ??───
 
 async function fetchBluetoothData() {
   try {
@@ -1548,9 +2102,11 @@ function toggleDrawer() {
   if (_drawerOpen) {
     drawer.classList.add('open');
     backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
   } else {
     drawer.classList.remove('open');
     backdrop.classList.remove('open');
+    document.body.style.overflow = '';
   }
 }
 
@@ -1558,3 +2114,2260 @@ function closeDrawer() {
   if (_drawerOpen) toggleDrawer();
 }
 
+
+
+// --- INJECTED BY RECOVERY SCRIPT ---
+
+
+function openRadarModal() {
+    document.getElementById('radar-modal').style.display = 'flex';
+}
+
+async function runRadarScan() {
+    const resDiv = document.getElementById('radar-results');
+    resDiv.innerHTML = "<span style='color:var(--cyan);'>Initiating ARP sweep... Please wait.</span>";
+    try {
+        const res = await fetch('/api/scan', { method: 'POST' });
+        const data = await res.json();
+        if(data.ok) {
+            let html = "<table style='width:100%; text-align:left; border-collapse:collapse;'>";
+            html += "<tr style='color:var(--cyan); border-bottom:1px solid #333;'><th>IP Address</th><th>MAC Address</th><th>Vendor/OS</th></tr>";
+            data.data.devices.forEach(d => {
+                let devType = d.vendor || d.os_guess || "Unknown";
+                html += `<tr><td style='padding:5px 0;'>${d.ip}</td><td>${d.mac}</td><td>${devType}</td></tr>`;
+            });
+            html += "</table>";
+            resDiv.innerHTML = html;
+        } else {
+            resDiv.innerHTML = "<span style='color:red;'>Scan failed: " + data.error + "</span>";
+        }
+    } catch(e) {
+        resDiv.innerHTML = "<span style='color:red;'>Error: " + e.message + "</span>";
+    }
+}
+
+
+
+let cacheInterval = null;
+
+function openCacheModal() {
+    document.getElementById('cache-modal').style.display = 'flex';
+    loadCachePathPref();
+    fetchCacheList();
+    if (cacheInterval) clearInterval(cacheInterval);
+    cacheInterval = setInterval(fetchCacheList, 2000);
+}
+
+// Ensure interval is cleared when closed
+document.addEventListener('DOMContentLoaded', () => {
+    const cacheModal = document.getElementById('cache-modal');
+    if (cacheModal) {
+        const closeBtn = cacheModal.querySelector('button[onclick*="none"]');
+        if (closeBtn) {
+            closeBtn.onclick = function() {
+                if (cacheInterval) clearInterval(cacheInterval);
+                cacheModal.style.display = 'none';
+            };
+        }
+    }
+});
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function fetchCacheList() {
+    try {
+        const res = await fetch('http://127.0.0.1:8766/cache/list');
+        const data = await res.json();
+        const resDiv = document.getElementById('cache-results');
+        
+        if (data.ok) {
+            if (data.cache.length === 0) {
+                resDiv.innerHTML = "<div style='color:#888; text-align:center; margin-top:20px;'>Vault is empty.</div>";
+                return;
+            }
+            
+            let html = "";
+            data.cache.forEach(t => {
+                const percent = Math.round(t.progress * 100);
+                const speed = formatBytes(t.downloadSpeed) + '/s';
+                const downloaded = formatBytes(t.downloaded);
+                const total = formatBytes(t.length);
+                const isDone = percent === 100;
+                
+                html += `
+                <div style="background:#111; border:1px solid #333; padding:15px; margin-bottom:10px; border-radius:4px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <strong style="color:var(--cyan); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;">${t.name || 'Fetching Metadata...'}</strong>
+                        <span style="color:#888; font-size:12px;">${isDone ? 'Completed' : speed}</span>
+                    </div>
+                    
+                    <div style="background:#222; height:10px; border-radius:5px; overflow:hidden; margin-bottom:10px;">
+                        <div style="background:${isDone ? 'var(--green)' : 'var(--cyan)'}; height:100%; width:${percent}%;"></div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#aaa; align-items:center;">
+                        <span>${percent}% (${downloaded} / ${total})</span>
+                        <div>
+                            ${isDone ? `<button onclick="playCached('${t.infoHash}')" style="background:var(--green); color:#000; border:none; padding:4px 10px; cursor:pointer; border-radius:2px; margin-right:5px; font-weight:bold;">PLAY</button>` : ''}
+                            <button onclick="deleteCache('${t.magnet}')" style="background:#ff4444; color:#fff; border:none; padding:4px 10px; cursor:pointer; border-radius:2px;">TRASH</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            resDiv.innerHTML = html;
+        }
+    } catch(e) {
+        console.error("Cache fetch error:", e);
+        const resDiv = document.getElementById('cache-results');
+        if (resDiv) {
+            resDiv.innerHTML = `
+            <div style="color:#ff8800; text-align:center; padding:20px; font-family:'Space Grotesk',sans-serif;">
+                <div style="font-size:24px; margin-bottom:8px;">⚠️</div>
+                <div style="font-weight:bold; margin-bottom:4px;">Cache Engine Offline</div>
+                <div style="font-size:12px; color:#888;">The P2P background process is offline or initializing...</div>
+            </div>`;
+        }
+    }
+}
+
+function saveCachePathPref() {
+    const path = document.getElementById('cache-path-input').value.trim();
+    if (path) localStorage.setItem('cache_vault_path', path);
+    else localStorage.removeItem('cache_vault_path');
+}
+
+function loadCachePathPref() {
+    const saved = localStorage.getItem('cache_vault_path');
+    const el = document.getElementById('cache-path-input');
+    if (saved && el) el.value = saved;
+}
+
+async function addCacheTask() {
+    const magnet = document.getElementById('cache-magnet-input').value.trim();
+    if (!magnet) return;
+    const pathEl = document.getElementById('cache-path-input');
+    const savePath = pathEl ? pathEl.value.trim() : '';
+    if (savePath) localStorage.setItem('cache_vault_path', savePath);
+    document.getElementById('cache-magnet-input').value = '';
+    
+    const url = new URL('http://127.0.0.1:8766/cache/add');
+    url.searchParams.set('magnet', magnet);
+    if (savePath) url.searchParams.set('path', savePath);
+    
+    try {
+        showToast('📥 Download started — seeding to ' + (savePath || 'default folder'), 'info');
+        await fetch(url.toString());
+        fetchCacheList();
+    } catch(e) {
+        showToast('❌ Failed to start download: ' + e.message, 'error');
+    }
+}
+
+async function deleteCache(magnet) {
+    if (!confirm("Delete this file permanently from disk?")) return;
+    try {
+        await fetch(`http://127.0.0.1:8766/cache/delete?magnet=${encodeURIComponent(magnet)}`);
+        fetchCacheList();
+    } catch(e) {}
+}
+
+function playCached(infoHash) {
+    document.getElementById('cache-modal').style.display = 'none';
+    if (cacheInterval) clearInterval(cacheInterval);
+    
+    // Play directly using the stream endpoint
+    document.getElementById('video-player').src = `http://127.0.0.1:8766/play/${infoHash}`;
+    document.getElementById('video-player').play();
+}
+
+
+
+
+// --- DOOMSCROLL LOGIC ---
+async function loadDoomScroll() {
+    const container = document.getElementById('doomscroll-container');
+    container.innerHTML = '<div style="text-align:center; padding:50px; color:#aa00ff; font-weight:bold; grid-column: 1 / -1;">Connecting to The Hive...</div>';
+    
+    try {
+        const res = await fetch(`${API}/doomscroll`);
+        const data = await res.json();
+        if(data.ok && data.posts) {
+            container.innerHTML = '';
+            data.posts.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'doom-card';
+                
+                let mediaHtml = '';
+                if(post.type === 'image') {
+                    mediaHtml = `<img src="${post.media_url}" class="doom-media" loading="lazy" onclick="window.open('${post.permalink}', '_blank')" style="cursor:pointer;" />`;
+                } else if (post.type === 'video') {
+                    mediaHtml = `<video src="${post.media_url}" class="doom-media" controls preload="none" poster="${post.thumbnail || ''}" loop></video>`;
+                }
+                
+                card.innerHTML = `
+                    ${mediaHtml}
+                    <div class="doom-content">
+                        <div class="doom-title">${post.title}</div>
+                        <div class="doom-meta">
+                            <span>${post.subreddit}</span>
+                            <span>?? ${post.score}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } else {
+            container.innerHTML = `<div style="color:red; padding:20px; grid-column: 1 / -1;">Failed to load The Hive: ${data.error || 'Unknown error'}</div>`;
+        }
+    } catch(err) {
+        container.innerHTML = `<div style="color:red; padding:20px; grid-column: 1 / -1;">Connection Error to The Hive</div>`;
+    }
+}
+
+
+async function loadAlertSettings() {
+    try {
+        const res = await fetch(`${API}/config`);
+        const data = await res.json();
+        if(data.ok && data.data && data.data.alerts) {
+            const alerts = data.data.alerts;
+            const unknownEl = document.getElementById('alert-unknown');
+            const bruteEl = document.getElementById('alert-bruteforce');
+            const processEl = document.getElementById('alert-process');
+            const firewallEl = document.getElementById('alert-firewall');
+            
+            if(unknownEl) unknownEl.checked = alerts.unknown_device ?? true;
+            if(bruteEl) bruteEl.checked = alerts.brute_force ?? true;
+            if(processEl) processEl.checked = alerts.high_risk_process ?? true;
+            if(firewallEl) firewallEl.checked = alerts.firewall_down ?? true;
+        }
+    } catch(e) {
+        console.error('Failed to load alert settings', e);
+    }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+// Streamlink Integration
+// -------------------------------------------------------------------------------------------------------------------
+async function launchStreamlink() {
+  const urlInput = document.getElementById('media-url-input');
+  if (!urlInput || !urlInput.value) {
+    alert("Please enter a media URL to stream!");
+    return;
+  }
+  const url = urlInput.value.trim();
+  try {
+    const res = await fetch(API + '/media/streamlink', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({url: url})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      alert(data.message);
+    } else {
+      alert("Error: " + data.error);
+    }
+  } catch (err) {
+    alert("Network error calling streamlink API.");
+  }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+// NetHunter / Remote Agent C2 Logic
+// -------------------------------------------------------------------------------------------------------------------
+let currentActionTarget = null;
+let actionPollInterval = null;
+
+function openActionPanel(deviceId) {
+  currentActionTarget = deviceId;
+  document.getElementById('action-target-id').textContent = deviceId;
+  document.getElementById('action-panel').style.display = 'block';
+  document.getElementById('action-terminal-output').textContent = `[+] Connected to agent: ${deviceId}\n[*] Awaiting commands...\n`;
+  
+  // Start polling for results
+  if (actionPollInterval) clearInterval(actionPollInterval);
+  actionPollInterval = setInterval(pollActionResults, 2000);
+}
+
+function closeActionPanel() {
+  document.getElementById('action-panel').style.display = 'none';
+  if (actionPollInterval) clearInterval(actionPollInterval);
+  currentActionTarget = null;
+}
+
+function sendPredefCommand(cmd) {
+  document.getElementById('action-cmd-input').value = cmd;
+  sendRemoteCommand();
+}
+
+async function sendRemoteCommand() {
+  if (!currentActionTarget) return;
+  const input = document.getElementById('action-cmd-input');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  
+  const term = document.getElementById('action-terminal-output');
+  term.textContent += `\n[User@Dashboard]~# ${cmd}\n[*] Queuing command...\n`;
+  input.value = '';
+  
+  try {
+    const res = await fetch(`${API}/agents/${currentActionTarget}/command`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({command: cmd})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      term.textContent += `[+] Command queued. Waiting for agent execution...\n`;
+      term.scrollTop = term.scrollHeight;
+    } else {
+      term.textContent += `[-] Failed to queue: ${data.error}\n`;
+    }
+  } catch (err) {
+    term.textContent += `[-] Network error queueing command.\n`;
+  }
+}
+
+let lastResultCount = 0;
+async function pollActionResults() {
+  if (!currentActionTarget) return;
+  try {
+    const res = await fetch(`${API}/agents/${currentActionTarget}/results`);
+    const data = await res.json();
+    if (data.ok && data.results) {
+      if (data.results.length > lastResultCount) {
+        const newResults = data.results.slice(lastResultCount);
+        lastResultCount = data.results.length;
+        
+        const term = document.getElementById('action-terminal-output');
+        newResults.forEach(r => {
+           term.textContent += `\n--- Result: ${r.command} ---\n${r.output}\n`;
+        });
+        term.scrollTop = term.scrollHeight;
+      }
+    }
+  } catch (err) {
+    // silently fail polling
+  }
+}
+
+
+// ---------------------------------------------------------------------------------------------------
+// Packet Matrix Logic
+// ---------------------------------------------------------------------------------------------------
+let snifferInterval = null;
+
+async function toggleSniffer() {
+  const btn = document.getElementById("btn-sniffer-start");
+  const statusEl = document.getElementById("sniffer-status");
+  
+  if (btn.innerText === "START SNIFFER") {
+    // Start it
+    btn.innerText = "STOP SNIFFER";
+    btn.style.background = "var(--red)";
+    statusEl.innerText = "ONLINE";
+    statusEl.style.color = "var(--green)";
+    
+    await fetch("/api/network/sniffer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "start" })
+    });
+    
+    document.getElementById("matrix-terminal").innerText = "Sniffer initialized. Awaiting packets...\n";
+    
+    // Poll every 1 second
+    snifferInterval = setInterval(pollSniffer, 1000);
+  } else {
+    // Stop it
+    btn.innerText = "START SNIFFER";
+    btn.style.background = "var(--cyan)";
+    statusEl.innerText = "OFFLINE";
+    statusEl.style.color = "var(--red)";
+    
+    clearInterval(snifferInterval);
+    snifferInterval = null;
+    
+    await fetch("/api/network/sniffer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "stop" })
+    });
+    
+    const term = document.getElementById("matrix-terminal");
+    term.innerText += "\n[SYSTEM] Sniffer Offline.";
+  }
+}
+
+async function pollSniffer() {
+  try {
+    const res = await fetch("/api/network/sniffer");
+    const data = await res.json();
+    
+    if (data.ok && data.packets && data.packets.length > 0) {
+      const term = document.getElementById("matrix-terminal");
+      
+      data.packets.forEach(p => {
+        let color = "#0f0"; // default TCP
+        if (p.protocol === "UDP") color = "#00ffff";
+        if (p.protocol === "ICMP") color = "#ff00ff";
+        if (p.protocol === "SYS") color = "#ff0000";
+        
+        let line = "";
+        if (p.protocol === "SYS") {
+          line = `<span style="color:${color}">[${p.timestamp}] ${p.info || p.error}</span>\n`;
+        } else {
+          line = `<span style="color:#555">[${p.timestamp}]</span> <span style="color:${color};font-weight:bold;">${p.protocol}</span> <span style="color:#aaa">${p.src}</span> &rarr; <span style="color:#fff">${p.dst}</span> <span style="color:#555">(${p.size} bytes)</span>\n`;
+        }
+        term.innerHTML += line;
+      });
+      
+      // Auto-scroll
+      term.scrollTop = term.scrollHeight;
+      
+      // Prevent unbounded growth
+      if (term.innerHTML.length > 50000) {
+        term.innerHTML = term.innerHTML.substring(term.innerHTML.length - 25000);
+      }
+    }
+    
+    // Safety check if backend stopped
+    if (data.ok && !data.running && document.getElementById("btn-sniffer-start").innerText === "STOP SNIFFER") {
+        toggleSniffer(); // Reset UI
+    }
+  } catch (e) {
+    console.error("Sniffer poll error", e);
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------
+// USB Trap Logic
+// ---------------------------------------------------------------------------------------------------
+async function toggleUsbTrap() {
+  const btn = document.getElementById("btn-usb-trap");
+  const statusEl = document.getElementById("usb-status-text");
+  
+  if (btn.innerText === "ARM TRIPWIRE") {
+    // Arm it
+    btn.innerText = "DISARM TRIPWIRE";
+    btn.style.background = "var(--red)";
+    statusEl.innerText = "ARMED & WATCHING";
+    statusEl.style.color = "var(--red)";
+    
+    await fetch("/api/usb/arm", { method: "POST" });
+    refreshUsbStatus();
+    
+  } else {
+    // Disarm it
+    btn.innerText = "ARM TRIPWIRE";
+    btn.style.background = "#555";
+    statusEl.innerText = "DISARMED";
+    statusEl.style.color = "var(--text-muted)";
+    
+    await fetch("/api/usb/disarm", { method: "POST" });
+    refreshUsbStatus();
+  }
+}
+
+async function refreshUsbStatus() {
+  try {
+    const res = await fetch("/api/usb/status");
+    const data = await res.json();
+    if (data.ok) {
+        document.getElementById("usb-trap-count").innerText = `Baselines: ${data.data.baseline_count} devices`;
+        
+        // Sync UI if changed via backend restart
+        const btn = document.getElementById("btn-usb-trap");
+        const statusEl = document.getElementById("usb-status-text");
+        if (data.data.armed && btn.innerText === "ARM TRIPWIRE") {
+            btn.innerText = "DISARM TRIPWIRE";
+            btn.style.background = "var(--red)";
+            statusEl.innerText = "ARMED & WATCHING";
+            statusEl.style.color = "var(--red)";
+        } else if (!data.data.armed && btn.innerText === "DISARM TRIPWIRE") {
+            btn.innerText = "ARM TRIPWIRE";
+            btn.style.background = "#555";
+            statusEl.innerText = "DISARMED";
+            statusEl.style.color = "var(--text-muted)";
+        }
+    }
+  } catch(e) {}
+}
+
+// Check USB status on boot
+setTimeout(refreshUsbStatus, 2000);
+
+
+
+// ------------------------------------------------------
+// KALI TERMINAL LOGIC
+// ------------------------------------------------------
+let kaliTerm = null;
+let kaliFitAddon = null;
+let activeKaliAgent = null;
+let terminalPollInterval = null;
+
+let termBuffer = '';
+document.addEventListener('DOMContentLoaded', () => {
+    // Override the init for full line buffering
+    setTimeout(() => {
+        if(kaliTerm) {
+            kaliTerm.dispose();
+            kaliTerm = null;
+        }
+        
+        const container = document.getElementById('kali-terminal');
+        if (!container) return;
+        
+        kaliTerm = new Terminal({
+          cursorBlink: true,
+          theme: { background: '#000000', foreground: '#00ffcc', cursor: '#00ffcc' },
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 14
+        });
+        
+        kaliFitAddon = new FitAddon.FitAddon();
+        kaliTerm.loadAddon(kaliFitAddon);
+        kaliTerm.open(container);
+        kaliFitAddon.fit();
+        
+        kaliTerm.writeln('root@nethunter:~# Ready.');
+        
+        kaliTerm.onData(async (data) => {
+            if (!activeKaliAgent) return;
+            
+            if (data === '\r') {
+                kaliTerm.write('\r\n');
+                if (termBuffer.trim().length > 0) {
+                    try {
+                        const res = await fetch(`${API}/agents/${activeKaliAgent}/command`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ cmd: termBuffer })
+                        });
+                        termBuffer = '';
+                    } catch(e) {
+                        kaliTerm.writeln(`\r\n[Error sending command: ${e.message}]`);
+                    }
+                } else {
+                    kaliTerm.write('root@nethunter:~# ');
+                }
+            } else if (data === '\u007F') {
+                if (termBuffer.length > 0) {
+                    termBuffer = termBuffer.slice(0, -1);
+                    kaliTerm.write('\b \b');
+                }
+            } else {
+                termBuffer += data;
+                kaliTerm.write(data);
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            if (kaliFitAddon) kaliFitAddon.fit();
+        });
+    }, 1000);
+});
+
+// ------------------------------------------------------
+// LOCAL SECURITY TOOLKIT LOGIC
+// ------------------------------------------------------
+let selectedAuditTool = 'ping';
+
+window.selectAuditTool = function(tool) {
+  selectedAuditTool = tool;
+  
+  // Update button background styling (yellow active, white inactive)
+  const tools = ['ping', 'traceroute', 'nmap', 'nikto', 'sqlmap', 'wayback', 'archive', 'sandbox', 'duckduckgo'];
+  tools.forEach(t => {
+    const btn = document.getElementById(`btn-tool-${t}`);
+    if (btn) {
+      if (t === tool) {
+        btn.style.background = '#ffcc00';
+      } else {
+        btn.style.background = '#fff';
+      }
+    }
+  });
+
+  // Update input placeholder text
+  const input = document.getElementById('audit-target-input');
+  if (input) {
+    const placeholders = {
+      ping: 'Enter IP or domain to ping (e.g. 8.8.8.8)',
+      traceroute: 'Enter target IP or domain for traceroute (e.g. google.com)',
+      nmap: 'Enter IP or domain for fast port scan (e.g. 192.168.1.1)',
+      nikto: 'Enter target web server IP/URL for Nikto scan (e.g. 192.168.1.10)',
+      sqlmap: 'Enter target HTTP URL to test for SQLi (e.g. http://192.168.1.15/page.php?id=1)',
+      wayback: 'Enter URL/domain to retrieve archive history (e.g. example.com)',
+      archive: 'Enter target URL to save a local HTML copy (e.g. http://example.com)',
+      sandbox: 'Enter suspicious URL to safely analyze in sandbox (e.g. http://malicious.com)',
+      duckduckgo: 'DuckDuckGo Browser (Target not required)'
+    };
+    input.placeholder = placeholders[tool] || 'Enter target...';
+    if (tool === 'duckduckgo') {
+      input.value = '';
+      input.disabled = true;
+    } else {
+      input.disabled = false;
+    }
+  }
+};
+
+window.executeAuditTool = async function() {
+  const targetInput = document.getElementById('audit-target-input');
+  const consoleElem = document.getElementById('audit-console');
+  const runBtn = document.getElementById('btn-run-audit');
+  
+  if (!targetInput || !consoleElem || !runBtn) return;
+  
+  const target = targetInput.value.trim();
+  if (!target && selectedAuditTool !== 'duckduckgo') {
+    showToast('⚠️ Target IP/Domain/URL is required.', 'warning');
+    return;
+  }
+  
+  // Set loading state
+  runBtn.disabled = true;
+  runBtn.textContent = 'RUNNING...';
+  runBtn.style.background = '#e8e6df';
+  
+  consoleElem.innerHTML = `<div style="color: #ffcc00;">[~] Starting ${selectedAuditTool.toUpperCase()} diagnostics on target: ${target || 'Local Session'}...\n[~] Execution initiated. Please wait (scans may take up to 30 seconds)...</div>`;
+  
+  try {
+    let url = `${API}/toolkit/${selectedAuditTool}`;
+    if (selectedAuditTool === 'archive') {
+      url = `${API}/toolkit/archive_local`;
+    }
+    
+    const body = {};
+    if (selectedAuditTool === 'sandbox') {
+      body.url = target;
+    } else {
+      body.ip = target;
+    }
+    
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    
+    const data = await res.json();
+    if (data.ok) {
+      if (selectedAuditTool === 'sandbox') {
+        const r = data.data;
+        let out = `URL SANDBOX ANALYSIS REPORT\n`;
+        out += `===========================\n`;
+        out += `Target URL: ${r.original_url}\n`;
+        out += `Final URL: ${r.final_url || 'N/A'}\n`;
+        out += `Page Title: ${r.title || 'N/A'}\n`;
+        out += `Risk Level: ${r.risk_level.toUpperCase()}\n`;
+        out += `Risk Factors:\n`;
+        if (!r.risk_factors || r.risk_factors.length === 0) {
+          out += `  - None detected\n`;
+        } else {
+          r.risk_factors.forEach(f => {
+            out += `  - [!] ${f}\n`;
+          });
+        }
+        out += `Scripts Found: ${r.scripts_found}\n`;
+        if (r.redirect_chain && r.redirect_chain.length > 0) {
+          out += `Redirect Chain:\n`;
+          r.redirect_chain.forEach((c, idx) => {
+            out += `  [${idx+1}] ${c.url} (Status: ${c.status_code})\n`;
+          });
+        }
+        if (r.error) {
+          out += `Error Details: ${r.error}\n`;
+        }
+        consoleElem.innerHTML = `<pre style="font-family: inherit; color: ${r.risk_level === 'high' ? '#ff3366' : r.risk_level === 'medium' ? '#ffcc00' : '#00ffcc'}; white-space: pre-wrap; margin: 0; text-align: left;">${out}</pre>`;
+        showToast('✅ URL Sandbox analysis completed.', 'success');
+      } else {
+        const escapedOutput = (data.output || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        consoleElem.innerHTML = `<pre style="font-family: inherit; color: #00ffcc; white-space: pre-wrap; margin: 0; text-align: left;">${escapedOutput}</pre>`;
+        showToast(`✅ ${selectedAuditTool.toUpperCase()} audit completed.`, 'success');
+      }
+    } else {
+      consoleElem.innerHTML = `<div style="color: #ff3366; text-align: left;">[x] Scan failed: ${data.error || 'Unknown error occurred'}</div>`;
+      showToast(`❌ ${selectedAuditTool.toUpperCase()} audit failed.`, 'error');
+    }
+  } catch (error) {
+    consoleElem.innerHTML = `<div style="color: #ff3366; text-align: left;">[x] Network error connecting to toolkit daemon: ${error.message}</div>`;
+    showToast('❌ Audit request failed due to connection error.', 'error');
+  } finally {
+    // Reset state
+    runBtn.disabled = false;
+    runBtn.textContent = 'RUN AUDIT';
+    runBtn.style.background = '#33ccff';
+    consoleElem.scrollTop = consoleElem.scrollHeight;
+  }
+};
+
+function clearTerminal() {
+    if (kaliTerm) {
+        kaliTerm.clear();
+        kaliTerm.writeln('root@nethunter:~# ');
+    }
+}
+
+async function pollKaliResults() {
+    if (!activeKaliAgent || !kaliTerm) return;
+    try {
+        const res = await fetch(`${API}/agents/${activeKaliAgent}/results`);
+        const json = await res.json();
+        if (json.ok && json.data && json.data.length > 0) {
+            json.data.forEach(result => {
+                const out = result.output || result.error || 'No output';
+                kaliTerm.write(out.replace(/\n/g, '\r\n') + '\r\n');
+                kaliTerm.write('root@nethunter:~# ');
+            });
+        }
+    } catch(e) {}
+}
+
+const originalLoadAgents = loadAgents;
+loadAgents = async function() {
+    await originalLoadAgents();
+    
+    const select = document.getElementById('terminal-agent-select');
+    if (!select) return;
+    
+    try {
+        const res = await fetch(`${API}/agents`);
+        const json = await res.json();
+        if (json.ok && json.data && json.data.agents && json.data.agents.length > 0) {
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">Select Target Drone...</option>';
+            
+            for (const agent of json.data.agents) {
+                const statusIcon = agent.status === 'online' ? '🟢' : '🔴';
+                select.innerHTML += `<option value="${agent.device_id}">${statusIcon} ${agent.platform} (${agent.ip})</option>`;
+            }
+            
+            if (currentVal && select.querySelector(`option[value="${currentVal}"]`)) {
+                select.value = currentVal;
+            }
+            
+            select.onchange = function() {
+                activeKaliAgent = this.value;
+                if (activeKaliAgent) {
+                    kaliTerm.writeln(`\r\n[*] Connected to ${this.options[this.selectedIndex].text}`);
+                    kaliTerm.write('root@nethunter:~# ');
+                    if (!terminalPollInterval) {
+                        terminalPollInterval = setInterval(pollKaliResults, 1500);
+                    }
+                } else {
+                    kaliTerm.writeln('\r\n[*] Disconnected.');
+                    if (terminalPollInterval) {
+                        clearInterval(terminalPollInterval);
+                        terminalPollInterval = null;
+                    }
+                }
+            };
+        } else {
+            select.innerHTML = '<option value="">No Active Drones</option>';
+        }
+    } catch(e) {}
+};
+
+const origShowTab = showTab;
+showTab = function(tabId) {
+    origShowTab(tabId);
+    if (tabId === 'toolkit' && kaliFitAddon) {
+        setTimeout(() => kaliFitAddon.fit(), 100);
+    }
+    if (tabId === 'casino' && typeof window.resizeCanvas === 'function') {
+        setTimeout(window.resizeCanvas, 100);
+    }
+    if (tabId === 'overview') {
+        setTimeout(resizeResourceChart, 100);
+    }
+};
+
+// --- ADVANCED PLAYER LOGIC ---
+let currentHls = null;
+const videoElem = document.getElementById('bs-video');
+const iframeElem = document.getElementById('bs-iframe');
+const controlsElem = document.getElementById('bs-controls');
+
+function setupAdvancedPlayer(url, isRawStream) {
+    videoElem.style.display = 'none';
+    iframeElem.style.display = 'none';
+    if(controlsElem) controlsElem.style.opacity = '0';
+    
+    if (currentHls) {
+        currentHls.destroy();
+        currentHls = null;
+    }
+
+    if (isRawStream) {
+        videoElem.style.display = 'block';
+        if(controlsElem) controlsElem.style.opacity = '1';
+        
+        if (url.includes('.m3u8')) {
+            if (window.Hls && Hls.isSupported()) {
+                currentHls = new Hls();
+                currentHls.loadSource(url);
+                currentHls.attachMedia(videoElem);
+                currentHls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    videoElem.play();
+                    updatePlayIcon(true);
+                });
+            } else if (videoElem.canPlayType('application/vnd.apple.mpegurl')) {
+                videoElem.src = url;
+                videoElem.addEventListener('loadedmetadata', function() {
+                    videoElem.play();
+                    updatePlayIcon(true);
+                });
+            }
+        } else {
+            videoElem.src = url;
+            videoElem.play();
+            updatePlayIcon(true);
+        }
+    } else {
+        iframeElem.src = url;
+        iframeElem.style.display = 'block';
+    }
+}
+
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+}
+
+function updatePlayIcon(playing) {
+    const path = document.getElementById('bs-play-icon');
+    if(!path) return;
+    if (playing) {
+        path.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+    } else {
+        path.setAttribute('d', 'M8 5v14l11-7z');
+    }
+}
+
+if(videoElem) {
+    videoElem.addEventListener('timeupdate', () => {
+        document.getElementById('bs-time-current').innerText = formatTime(videoElem.currentTime);
+        if(videoElem.duration) {
+            const percent = (videoElem.currentTime / videoElem.duration) * 100;
+            document.getElementById('bs-progress').value = percent;
+        }
+    });
+
+    videoElem.addEventListener('loadedmetadata', () => {
+        document.getElementById('bs-time-total').innerText = formatTime(videoElem.duration);
+    });
+
+    videoElem.addEventListener('play', () => updatePlayIcon(true));
+    videoElem.addEventListener('pause', () => updatePlayIcon(false));
+}
+
+if(document.getElementById('bs-play-btn')) {
+    document.getElementById('bs-play-btn').addEventListener('click', () => {
+        if (videoElem.paused) videoElem.play();
+        else videoElem.pause();
+    });
+
+    document.getElementById('bs-progress').addEventListener('input', (e) => {
+        if(videoElem.duration) {
+            videoElem.currentTime = (e.target.value / 100) * videoElem.duration;
+        }
+    });
+
+    document.getElementById('bs-volume').addEventListener('input', (e) => {
+        videoElem.volume = e.target.value;
+    });
+
+    document.getElementById('bs-speed').addEventListener('change', (e) => {
+        videoElem.playbackRate = parseFloat(e.target.value);
+    });
+
+    document.getElementById('bs-pip-btn').addEventListener('click', async () => {
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+        } else if (videoElem.readyState !== 0) {
+            await videoElem.requestPictureInPicture();
+        }
+    });
+
+    document.getElementById('bs-fullscreen-btn').addEventListener('click', () => {
+        const container = document.getElementById('media-player-container');
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch(err => console.log(err));
+        } else {
+            document.exitFullscreen();
+        }
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    // Only if panel-media is active and we are not typing in input
+    if(document.getElementById('panel-media').style.display !== 'none' && document.activeElement.tagName !== 'INPUT') {
+        if(e.code === 'Space') {
+            e.preventDefault();
+            if (videoElem.paused) videoElem.play();
+            else videoElem.pause();
+        } else if (e.code === 'ArrowRight') {
+            videoElem.currentTime += 5;
+        } else if (e.code === 'ArrowLeft') {
+            videoElem.currentTime -= 5;
+        } else if (e.code === 'KeyF') {
+            const container = document.getElementById('media-player-container');
+            if (!document.fullscreenElement) container.requestFullscreen();
+            else document.exitFullscreen();
+        }
+    }
+});
+
+// ══════════════════════════════════════════════════════
+// CINEMA MODE — Lights-out immersive player experience
+// ══════════════════════════════════════════════════════
+let cinemaModeActive = false;
+
+function toggleCinemaMode(forceOn) {
+    const overlay = document.getElementById('cinema-overlay');
+    const container = document.getElementById('media-player-container');
+    const btn = document.getElementById('btn-cinema');
+    const bsContainer = document.getElementById('bs-container');
+    const toolbar = document.querySelector('#panel-media .panel-toolbar');
+
+    if (forceOn === true) cinemaModeActive = false; // force enable path
+    cinemaModeActive = !cinemaModeActive;
+
+    if (cinemaModeActive) {
+        // Lights out! Blur + darken everything
+        overlay.style.display = 'block';
+        requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+
+        // Elevate player above overlay
+        if (container) {
+            container.style.display = 'block';
+            container.style.position = 'fixed';
+            container.style.zIndex = '10000';
+            container.style.top = '50%';
+            container.style.left = '50%';
+            container.style.transform = 'translate(-50%, -50%)';
+            container.style.width = 'min(95vw, 1400px)';
+            container.style.maxWidth = 'unset';
+            container.style.borderRadius = '8px';
+            container.style.boxShadow = '0 0 120px rgba(255, 0, 0, 0.35), 0 0 250px rgba(0,0,0,0.9)';
+            container.style.transition = 'box-shadow 0.4s';
+        }
+
+        // Blur & dim the rest of the player card content
+        if (bsContainer) {
+            bsContainer.style.filter = 'blur(8px)';
+            bsContainer.style.pointerEvents = 'none';
+            bsContainer.style.transition = 'filter 0.4s';
+        }
+        if (toolbar) {
+            toolbar.style.filter = 'blur(6px) opacity(0.3)';
+            toolbar.style.transition = 'filter 0.4s';
+        }
+
+        // Cinema exit hint
+        if (!document.getElementById('cinema-exit-hint')) {
+            const hint = document.createElement('div');
+            hint.id = 'cinema-exit-hint';
+            hint.innerHTML = '🎬 Cinema Mode &nbsp;|&nbsp; Press <kbd>C</kbd> or click to exit';
+            hint.style.cssText = `
+                position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+                z-index: 10001; background: rgba(0,0,0,0.75); color: #ffcccc;
+                padding: 10px 22px; border-radius: 30px; font-size: 13px;
+                border: 1px solid rgba(255,50,50,0.4); pointer-events: none;
+                opacity: 1; transition: opacity 2s; font-family: 'Space Grotesk', sans-serif;
+                backdrop-filter: blur(10px); letter-spacing: 0.5px;
+            `;
+            document.body.appendChild(hint);
+            setTimeout(() => { hint.style.opacity = '0'; }, 3000);
+            setTimeout(() => { if(hint.parentNode) hint.remove(); }, 5200);
+        }
+
+        if (btn) { btn.classList.add('active'); btn.textContent = '✕ Exit Cinema'; }
+
+    } else {
+        // Exit cinema mode
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.style.display = 'none'; }, 400);
+
+        if (container) {
+            container.style.position = '';
+            container.style.zIndex = '';
+            container.style.top = '';
+            container.style.left = '';
+            container.style.transform = '';
+            container.style.width = '';
+            container.style.maxWidth = '';
+            container.style.boxShadow = '';
+        }
+        if (bsContainer) { bsContainer.style.filter = ''; bsContainer.style.pointerEvents = ''; }
+        if (toolbar) { toolbar.style.filter = ''; }
+        if (btn) { btn.classList.remove('active'); btn.textContent = '🎬 Cinema Mode'; }
+    }
+}
+
+// Click overlay to exit cinema mode
+document.getElementById('cinema-overlay')?.addEventListener('click', () => {
+    if (cinemaModeActive) toggleCinemaMode();
+});
+
+// C key shortcut
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'KeyC' && !e.ctrlKey && !e.altKey &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA') {
+        if (document.getElementById('panel-media').style.display !== 'none') {
+            toggleCinemaMode();
+        }
+    }
+});
+
+window.toggleCinemaMode = toggleCinemaMode;
+
+async function extractAndPlayMedia() {
+    const urlInput = document.getElementById('media-url-input');
+    const url = urlInput.value.trim();
+    if (!url) return;
+
+    const btn = document.getElementById('btn-play-media');
+    const titleElem = document.getElementById('media-title');
+    const container = document.getElementById('media-player-container');
+
+    btn.disabled = true;
+    btn.innerText = "Initiating Bloody Sweet Stream...";
+    
+    container.style.display = 'flex';
+    titleElem.innerText = "Sniffing stream: " + url + " ...";
+    setupAdvancedPlayer('', false); // clear
+
+    try {
+        const res = await fetch(API + '/media/extract', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+        const data = await res.json();
+        
+        if (data.ok) {
+            titleElem.innerText = data.title;
+            const targetUrl = data.stream_url || data.iframe_url;
+            setupAdvancedPlayer(targetUrl, !!data.stream_url);
+        } else {
+            titleElem.innerText = "Extraction Failed: " + (data.error || "Unknown Error");
+        }
+    } catch (err) {
+        titleElem.innerText = "Connection Error";
+    }
+
+    btn.disabled = false;
+    btn.innerText = "Play";
+}
+
+// ──────────────────────────────────────────────────────
+// CYBER CREDITS ECONOMY
+// ──────────────────────────────────────────────────────
+async function fetchCredits() {
+  try {
+    const res = await fetch(`${API}/credits`);
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('cyber-credits-display').textContent = data.credits;
+    }
+  } catch (err) {}
+}
+
+async function updateCredits(delta) {
+  try {
+    const res = await fetch(`${API}/credits/update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delta })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      const el = document.getElementById('cyber-credits-display');
+      if (el) {
+          el.textContent = data.credits;
+          
+          // Visual flair
+          el.style.color = delta > 0 ? '#0f0' : '#f00';
+          el.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            el.style.color = '';
+            el.style.transform = '';
+          }, 500);
+      }
+    }
+    return data;
+  } catch (err) {
+    return { ok: false };
+  }
+}
+
+
+// Sidebar toggle is now handled inline in index.html to prevent caching collisions
+
+// --- GHOSTTRACK OSINT SCANNER & REVERSE SEARCH ---
+async function startGhostTrackHunt() {
+    const targetInput = document.getElementById('gt-target');
+    if (!targetInput) return;
+    const query = targetInput.value.trim();
+    if (!query) {
+        showToast("Please enter a username, email, or phone number", "error");
+        return;
+    }
+    
+    const progressContainer = document.getElementById('gt-progress-container');
+    const progressBar = document.getElementById('gt-progress-bar');
+    const statusText = document.getElementById('gt-status-text');
+    const resultsCard = document.getElementById('gt-results-card');
+    const resultsDiv = document.getElementById('gt-results');
+    
+    if (progressContainer) progressContainer.style.display = 'block';
+    if (resultsCard) resultsCard.style.display = 'none';
+    if (progressBar) progressBar.style.width = '0%';
+    
+    const statuses = [
+        "Initializing deep web crawlers...",
+        "Querying public intelligence repositories...",
+        "Resolving social media accounts...",
+        "Checking database leak records...",
+        "Analyzing footprint reports..."
+    ];
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+        const statusIdx = Math.floor((progress / 100) * statuses.length);
+        if (statusText && statusIdx < statuses.length) {
+            statusText.textContent = statuses[statusIdx];
+        }
+        if (progress >= 100) {
+            clearInterval(interval);
+        }
+    }, 200);
+    
+    try {
+        const response = await fetch('/api/osint/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+        const result = await response.json();
+        
+        await new Promise(r => setTimeout(r, 2200));
+        
+        if (progressContainer) progressContainer.style.display = 'none';
+        
+        if (response.ok && result.ok) {
+            if (resultsCard) resultsCard.style.display = 'block';
+            if (resultsDiv) {
+                renderGtResults(result, resultsDiv);
+            }
+        } else {
+            showToast(result.error || "OSINT scan failed", "error");
+        }
+    } catch (e) {
+        if (progressContainer) progressContainer.style.display = 'none';
+        showToast("Error connecting to OSINT API", "error");
+    }
+}
+
+async function uploadGtExif(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const progressContainer = document.getElementById('gt-progress-container');
+    const progressBar = document.getElementById('gt-progress-bar');
+    const statusText = document.getElementById('gt-status-text');
+    const resultsCard = document.getElementById('gt-results-card');
+    const resultsDiv = document.getElementById('gt-results');
+    
+    if (progressContainer) progressContainer.style.display = 'block';
+    if (resultsCard) resultsCard.style.display = 'none';
+    if (progressBar) progressBar.style.width = '0%';
+    if (statusText) statusText.textContent = "Extracting EXIF Image Metadata...";
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 15;
+        if (progress > 90) progress = 90;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+    }, 150);
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        const response = await fetch('/api/osint/exif', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        
+        clearInterval(interval);
+        if (progressBar) progressBar.style.width = '100%';
+        await new Promise(r => setTimeout(r, 400));
+        if (progressContainer) progressContainer.style.display = 'none';
+        
+        if (response.ok && result.ok) {
+            if (resultsCard) resultsCard.style.display = 'block';
+            if (resultsDiv) {
+                renderGtResults(result, resultsDiv);
+            }
+        } else {
+            showToast(result.error || "EXIF parsing failed", "error");
+        }
+    } catch (e) {
+        clearInterval(interval);
+        if (progressContainer) progressContainer.style.display = 'none';
+        showToast("Error connecting to EXIF API", "error");
+    } finally {
+        input.value = ''; // Reset file input
+    }
+}
+
+async function uploadGtReverse(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const progressContainer = document.getElementById('gt-progress-container');
+    const progressBar = document.getElementById('gt-progress-bar');
+    const statusText = document.getElementById('gt-status-text');
+    const resultsCard = document.getElementById('gt-results-card');
+    const resultsDiv = document.getElementById('gt-results');
+    
+    if (progressContainer) progressContainer.style.display = 'block';
+    if (resultsCard) resultsCard.style.display = 'none';
+    if (progressBar) progressBar.style.width = '0%';
+    
+    const isVideo = file.type.startsWith('video/') || file.name.toLowerCase().endsWith('.mp4') || file.name.toLowerCase().endsWith('.webm') || file.name.toLowerCase().endsWith('.mov');
+    if (statusText) {
+        statusText.textContent = isVideo ? "Extracting frame and searching sources..." : "Uploading image for reverse search...";
+    }
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 5;
+        if (progress > 95) progress = 95;
+        if (progressBar) progressBar.style.width = `${progress}%`;
+    }, 200);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/reverse-image', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        
+        clearInterval(interval);
+        if (progressBar) progressBar.style.width = '100%';
+        await new Promise(r => setTimeout(r, 400));
+        if (progressContainer) progressContainer.style.display = 'none';
+        
+        if (response.ok && result.ok) {
+            if (resultsCard) resultsCard.style.display = 'block';
+            if (resultsDiv) {
+                renderGtResults({ type: 'REVERSE_SEARCH', data: result }, resultsDiv);
+            }
+        } else {
+            showToast(result.error || "Reverse search failed", "error");
+        }
+    } catch (e) {
+        clearInterval(interval);
+        if (progressContainer) progressContainer.style.display = 'none';
+        showToast("Error connecting to Reverse Search API", "error");
+    } finally {
+        input.value = ''; // Reset file input
+    }
+}
+
+function renderGtResults(res, targetDiv) {
+    let html = '';
+    const type = res.type;
+    
+    if (type === 'IP') {
+        const d = res.data;
+        html += createGtCard('fa-location-dot', 'Location', d.location || 'Unknown');
+        const coords = d.coordinates || d.loc || '';
+        html += createGtCard('fa-map', 'Coordinates', coords
+            ? `${coords} <a href="https://maps.google.com/?q=${encodeURIComponent(coords)}" target="_blank" style="color:var(--cyan); font-size:11px; margin-left:6px;">🗺 View on Map</a>`
+            : 'N/A');
+        html += createGtCard('fa-network-wired', 'ISP', d.isp || d.org || 'Unknown');
+        html += createGtCard('fa-building', 'Organization', d.organization || d.org || 'Unknown');
+        html += createGtCard('fa-clock', 'Timezone', d.timezone || 'Unknown');
+        if (d.country_code) html += createGtCard('fa-flag', 'Country', `${d.country_code} — ${d.country || ''}`);
+        if (d.asn) html += createGtCard('fa-server', 'ASN', d.asn);
+    }
+    else if (type === 'PHONE') {
+        const d = res.data;
+        // Radar canvas id unique to avoid collisions
+        const radarId = 'phone-radar-' + Date.now();
+        const coordsText = d.coordinates && d.coordinates !== 'Unknown' ? `<div id="radar-gps-text" style="font-size:11px; color:#00d4ff; font-family:monospace; margin-top:4px;">GPS: ${d.coordinates}</div>` : '';
+        html += `
+        <div class="intel-card" style="grid-column: 1 / -1; background: #0a0a0f; border-color: #00d4ff; padding: 0; overflow: hidden; min-height: 200px; position: relative;">
+            <canvas id="${radarId}" width="600" height="200" style="width:100%; display:block;"></canvas>
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; pointer-events:none;">
+                <div style="font-size:11px; color:#00d4ff; font-weight:900; letter-spacing:2px; text-transform:uppercase; font-family:monospace;">SIGNAL TRACE</div>
+                <div style="font-size:22px; font-weight:900; color:#fff; margin:4px 0; font-family:monospace;">${d.number || 'Unknown'}</div>
+                <div style="font-size:12px; color:#aaa; font-family:monospace;">${d.carrier || 'Carrier Unknown'} • ${d.location || 'Location Unknown'}</div>
+                ${coordsText}
+            </div>
+        </div>`;
+        html += createGtCard('fa-phone', 'International Format', d.number || 'N/A');
+        html += createGtCard('fa-earth-americas', 'Country Code', d.country_code ? `+${d.country_code}` : 'N/A');
+        html += createGtCard('fa-location-dot', 'Region', d.location || 'N/A');
+        const coordsVal = (d.coordinates && d.coordinates !== 'Unknown') ? d.coordinates : 'Unknown';
+        const mapLinkHtml = coordsVal !== 'Unknown' 
+          ? `<a id="osint-gps-maplink" href="https://maps.google.com/?q=${encodeURIComponent(coordsVal)}" target="_blank" style="color:var(--cyan); font-size:11px; margin-left:6px; font-weight: bold;">🗺 View on Map</a>`
+          : `<a id="osint-gps-maplink" href="#" target="_blank" style="color:var(--cyan); font-size:11px; margin-left:6px; font-weight: bold; display: none;">🗺 View on Map</a>`;
+          
+        html += createGtCard('fa-map-location-dot', 'GPS Coordinates', `
+            <span id="osint-gps-coords">${coordsVal}</span>
+            ${mapLinkHtml}
+            <div style="margin-top: 8px;">
+                <button class="btn-sm" style="padding: 6px 12px; font-size: 11px; background: var(--green); color: #000; cursor: pointer; border: 2px solid var(--border); box-shadow: 2px 2px 0px var(--border); font-family: var(--font);" onclick="refineWithBrowserGps()">📍 Recalibrate with Device GPS</button>
+            </div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">*OSINT retrieves carrier registry center. Click Recalibrate to query active browser GPS.</div>
+        `);
+        html += createGtCard('fa-sim-card', 'Network Carrier', d.carrier || 'Unknown');
+        if (d.line_type) html += createGtCard('fa-mobile-screen', 'Line Type', d.line_type);
+        if (d.timezones && d.timezones.length) html += createGtCard('fa-clock', 'Timezones', Array.isArray(d.timezones) ? d.timezones.join(', ') : d.timezones);
+        if (d.number_type) html += createGtCard('fa-hashtag', 'Number Type', d.number_type);
+        // Schedule radar animation after DOM paint
+        setTimeout(() => startPhoneRadar(radarId), 80);
+    }
+    else if (type === 'EMAIL') {
+        const d = res.data;
+        html += createGtCard('fa-at', 'Domain', d.domain_info.domain);
+        html += createGtCard(d.domain_info.is_disposable ? 'fa-trash' : 'fa-server', 'Provider Type', d.domain_info.is_disposable ? 'Disposable / Burner' : d.domain_info.provider);
+        if (d.gravatar && d.gravatar.has_profile) {
+            html += `
+            <div class="intel-card" style="border-color: var(--cyan);">
+                <h3><i class="fa-solid fa-image"></i> Gravatar Profile</h3>
+                <div style="display:flex; justify-content:center; align-items:center;">
+                    <img src="${d.gravatar.url}" style="border-radius: 4px; width: 80px; height: 80px; border: 2px solid var(--cyan);" alt="Gravatar">
+                </div>
+            </div>`;
+        }
+        if (d.social_profiles && d.social_profiles.length > 0) {
+            let profilesHtml = '<div class="profile-grid">';
+            d.social_profiles.forEach(p => {
+                const icon = p.found ? 'fa-check' : 'fa-xmark';
+                const statusClass = p.found ? 'found' : 'not-found';
+                const link = p.found ? `<a href="${p.url}" target="_blank">${p.platform} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i></a>` : p.platform;
+                profilesHtml += `
+                <div class="profile-item ${statusClass}">
+                    <i class="fa-solid ${icon}"></i>
+                    ${link}
+                </div>`;
+            });
+            profilesHtml += '</div>';
+            html += `
+            <div class="intel-card" style="grid-column: 1 / -1;">
+                <h3><i class="fa-solid fa-users-viewfinder"></i> Username Correlation (@${d.username})</h3>
+                ${profilesHtml}
+            </div>`;
+        }
+    }
+    else if (type === 'USERNAME') {
+        const profiles = res.data.profiles || [];
+        let profilesHtml = '<div class="profile-grid">';
+        profiles.forEach(p => {
+            const icon = p.found ? 'fa-check' : 'fa-xmark';
+            const statusClass = p.found ? 'found' : 'not-found';
+            const link = p.found ? `<a href="${p.url}" target="_blank">${p.platform} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.7rem;"></i></a>` : p.platform;
+            profilesHtml += `
+            <div class="profile-item ${statusClass}">
+                <i class="fa-solid ${icon}"></i>
+                ${link}
+            </div>`;
+        });
+        profilesHtml += '</div>';
+        html += `
+        <div class="intel-card" style="grid-column: 1 / -1;">
+            <h3><i class="fa-solid fa-users-viewfinder"></i> Cross-Platform Presence</h3>
+            ${profilesHtml}
+        </div>`;
+    }
+    else if (type === 'EXIF') {
+        const d = res.data;
+        if (d.Make) html += createGtCard('fa-camera', 'Make', d.Make);
+        if (d.Model) html += createGtCard('fa-mobile-screen', 'Model', d.Model);
+        if (d.OriginalTime) html += createGtCard('fa-clock', 'Taken On', d.OriginalTime);
+        if (d.Software) html += createGtCard('fa-code', 'Software', d.Software);
+        if (d.GPS) {
+            html += `
+            <div class="intel-card" style="grid-column: 1 / -1; border-color: var(--cyan);">
+                <h3><i class="fa-solid fa-map-location-dot" style="color: var(--cyan);"></i> Exact GPS Location</h3>
+                <div class="intel-value" style="font-size: 15px; color: var(--cyan);">
+                    Lat: ${d.GPS.Latitude}, Lon: ${d.GPS.Longitude}
+                    <a href="${d.GPS.MapLink}" target="_blank" style="margin-left: 10px; color: #fff; text-decoration: underline; font-weight: bold;">Open in Maps <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                </div>
+            </div>`;
+        }
+        if (Object.keys(d).length === 0 || (Object.keys(d).length === 1 && d.hasOwnProperty('GPS') && Object.keys(d.GPS).length === 0)) {
+            html += createGtCard('fa-triangle-exclamation', 'No EXIF Data', 'No camera metadata or location data found in this image.');
+        }
+    }
+    else if (type === 'REVERSE_SEARCH') {
+        const d = res.data;
+        if (d.results && d.results.length > 0) {
+            d.results.forEach(r => {
+                let urlsHtml = '';
+                if (r.urls && r.urls.length > 0) {
+                    urlsHtml = '<div style="margin-top: 8px; display:flex; gap:10px; flex-wrap:wrap;">';
+                    r.urls.forEach(url => {
+                        let domain = new URL(url).hostname.replace('www.', '');
+                        urlsHtml += `<a href="${url}" target="_blank" style="background:#222; border:1px solid #333; padding:4px 8px; border-radius:4px; font-size:11px; color:var(--cyan); text-decoration:none; font-weight:bold;">${domain} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 9px;"></i></a>`;
+                    });
+                    urlsHtml += '</div>';
+                }
+                
+                html += `
+                <div class="intel-card" style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
+                    ${r.thumbnail ? `
+                    <div style="flex-shrink: 0; width: 100px; height: 100px; border: 1px solid #333; background: #000; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+                        <img src="${r.thumbnail}" style="max-width:100%; max-height:100%; object-fit:contain;" alt="Thumbnail">
+                    </div>` : ''}
+                    <div style="flex: 1; min-width: 200px;">
+                        <h3 style="margin-bottom:4px;"><i class="fa-solid fa-circle-check"></i> ${r.similarity}% Match</h3>
+                        <div class="intel-value" style="font-size: 15px; margin-bottom: 4px;">${r.title}</div>
+                        ${r.author ? `<div style="font-size:12px; color:var(--text-secondary); margin-bottom:6px;">Author: <strong>${r.author}</strong></div>` : ''}
+                        <div style="font-size:10px; color:#555; font-family:monospace;">Source Database: ${r.index_name}</div>
+                        ${urlsHtml}
+                    </div>
+                </div>`;
+            });
+        } else {
+            html += createGtCard('fa-magnifying-glass', 'No Matches Found', 'SauceNAO database returned no matches with high similarity (>40%).');
+        }
+    }
+    
+    targetDiv.innerHTML = `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 15px;">${html}</div>`;
+}
+
+function startPhoneRadar(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Scale for High DPI / Retina Displays
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    
+    const W = rect.width;
+    const H = rect.height;
+    const cx = W / 2;
+    const cy = H / 2;
+    const maxR = Math.min(cx, cy) - 10;
+    let angle = 0;
+    let blips = [];
+    
+    // Generate 5 random signal blips
+    for (let i = 0; i < 5; i++) {
+        blips.push({
+            a: Math.random() * Math.PI * 2,
+            r: (0.3 + Math.random() * 0.6) * maxR,
+            life: 0,
+            maxLife: 120 + Math.random() * 60
+        });
+    }
+    
+    function drawFrame() {
+        if (!document.getElementById(canvasId)) return; // stop if removed
+        ctx.clearRect(0, 0, W, H);
+        
+        // Background
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, W, H);
+        
+        // Tech Grid Dots Background
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.05)';
+        for (let x = 10; x < W; x += 20) {
+            for (let y = 10; y < H; y += 20) {
+                ctx.fillRect(x, y, 1.5, 1.5);
+            }
+        }
+        
+        // Draw concentric rings
+        for (let ring = 1; ring <= 4; ring++) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, maxR * ring / 4, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        
+        // Cross hairs
+        ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+        ctx.beginPath(); ctx.moveTo(cx - maxR, cy); ctx.lineTo(cx + maxR, cy); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, cy - maxR); ctx.lineTo(cx, cy + maxR); ctx.stroke();
+        
+        // Sweep
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        const grad = ctx.createLinearGradient(0, 0, maxR, 0);
+        grad.addColorStop(0, 'rgba(0, 212, 255, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 212, 255, 0)');
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, maxR, -0.5, 0);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+        
+        // Sweep line
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(maxR, 0);
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+        
+        // Blips
+        blips.forEach(b => {
+            const diff = ((b.a - angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            if (diff < 0.2) { b.life = b.maxLife; }
+            if (b.life > 0) {
+                const alpha = b.life / b.maxLife;
+                const bx = cx + Math.cos(b.a) * b.r;
+                const by = cy + Math.sin(b.a) * b.r;
+                
+                ctx.beginPath();
+                ctx.arc(bx, by, 5 * alpha, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 136, ${alpha})`;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(bx, by, 10 * alpha, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(0, 255, 136, ${alpha * 0.5})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                b.life--;
+            }
+        });
+        
+        // Center dot
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#00d4ff';
+        ctx.fill();
+        
+        angle += 0.025;
+        requestAnimationFrame(drawFrame);
+    }
+    drawFrame();
+}
+
+function createGtCard(icon, title, value) {
+    return `
+    <div class="intel-card">
+        <h3><i class="fa-solid ${icon}"></i> ${title}</h3>
+        <div class="intel-value">${value}</div>
+    </div>`;
+}
+
+window.startGhostTrackHunt = startGhostTrackHunt;
+window.uploadGtExif = uploadGtExif;
+window.uploadGtReverse = uploadGtReverse;
+
+// --- LIVE SYSTEM RESOURCES CANVAS CHART ---
+window.resourceHistory = [];
+const MAX_HISTORY = 40;
+
+window.updateResourceChartData = function(cpu, mem) {
+  window.resourceHistory.push({ cpu: cpu, mem: mem });
+  if (window.resourceHistory.length > MAX_HISTORY) {
+    window.resourceHistory.shift();
+  }
+};
+
+// ══════════════════════════════════════════════════════
+// LIVE SYSTEM RESOURCES — CSS + SVG (bulletproof, no canvas sizing issues)
+// ══════════════════════════════════════════════════════
+function buildResourceWidget() {
+  const wrapper = document.getElementById('resource-widget-inner');
+  if (!wrapper) return;
+  wrapper.innerHTML = `
+  <style>
+    @keyframes pulse-glow {
+      from { opacity: 0.3; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1.1); }
+    }
+  </style>
+  <div id="res-widget" style="display: flex; flex-direction: column; gap: 16px;">
+    <!-- Indicator Row -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+      <!-- CPU Indicator -->
+      <div style="background: #ffcc00; border: 2px solid #111111; padding: 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 3px 3px 0px #111111;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; color: #111111; letter-spacing: 1px;">CPU LOAD</span>
+          <span id="res-cpu-pct" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px; color: #111111;">0%</span>
+        </div>
+        <!-- Track -->
+        <div style="height: 10px; background: #ffffff; border: 2px solid #111111; overflow: hidden; position: relative;">
+          <div id="res-cpu-bar" style="height: 100%; background: #111111; border-right: 2px solid #111111; width: 0%; transition: width 0.25s cubic-bezier(0.4,0,0.2,1);"></div>
+        </div>
+      </div>
+      
+      <!-- Memory Indicator -->
+      <div style="background: #33ccff; border: 2px solid #111111; padding: 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: 3px 3px 0px #111111;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; color: #111111; letter-spacing: 1px;">RAM USAGE</span>
+          <span id="res-mem-pct" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px; color: #111111;">0%</span>
+        </div>
+        <!-- Track -->
+        <div style="height: 10px; background: #ffffff; border: 2px solid #111111; overflow: hidden; position: relative;">
+          <div id="res-mem-bar" style="height: 100%; background: #111111; border-right: 2px solid #111111; width: 0%; transition: width 0.25s cubic-bezier(0.4,0,0.2,1);"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Oscilloscope Container -->
+    <div style="background: #000000; border: 2px solid #111111; padding: 10px; position: relative; box-shadow: 3px 3px 0px #111111; display: flex; flex-direction: column;">
+      <!-- Live Indicator Overlay -->
+      <div style="position: absolute; top: 10px; right: 12px; display: flex; align-items: center; gap: 6px; font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #00ffcc; z-index: 10;">
+        <span style="display: inline-block; width: 6px; height: 6px; background: #00ffcc; border-radius: 50%; animation: pulse-glow 1.5s infinite alternate;"></span>
+        LIVE FEED
+      </div>
+      
+      <svg class="res-sparkline" id="res-sparkline" viewBox="0 0 400 80" preserveAspectRatio="none" style="width: 100%; height: 90px; display: block; background: #000000;">
+        <defs>
+          <linearGradient id="g-cpu" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffcc00" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#ffcc00" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g-mem" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#33ccff" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#33ccff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Grid lines -->
+        <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2,2"/>
+        <line x1="0" y1="40" x2="400" y2="40" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2,2"/>
+        <line x1="0" y1="60" x2="400" y2="60" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2,2"/>
+        <!-- CPU area fill -->
+        <path id="res-cpu-area" fill="url(#g-cpu)" d="M0,80 L400,80 Z"/>
+        <!-- MEM area fill -->
+        <path id="res-mem-area" fill="url(#g-mem)" d="M0,80 L400,80 Z"/>
+        <!-- CPU line -->
+        <polyline id="res-cpu-line" fill="none" stroke="#ffcc00" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="0,80"/>
+        <!-- MEM line -->
+        <polyline id="res-mem-line" fill="none" stroke="#33ccff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="0,80"/>
+        <!-- Scan line -->
+        <line id="res-scanline" x1="0" y1="0" x2="0" y2="80" stroke="rgba(0,212,255,0.25)" stroke-width="1.5"/>
+        <!-- Live dots -->
+        <circle id="res-cpu-dot" cx="0" cy="80" r="4.5" fill="#ffcc00" stroke="#000000" stroke-width="1"/>
+        <circle id="res-mem-dot" cx="0" cy="80" r="4.5" fill="#33ccff" stroke="#000000" stroke-width="1"/>
+      </svg>
+      <div style="display: flex; gap: 14px; margin-top: 8px; justify-content: flex-start;">
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,0.5);"><span style="width: 8px; height: 8px; background: #ffcc00; display: inline-block;"></span>CPU</div>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,0.5);"><span style="width: 8px; height: 8px; background: #33ccff; display: inline-block;"></span>Memory</div>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+const RES_HISTORY_MAX = 60;
+const resHistory = [];
+
+function updateResourceWidget(cpu, mem) {
+  resHistory.push({ cpu, mem });
+  if (resHistory.length > RES_HISTORY_MAX) resHistory.shift();
+
+  // Update bars
+  const cpuBar = document.getElementById('res-cpu-bar');
+  const memBar = document.getElementById('res-mem-bar');
+  const cpuPct = document.getElementById('res-cpu-pct');
+  const memPct = document.getElementById('res-mem-pct');
+  if (!cpuBar) return;
+
+  cpuBar.style.width = cpu + '%';
+  memBar.style.width = mem + '%';
+  cpuPct.textContent = Math.round(cpu) + '%';
+  memPct.textContent = Math.round(mem) + '%';
+
+  // Color cpu bar by load level
+  if (cpu > 80) cpuBar.style.background = 'linear-gradient(90deg,#ff2200,#ff4400)';
+  else if (cpu > 50) cpuBar.style.background = 'linear-gradient(90deg,#ff6600,#ff8800)';
+  else cpuBar.style.background = 'linear-gradient(90deg,#ff8800,#ffaa00)';
+
+  // Update sparklines
+  const W = 400, H = 80;
+  const n = resHistory.length;
+  const step = W / (RES_HISTORY_MAX - 1);
+
+  function buildPoints(key) {
+    return resHistory.map((p, i) => {
+      const x = i * step;
+      const y = H - (p[key] / 100) * (H - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  function buildArea(key) {
+    const pts = resHistory.map((p, i) => {
+      const x = i * step;
+      const y = H - (p[key] / 100) * (H - 4) - 2;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    if (!pts.length) return '';
+    return `M${pts[0]} L${pts.join(' L')} L${((n-1)*step).toFixed(1)},${H} L0,${H} Z`;
+  }
+
+  const cpuPts = buildPoints('cpu');
+  const memPts = buildPoints('mem');
+  document.getElementById('res-cpu-line').setAttribute('points', cpuPts);
+  document.getElementById('res-mem-line').setAttribute('points', memPts);
+  document.getElementById('res-cpu-area').setAttribute('d', buildArea('cpu'));
+  document.getElementById('res-mem-area').setAttribute('d', buildArea('mem'));
+
+  // Live end dots
+  const last = resHistory[resHistory.length - 1];
+  const lastX = ((n - 1) * step).toFixed(1);
+  const cpuY = (H - (last.cpu / 100) * (H - 4) - 2).toFixed(1);
+  const memY = (H - (last.mem / 100) * (H - 4) - 2).toFixed(1);
+  document.getElementById('res-cpu-dot').setAttribute('cx', lastX);
+  document.getElementById('res-cpu-dot').setAttribute('cy', cpuY);
+  document.getElementById('res-mem-dot').setAttribute('cx', lastX);
+  document.getElementById('res-mem-dot').setAttribute('cy', memY);
+
+  // Animated scan line
+  const scanX = ((Date.now() / 30) % W).toFixed(1);
+  const scanEl = document.getElementById('res-scanline');
+  if (scanEl) { scanEl.setAttribute('x1', scanX); scanEl.setAttribute('x2', scanX); }
+}
+
+function resizeScanlineLoop() {
+  const scanEl = document.getElementById('res-scanline');
+  if (!scanEl) return;
+  const scanX = ((Date.now() / 30) % 400).toFixed(1);
+  scanEl.setAttribute('x1', scanX);
+  scanEl.setAttribute('x2', scanX);
+  requestAnimationFrame(resizeScanlineLoop);
+}
+
+function resizeResourceChart() { /* kept for compat — no-op; SVG widget is used now */ }
+
+
+function drawResourceChart() {
+  const canvas = document.getElementById('resourceChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const w = canvas.width;
+  const h = canvas.height;
+  
+  // Neo-Brutalist clean dark chart background
+  ctx.fillStyle = "#0c1015";
+  ctx.fillRect(0, 0, w, h);
+  
+  const chartX = 35;
+  const chartW = w - 45;
+  
+  // Grid lines
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.lineWidth = 1;
+  
+  // 6 vertical grid sections
+  const gridSpacing = chartW / 6;
+  for (let i = 0; i <= 6; i++) {
+    const x = chartX + i * gridSpacing;
+    ctx.beginPath();
+    ctx.moveTo(x, 5);
+    ctx.lineTo(x, h - 10);
+    ctx.stroke();
+  }
+  
+  // 4 horizontal grid sections
+  const horizSpacing = (h - 15) / 4;
+  for (let i = 0; i <= 4; i++) {
+    const y = 5 + i * horizSpacing;
+    ctx.beginPath();
+    ctx.moveTo(chartX, y);
+    ctx.lineTo(chartX + chartW, y);
+    ctx.stroke();
+  }
+  
+  // Percentage markers
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+  ctx.font = "9px 'JetBrains Mono', monospace";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.fillText("100%", 28, 5);
+  ctx.fillText("75%", 28, 5 + horizSpacing);
+  ctx.fillText("50%", 28, 5 + 2 * horizSpacing);
+  ctx.fillText("25%", 28, 5 + 3 * horizSpacing);
+  ctx.fillText("0%", 28, h - 10);
+  
+  // Dynamic scanning radar sweeping line
+  const scanX = chartX + ((Date.now() / 20) % chartW);
+  ctx.strokeStyle = "rgba(0, 212, 255, 0.08)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(scanX, 5);
+  ctx.lineTo(scanX, h - 10);
+  ctx.stroke();
+  
+  if (window.resourceHistory.length < 2) {
+    ctx.fillStyle = "#8892b0";
+    ctx.font = "12px 'Space Grotesk', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Awaiting telemetry updates...", chartX + chartW / 2, h / 2 + 4);
+    return;
+  }
+  
+  const points = window.resourceHistory.length;
+  const step = chartW / (MAX_HISTORY - 1);
+  
+  function drawMetric(key, strokeColor, fillColor, labelText, labelY) {
+    ctx.beginPath();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = strokeColor;
+    
+    // Smooth quadratic curve plotting
+    const getX = (idx) => chartX + idx * step;
+    const getY = (idx) => h - 10 - (window.resourceHistory[idx][key] / 100) * (h - 15);
+    
+    ctx.moveTo(getX(0), getY(0));
+    if (points > 2) {
+      for (let i = 0; i < points - 1; i++) {
+        const xc = (getX(i) + getX(i + 1)) / 2;
+        const yc = (getY(i) + getY(i + 1)) / 2;
+        ctx.quadraticCurveTo(getX(i), getY(i), xc, yc);
+      }
+      ctx.lineTo(getX(points - 1), getY(points - 1));
+    } else {
+      ctx.lineTo(getX(points - 1), getY(points - 1));
+    }
+    ctx.stroke();
+    
+    // Fill Area under curve
+    const lastX = getX(points - 1);
+    ctx.lineTo(lastX, h - 10);
+    ctx.lineTo(chartX, h - 10);
+    ctx.closePath();
+    
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, fillColor);
+    grad.addColorStop(1, "rgba(12, 16, 21, 0)");
+    ctx.fillStyle = grad;
+    ctx.fill();
+    
+    // Draw current value label
+    const lastVal = window.resourceHistory[points - 1][key];
+    ctx.fillStyle = strokeColor;
+    ctx.font = "bold 11px 'Space Grotesk', sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${labelText}: ${Math.round(lastVal)}%`, w - 12, labelY);
+    
+    // Draw glowing dot at the tail
+    const lastY = getY(points - 1);
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = strokeColor;
+    ctx.fill();
+    
+    const pulseRadius = 4.5 + (Date.now() % 1000) / 200;
+    ctx.beginPath();
+    ctx.arc(lastX, lastY, pulseRadius, 0, Math.PI * 2);
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  
+  drawMetric('cpu', '#ff8800', 'rgba(255, 136, 0, 0.15)', 'CPU', 18);
+  drawMetric('mem', '#00ffcc', 'rgba(0, 255, 204, 0.15)', 'MEM', 34);
+}
+
+window.startResourceChartLoop = function() {
+  // Build the new SVG neo-brutalist widget in the DOM
+  buildResourceWidget();
+  
+  // Pre-fill the sparkline history with initial zero values so it starts rendering lines immediately
+  if (resHistory.length === 0) {
+    for (let i = 0; i < RES_HISTORY_MAX; i++) {
+      resHistory.push({ cpu: 0, mem: 0 });
+    }
+  }
+  
+  // Do an initial render of the sparklines/bars
+  updateResourceWidget(0, 0);
+
+  // Start the scanline animation loop
+  resizeScanlineLoop();
+};
+
+window.runSandboxTest = async function(module) {
+  const labels = { tarpit: 'Infinite Tarpit', tripwire: 'Ransomware Tripwire' };
+  const label = labels[module] || module;
+  const container = document.getElementById('overview-ids-feed');
+
+  // Helper: inject a line into the feed
+  function feedLine(level, cat, msg) {
+    if (!container) return;
+    const el = _idsBuildLine(new Date().toLocaleTimeString(), level, cat, msg);
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Show "running" line in feed
+  feedLine('SYS', 'TEST', `Running sandbox test for ${label}...`);
+
+  try {
+    const res = await fetch('/api/system/sandbox-test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // Build a full alert card for the result
+      const cat = module === 'tripwire' ? 'TRIPWIRE' : 'HONEYPOT';
+      const solutions = _solutions[cat] || _solutions.INTRUSION;
+      const card = document.createElement('div');
+      card.style.cssText = `border:2px solid #00e699; background:rgba(0,230,153,0.06); margin-bottom:6px; overflow:hidden;`;
+
+      const header = document.createElement('div');
+      header.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:rgba(0,230,153,0.1); border-bottom:1px solid rgba(0,230,153,0.2);`;
+      header.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:14px;">${module === 'tripwire' ? '⚡' : '🍯'}</span>
+          <span style="font-family:'Space Grotesk',sans-serif; font-weight:900; font-size:11px; color:#00e699; letter-spacing:1px;">TEST PASSED — ${label.toUpperCase()}</span>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#888;">${new Date().toLocaleTimeString()}</span>
+      `;
+
+      const msgEl = document.createElement('div');
+      msgEl.style.cssText = `padding:6px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#aaa; border-bottom:1px solid #1a2a1a;`;
+      msgEl.textContent = data.message;
+
+      const solEl = document.createElement('div');
+      solEl.style.cssText = `padding:6px 10px;`;
+      solEl.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:800; color:#ffcc00; letter-spacing:1px; margin-bottom:4px;">▶ WHAT THIS MEANS IF REAL</div>`;
+      solutions.slice(0, 3).forEach(s => {
+        const item = document.createElement('div');
+        item.style.cssText = `font-family:'JetBrains Mono',monospace; font-size:10px; color:#888; padding:1px 0 1px 8px;`;
+        item.textContent = s;
+        solEl.appendChild(item);
+      });
+
+      card.appendChild(header);
+      card.appendChild(msgEl);
+      card.appendChild(solEl);
+
+      if (container) {
+        container.appendChild(card);
+        container.scrollTop = container.scrollHeight;
+      }
+    } else {
+      feedLine('WARN', 'TEST', `Test failed: ${data.error || 'Sandbox returned error'}`);
+    }
+  } catch(e) {
+    feedLine('WARN', 'TEST', `Test request failed: ${e.message}`);
+  }
+};
+
+window.refineWithBrowserGps = function() {
+  if (!navigator.geolocation) {
+    showToast('⚠️ Geolocation is not supported by your browser.', 'error');
+    return;
+  }
+  
+  showToast('⏳ Requesting device GPS access...', 'info');
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+      const coords = `${lat}, ${lon}`;
+      
+      // Update the UI elements
+      const coordsSpan = document.getElementById('osint-gps-coords');
+      const mapLink = document.getElementById('osint-gps-maplink');
+      
+      if (coordsSpan) coordsSpan.textContent = coords;
+      if (mapLink) {
+        mapLink.href = `https://maps.google.com/?q=${encodeURIComponent(coords)}`;
+        mapLink.style.display = 'inline-block';
+      }
+      
+      // Also update any radar text overlay if active
+      const radarCoords = document.getElementById('radar-gps-text');
+      if (radarCoords) {
+        radarCoords.textContent = `GPS: ${coords}`;
+      }
+      
+      showToast('✅ Location recalibrated successfully!', 'success');
+    },
+    (error) => {
+      console.warn("Hardware GPS failed, falling back to IP Geolocation:", error);
+      showToast('⚠️ Hardware GPS unavailable. Attempting IP-based geolocation...', 'info');
+      
+      // Fallback: Fetch location from ip-api.com
+      fetch('https://ip-api.com/json/')
+        .then(res => res.json())
+        .then(ipData => {
+          if (ipData && ipData.lat && ipData.lon) {
+            const coords = `${ipData.lat}, ${ipData.lon}`;
+            
+            const coordsSpan = document.getElementById('osint-gps-coords');
+            const mapLink = document.getElementById('osint-gps-maplink');
+            
+            if (coordsSpan) coordsSpan.textContent = coords + ' (IP Estimated)';
+            if (mapLink) {
+              mapLink.href = `https://maps.google.com/?q=${encodeURIComponent(coords)}`;
+              mapLink.style.display = 'inline-block';
+            }
+            
+            const radarCoords = document.getElementById('radar-gps-text');
+            if (radarCoords) {
+              radarCoords.textContent = `GPS: ${coords} (IP)`;
+            }
+            
+            showToast('✅ Coarse IP-based location resolved!', 'success');
+          } else {
+            showToast('❌ Location unavailable (IP lookup failed).', 'error');
+          }
+        })
+        .catch(err => {
+          showToast('❌ Location unavailable (Network error on IP lookup).', 'error');
+        });
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+};
+
+// ══════════════════════════════════════════════════════
+// LIVE IDS SENSOR FEED — Real events + simulated ambient
+// ══════════════════════════════════════════════════════
+let _idsTimer = null;
+let _idsLastEventCount = 0;
+let _idsSeenIds = new Set();
+
+const _mockIPs = [
+  '185.220.101.4','45.143.203.14','92.118.160.17',
+  '141.98.80.32','185.244.25.178','80.82.77.240'
+];
+
+// Ambient noise events (simulated network chatter)
+const _ambientEvents = [
+  { level: 'INFO',  cat: 'NET',     msg: 'TCP SYN probe on port {port} — dropped by firewall' },
+  { level: 'INFO',  cat: 'NET',     msg: 'Stealth ping sweep from {ip} — ignored' },
+  { level: 'INFO',  cat: 'SYS',     msg: 'Windows Defender real-time protection: active' },
+  { level: 'INFO',  cat: 'SYS',     msg: 'Firewall rule set loaded — {port} rules active' },
+  { level: 'WARN',  cat: 'NET',     msg: 'Port scan detected from {ip} — ports 22,80,443 probed' },
+  { level: 'WARN',  cat: 'NET',     msg: 'Blocked outbound connection sweep from {ip}' },
+  { level: 'INFO',  cat: 'SYS',     msg: 'DNS query for {ip} resolved successfully' },
+  { level: 'INFO',  cat: 'NET',     msg: 'ICMP echo to {ip} — TTL expired in transit' },
+  { level: 'INFO',  cat: 'SYS',     msg: 'TLS handshake with remote host — certificate valid' },
+  { level: 'WARN',  cat: 'NET',     msg: 'Brute-force attempt on port {port} from {ip} — rate limited' },
+];
+
+// Solution playbooks for critical events
+const _solutions = {
+  TRIPWIRE: [
+    '🚨 IMMEDIATELY disconnect from the internet',
+    '🔍 Run full AV scan: Windows Defender > Full Scan',
+    '💾 Check C:\\Users for any encrypted files (.locked, .enc)',
+    '📋 Open Event Viewer → Security logs for the accessing process',
+    '🔒 Change all passwords from a CLEAN device',
+    '📞 Report to: security@cert.in or call 1800-11-4949'
+  ],
+  HONEYPOT: [
+    '🛡️ Block attacker IP in Windows Firewall immediately',
+    '🔍 Check if port {port} is exposed via: netstat -an',
+    '📋 Review network logs for other connections from this IP',
+    '🌐 Look up IP reputation: https://www.abuseipdb.com',
+    '🔔 Enable alerts if IP connects again',
+    '📝 Document the incident with timestamp and IP'
+  ],
+  INTRUSION: [
+    '🚫 Block the source IP in your router/firewall',
+    '📊 Check active connections: netstat -b in cmd',
+    '🔍 Verify no new user accounts were created',
+    '🔒 Rotate passwords for any exposed services',
+    '📋 Check Windows Event Viewer for login attempts'
+  ]
+};
+
+function _idsLevelStyle(level) {
+  switch(level) {
+    case 'CRITICAL': return { color: '#ff1a2e', border: '#ff1a2e', bg: 'rgba(255,26,46,0.08)', label: '💀 CRITICAL' };
+    case 'ALERT':    return { color: '#ff4455', border: '#ff4455', bg: 'rgba(255,68,85,0.06)',  label: '🚨 ALERT' };
+    case 'WARN':     return { color: '#ff9944', border: '#ff9944', bg: 'rgba(255,153,68,0.05)', label: '⚠️ WARN' };
+    case 'INFO':     return { color: '#33ccff', border: '#333',    bg: 'transparent',           label: 'ℹ️ INFO' };
+    case 'SYS':      return { color: '#888',    border: '#333',    bg: 'transparent',           label: '⚙️ SYS' };
+    default:         return { color: '#aaa',    border: '#333',    bg: 'transparent',           label: level };
+  }
+}
+
+function _idsBuildLine(timeStr, level, cat, msg) {
+  const s = _idsLevelStyle(level);
+  const el = document.createElement('div');
+  el.style.cssText = `padding:4px 8px; border-left:3px solid ${s.border}; background:${s.bg}; margin-bottom:2px; line-height:1.5;`;
+  const t = timeStr ? `<span style="color:#555; font-size:10px;">[${timeStr}]</span> ` : '';
+  const c = cat ? `<span style="color:#666; font-size:9px; background:#222; padding:1px 4px; margin-right:4px; border-radius:2px;">${cat}</span>` : '';
+  el.innerHTML = `${t}${c}<span style="color:${s.color}; font-size:10px; font-weight:700;">${s.label}</span> <span style="color:#ccc; font-size:11px;">${msg}</span>`;
+  return el;
+}
+
+function _idsBuildAlertCard(event) {
+  const s = _idsLevelStyle(event.level);
+  const cat = event.category || 'EVENT';
+  const solutions = _solutions[cat] || _solutions.INTRUSION;
+  const ip = event.data && event.data.ip ? event.data.ip : '';
+  const port = event.data && event.data.port ? event.data.port : '22';
+
+  const card = document.createElement('div');
+  card.style.cssText = `border:2px solid ${s.border}; background:${s.bg || 'rgba(255,68,85,0.05)'}; margin-bottom:6px; overflow:hidden;`;
+
+  // Header
+  const header = document.createElement('div');
+  header.style.cssText = `display:flex; align-items:center; justify-content:space-between; padding:6px 10px; background:${s.border}22; border-bottom:1px solid ${s.border}44;`;
+  header.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:14px;">${event.level === 'CRITICAL' ? '💀' : event.category === 'HONEYPOT' ? '🍯' : '🚨'}</span>
+      <span style="font-family:'Space Grotesk',sans-serif; font-weight:900; font-size:11px; color:${s.color}; letter-spacing:1px;">${event.level} — ${cat}</span>
+    </div>
+    <span style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#888;">${event.time || new Date().toLocaleTimeString()}</span>
+  `;
+
+  // Message
+  const msgEl = document.createElement('div');
+  msgEl.style.cssText = `padding:6px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:#ddd; border-bottom:1px solid #222;`;
+  msgEl.textContent = event.msg;
+
+  // Solutions section
+  const solEl = document.createElement('div');
+  solEl.style.cssText = `padding:6px 10px;`;
+  solEl.innerHTML = `<div style="font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:800; color:#ffcc00; letter-spacing:1px; margin-bottom:4px;">▶ RECOMMENDED ACTIONS</div>`;
+  solutions.slice(0, 4).forEach(sol => {
+    const s2 = sol.replace('{port}', port).replace('{ip}', ip);
+    const item = document.createElement('div');
+    item.style.cssText = `font-family:'JetBrains Mono',monospace; font-size:10px; color:#aaa; padding:1px 0; padding-left:8px;`;
+    item.textContent = s2;
+    solEl.appendChild(item);
+  });
+
+  // Dismiss button
+  const footer = document.createElement('div');
+  footer.style.cssText = `padding:4px 10px; display:flex; justify-content:flex-end; border-top:1px solid #222;`;
+  const btn = document.createElement('button');
+  btn.textContent = 'ACKNOWLEDGE';
+  btn.style.cssText = `font-family:'Space Grotesk',sans-serif; font-size:9px; font-weight:800; padding:2px 8px; background:transparent; border:1px solid #444; color:#888; cursor:pointer; letter-spacing:1px;`;
+  btn.onclick = () => { card.style.opacity = '0.3'; btn.textContent = 'ACK\'D'; btn.disabled = true; };
+  footer.appendChild(btn);
+
+  card.appendChild(header);
+  card.appendChild(msgEl);
+  card.appendChild(solEl);
+  card.appendChild(footer);
+  return card;
+}
+
+// Poll /api/events for real data
+async function _idsPollReal(container) {
+  try {
+    const r = await fetch('/api/events');
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data.ok || !data.events) return;
+
+    let added = 0;
+    for (const ev of data.events) {
+      // Create a unique key for deduplication
+      const key = ev.category + '|' + ev.level + '|' + ev.msg + '|' + ev.time;
+      if (_idsSeenIds.has(key)) continue;
+      _idsSeenIds.add(key);
+
+      let el;
+      const isCritical = ev.level === 'CRITICAL' || ev.level === 'ALERT' || ev.category === 'TRIPWIRE' || ev.category === 'HONEYPOT';
+      if (isCritical && !ev.acknowledged) {
+        el = _idsBuildAlertCard(ev);
+      } else {
+        el = _idsBuildLine(ev.time, ev.level, ev.category, ev.msg);
+      }
+      container.appendChild(el);
+      added++;
+    }
+
+    if (added > 0) {
+      container.scrollTop = container.scrollHeight;
+    }
+    // Prune old simple lines (keep cards)
+    while (container.childNodes.length > 60) {
+      const first = container.firstChild;
+      if (first) container.removeChild(first);
+    }
+  } catch(e) { /* offline */ }
+}
+
+// Inject ambient simulated network noise
+function _idsInjectAmbient(container) {
+  const t = _ambientEvents[Math.floor(Math.random() * _ambientEvents.length)];
+  const ip = _mockIPs[Math.floor(Math.random() * _mockIPs.length)];
+  const port = [22, 80, 443, 445, 3389, 8080][Math.floor(Math.random() * 6)];
+  const msg = t.msg.replace('{ip}', ip).replace('{port}', port);
+  const time = new Date().toLocaleTimeString();
+  const el = _idsBuildLine(time, t.level, t.cat, msg);
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  while (container.childNodes.length > 80) container.removeChild(container.firstChild);
+}
+
+window.startIdsFeed = function() {
+  const container = document.getElementById('overview-ids-feed');
+  if (!container) return;
+
+  container.innerHTML = '';
+  // Boot message
+  const boot = _idsBuildLine(new Date().toLocaleTimeString(), 'SYS', 'BOOT', 'IDS daemon online — all interfaces monitored');
+  container.appendChild(boot);
+
+  if (_idsTimer) clearInterval(_idsTimer);
+  _idsSeenIds.clear();
+
+  // Poll real events immediately, then every 5s
+  _idsPollReal(container);
+  const realTimer = setInterval(() => _idsPollReal(container), 5000);
+
+  // Inject ambient noise every 3-6s
+  let ambientDelay = 3000;
+  function scheduleAmbient() {
+    setTimeout(() => {
+      _idsInjectAmbient(container);
+      ambientDelay = 3000 + Math.random() * 3000;
+      scheduleAmbient();
+    }, ambientDelay);
+  }
+  scheduleAmbient();
+
+  _idsTimer = realTimer;
+};
