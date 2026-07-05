@@ -460,3 +460,15 @@ multi-byte UTF-8 sequences when files were saved through the editor.
 #### Storage Migration to D: Drive
 - **Freed C: drive space**: Migrated the entire `Security Suite` project directory to `D:\Security Suite`, successfully freeing **676 MB** of disk space on the C: drive.
 - **Seamless execution**: Restarted the master python server and the Cloudflare cellular tunnel from the new D: drive workspace path.
+
+#### Automated Self-Updating C2 Agent Node
+- **Zero-intervention auto-update loop**: Added an update checking loop inside `scripts/nethunter_agent.py`. The agent automatically requests the latest version of itself from the server, compares its local file contents, and overwrites/reboots its own process using `os.execv` if a code change is detected.
+- **Server static route**: Added a static `/nethunter_agent.py` endpoint in `backend/server.py` to deliver the agent script dynamically from the project root directory.
+
+#### Mobile Installation Guide Node
+- **Hosted setup helper**: Created a mobile-optimized responsive HTML guide `dashboard/kali_install.html` detailing step-by-step partition shrinking, Rufus burning, boot menu keys, and graphical setup steps.
+- **Subdomain sharing**: Enabled operators to access the guide from their phones over WiFi (`http://192.168.1.10:8767/kali_install.html`) or the internet (`trycloudflare.com`) during PC reboots.
+
+#### Bug Fixes & Timeout Resolutions
+- **Closed tag typo repair**: Fixed a literal `\n` string print bug at the bottom-left of `dashboard/index.html` directly preceding the `</body>` tag.
+- **Orphaned process port release**: Terminated a legacy background Node process on port `8766` that was orphaned under the deleted C: drive path, resolving `Read timed out` connection errors in the Cache Vault.
