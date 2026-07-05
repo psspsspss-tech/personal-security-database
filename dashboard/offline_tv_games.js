@@ -508,11 +508,99 @@ function updateSnake() {
 }
 
 // --- HACKER TERMINAL CONFIG ---
-let hackerLines = [];
+let hackerLines = []; // [{text, color}]
 let hackerCodePos = 0;
 let lastHackerAutoLog = 0;
 let hackerCursorBlink = true;
 let lastHackerCursorBlink = 0;
+
+// --- COMMAND SEQUENCE STATE MACHINE ---
+let hackerPhase = 'idle'; // idle | typing_cmd | pausing | showing_output
+let hackerCmdTyped = '';
+let hackerCmdTarget = '';
+let hackerCmdOutput = [];
+let hackerCmdOutputIdx = 0;
+let lastHackerCmdTick = 0;
+let hackerCmdPauseEnd = 0;
+let hackerCmdIdx = 0;
+
+// --- PROGRESS BAR ---
+let hackerProgressBar = {active: false, label: '', progress: 0, speed: 0, lastUpdate: 0};
+
+// --- SYSTEM STATS HUD ---
+let hackerStats = {cpu: 45, mem: 52, netUp: 2.1, netDown: 5.4, packets: 8241, lastUpdate: 0};
+
+// --- GLITCH STATE ---
+let hackerGlitching = false;
+let hackerGlitchEnd = 0;
+let lastHackerGlitch = 0;
+let hackerGlitchNextIn = 20000;
+
+// --- RANDOM NETWORK TOPOLOGY ---
+let hackerFakeNetwork = {};
+
+// --- COLOUR MAP ---
+const hackerColorMap = {
+    '[SUCCESS]': '#00ffcc',
+    '[WARN]':    '#ffdd00',
+    '[ERROR]':   '#ff0077',
+    '[OK]':      '#00ff88',
+    '[INFO]':    '#33ff33',
+    '[SYSTEM]':  '#cc88ff',
+    '[DEBUG]':   '#668866',
+    '[STATUS]':  '#ff8800',
+    '[NET]':     '#44aaff',
+};
+
+function getHackerLineColor(text) {
+    for (const [tag, color] of Object.entries(hackerColorMap)) {
+        if (text.startsWith(tag)) return color;
+    }
+    if (text.startsWith('[root@')) return '#ffffff';
+    if (text.match(/^\d+\/tcp/)) return '#44aaff';
+    if (text.startsWith('Starting') || text.startsWith('Nmap') || text.startsWith('hashcat')) return '#668866';
+    return '#33ff33';
+}
+
+function addHackerLine(text, color) {
+    const c = color || getHackerLineColor(text);
+    hackerLines.push({text, color: c});
+    const maxVisible = tvCanvas ? Math.floor(tvCanvas.height / 16) - 8 : 30;
+    while (hackerLines.length > maxVisible) hackerLines.shift();
+}
+
+function generateFakeNetwork() {
+    const sub = `192.168.${Math.floor(Math.random()*5)}`;
+    const randIP = () => `${sub}.${10 + Math.floor(Math.random()*240)}`;
+    const hostWords = ['alpha','beta','gamma','delta','node','proxy','gate','core','edge','vault'];
+    const tlds = ['.local','.int','.corp'];
+    const hostname = hostWords[Math.floor(Math.random()*hostWords.length)] + '-' + Math.floor(Math.random()*99) + tlds[Math.floor(Math.random()*tlds.length)];
+    const allPorts = [
+        {port:22,  service:'ssh',      version:'OpenSSH 8.4p1'},
+        {port:80,  service:'http',     version:'Apache 2.4.51'},
+        {port:443, service:'https',    version:'nginx 1.21.6'},
+        {port:3306,service:'mysql',    version:'MySQL 8.0.28'},
+        {port:8080,service:'http-alt', version:'Tomcat 9.0.62'},
+        {port:6379,service:'redis',    version:'Redis 6.2.6'},
+        {port:5432,service:'postgres', version:'PostgreSQL 14.2'},
+        {port:21,  service:'ftp',      version:'vsftpd 3.0.3'},
+    ];
+    const ports = [...allPorts].sort(() => Math.random()-0.5).slice(0, 3 + Math.floor(Math.random()*3));
+    const users = ['admin','root','ubuntu','ec2-user','deploy'];
+    const dbNames = ['users','accounts','customers','employees','vault'];
+    return {
+        targetIP:  randIP(),
+        gatewayIP: `10.${Math.floor(Math.random()*3)}.0.1`,
+        hostname,
+        ports,
+        user:   users[Math.floor(Math.random()*users.length)],
+        dbName: dbNames[Math.floor(Math.random()*dbNames.length)] + '_db',
+        pid:    1000 + Math.floor(Math.random()*60000),
+        pid2:   1000 + Math.floor(Math.random()*60000),
+        hash:   [...Array(32)].map(()=>Math.floor(Math.random()*16).toString(16)).join(''),
+    };
+}
+
 
 const hackerPayloadCode = `
 #include <stdio.h>
@@ -571,124 +659,344 @@ int main(int argc, char *argv[]) {
 }
 `;
 
-const hackerLogs = [
-    "[SYSTEM] Overriding security protocols...",
-    "[DEBUG] Scanning subnet range 192.168.1.0/24...",
-    "[INFO] Port 22/tcp [ssh] open on 192.168.1.45",
-    "[WARN] SSH Banner: 'Dropbear sshd 2018.76'",
-    "[SYSTEM] Loading SSH brute force dictionary...",
-    "[STATUS] Brute force speed: 450 attempts/sec",
-    "[INFO] Attempting credentials root:root...",
-    "[INFO] Attempting credentials admin:admin123...",
-    "[SUCCESS] Credential match found: admin:password123",
-    "[SYSTEM] Opening interactive shell session...",
-    "[STATUS] Local shell spawned on tty1 (PID: 28419)",
-    "[DEBUG] Injecting rootkit payload.sys into /boot/...",
-    "[SYSTEM] Clearing authentication log files...",
-    "[OK] System footprint erased successfully.",
-    "[INFO] Downloading database backup: db_users.sql (4.2MB)",
-    "[STATUS] Download progress: [||||||||||||||||||||] 100% completed",
-    "[SYSTEM] Decrypting database hashes (SHA-256)...",
-    "[SUCCESS] Cracked admin password: 'sUpEr_sEcUrE_pAsSwOrD'",
-    "[INFO] Redirecting main gateway routing tables..."
-];
+function buildHackerCommands(net) {
+    return [
+        {
+            cmd: `nmap -sV -p- ${net.targetIP}`,
+            output: [
+                {text:`Starting Nmap 7.94 ( https://nmap.org )`, color:'#668866'},
+                {text:`Nmap scan report for ${net.hostname} (${net.targetIP})`, color:'#33ff33'},
+                {text:`Host is up (0.024s latency).`, color:'#33ff33'},
+                {text:`PORT      STATE  SERVICE    VERSION`, color:'#00ffcc'},
+                ...net.ports.map(p=>({text:`${(p.port+'/tcp').padEnd(10)}open   ${p.service.padEnd(11)}${p.version}`, color:'#44aaff'})),
+                {text:`Nmap done: 1 IP address scanned in 8.32s`, color:'#668866'},
+            ]
+        },
+        {
+            cmd: `ssh ${net.user}@${net.targetIP}`,
+            output: [
+                {text:`The authenticity of host '${net.targetIP}' can't be established.`, color:'#ffdd00'},
+                {text:`RSA key fingerprint: SHA256:${net.hash.slice(0,20)}.`, color:'#668866'},
+                {text:`Are you sure you want to continue? yes`, color:'#ffffff'},
+                {text:`[WARN] Permanently added '${net.targetIP}' to known hosts.`, color:'#ffdd00'},
+                {text:`[SUCCESS] Welcome to ${net.hostname}!`, color:'#00ffcc'},
+                {text:`Last login: Mon Jul 06 03:42:11 2026 from ${net.gatewayIP}`, color:'#668866'},
+            ]
+        },
+        {
+            cmd: `python3 exploit.py --target ${net.targetIP} --port ${net.ports[0]?.port||80}`,
+            output: [
+                {text:`[SYSTEM] Loading exploit framework v2.4.1...`, color:'#cc88ff'},
+                {text:`[INFO] Target: ${net.targetIP}:${net.ports[0]?.port||80}`, color:'#33ff33'},
+                {text:`[DEBUG] Sending probe packets...`, color:'#668866'},
+                {text:`[WARN] Firewall detected — initiating bypass...`, color:'#ffdd00'},
+                {text:`[SYSTEM] ROP chain injected into process ${net.pid2}`, color:'#cc88ff'},
+                {text:`[SUCCESS] Remote code execution achieved! Shell active.`, color:'#00ffcc'},
+            ]
+        },
+        {
+            cmd: `hashcat -m 0 hashes.txt rockyou.txt`,
+            output: [
+                {text:`hashcat (v6.2.6) starting...`, color:'#668866'},
+                {text:`[INFO] Device: NVIDIA RTX 4090 (24576 MB)`, color:'#33ff33'},
+                {text:`[STATUS] Speed: 45,231.4 MH/s`, color:'#ff8800'},
+                {text:`[STATUS] Progress: 14,344,391/14,344,391 (100%)`, color:'#ff8800'},
+                {text:`[SUCCESS] ${net.hash.slice(0,28)}:password123`, color:'#00ffcc'},
+                {text:`[OK] Session complete.`, color:'#00ff88'},
+            ]
+        },
+        {
+            cmd: `sqlmap -u http://${net.targetIP}/login --dump --batch`,
+            output: [
+                {text:`[SYSTEM] sqlmap 1.7.8 — automatic SQL injection`, color:'#cc88ff'},
+                {text:`[INFO] Testing connection to target URL...`, color:'#33ff33'},
+                {text:`[INFO] Parameter 'username' is injectable (UNION based)`, color:'#33ff33'},
+                {text:`[STATUS] Dumping table: ${net.dbName}...`, color:'#ff8800'},
+                {text:`[STATUS] Retrieved 4,291 rows`, color:'#ff8800'},
+                {text:`[SUCCESS] Saved to /tmp/${net.dbName}.csv`, color:'#00ffcc'},
+            ]
+        },
+    ];
+}
 
-let hackerLogIdx = 0;
+function buildHackerIdleLogs(net) {
+    return [
+        `[INFO] Gateway: ${net.gatewayIP} — RTT 4ms`,
+        `[DEBUG] Scanning subnet ${net.targetIP.split('.').slice(0,3).join('.')}.0/24...`,
+        `[INFO] Port ${net.ports[0]?.port||22}/tcp [${net.ports[0]?.service||'ssh'}] open on ${net.targetIP}`,
+        `[WARN] SSH Banner: 'Dropbear sshd 2018.76'`,
+        `[SYSTEM] Loading brute force dictionary (rockyou.txt)...`,
+        `[STATUS] Brute force speed: 450 attempts/sec`,
+        `[INFO] Attempting ${net.user}:${net.user}...`,
+        `[INFO] Attempting admin:admin123...`,
+        `[SUCCESS] Credential match: ${net.user}:password123`,
+        `[SYSTEM] Opening interactive shell session...`,
+        `[STATUS] Shell spawned on tty1 (PID: ${net.pid})`,
+        `[DEBUG] Injecting rootkit payload into /boot/...`,
+        `[SYSTEM] Clearing authentication logs...`,
+        `[OK] System footprint erased.`,
+        `[INFO] Downloading ${net.dbName}.sql (4.2MB)`,
+        `[SYSTEM] Decrypting database hashes (SHA-256)...`,
+        `[SUCCESS] Hash cracked: ${net.hash.slice(0,16)}...`,
+        `[NET] Routing tables redirected via ${net.gatewayIP}`,
+        `[DEBUG] ARP cache poisoned: ${net.targetIP} → ${net.gatewayIP}`,
+        `[INFO] Process ${net.pid2} hijacked successfully`,
+    ];
+}
+
+let hackerCommands = [];
+let hackerIdleLogs = [];
+let hackerIdleLogIdx = 0;
 
 function initHackerTerminal() {
-    hackerLines = [
-        "================================================",
-        "     CYBER COMMAND CENTER -- TERMINAL V1.0.4    ",
-        "================================================",
-        "[root@local]# initiate_sequence --verbose",
-        "Initializing core subsystems..."
-    ];
+    hackerFakeNetwork = generateFakeNetwork();
+    hackerCommands = buildHackerCommands(hackerFakeNetwork);
+    hackerIdleLogs = buildHackerIdleLogs(hackerFakeNetwork);
+    hackerIdleLogIdx = 0;
+    
+    hackerLines = [];
+    addHackerLine('════════════════════════════════════════════════', '#00ffcc');
+    addHackerLine('     CYBER COMMAND CENTER — TERMINAL V1.0.4     ', '#00ffcc');
+    addHackerLine('════════════════════════════════════════════════', '#00ffcc');
+    addHackerLine(`[root@cybernode]# target set: ${hackerFakeNetwork.hostname} (${hackerFakeNetwork.targetIP})`, '#ffffff');
+    addHackerLine('[SYSTEM] Initializing core subsystems...', '#cc88ff');
+    
     hackerCodePos = 0;
-    hackerLogIdx = 0;
+    hackerPhase = 'idle';
+    hackerCmdTyped = '';
+    hackerCmdTarget = '';
+    hackerCmdOutput = [];
+    hackerCmdOutputIdx = 0;
+    hackerCmdIdx = 0;
     lastHackerAutoLog = Date.now();
+    lastHackerCmdTick = Date.now();
+    hackerCmdPauseEnd = Date.now() + 3500;
     lastHackerCursorBlink = Date.now();
     hackerCursorBlink = true;
+    hackerProgressBar = {active: false, label: '', progress: 0, speed: 0, lastUpdate: 0};
+    hackerStats = {
+        cpu: 20 + Math.floor(Math.random()*60),
+        mem: 30 + Math.floor(Math.random()*50),
+        netUp: 0.5 + Math.random()*5,
+        netDown: 1 + Math.random()*10,
+        packets: Math.floor(Math.random()*20000),
+        lastUpdate: 0
+    };
+    hackerGlitching = false;
+    hackerGlitchEnd = 0;
+    lastHackerGlitch = Date.now();
+    hackerGlitchNextIn = 15000 + Math.random()*20000;
 }
 
 function hackerTypeKey() {
-    if (typeof window.playKeyClick === 'function') {
-        window.playKeyClick();
-    }
-    
-    // Add 3-5 characters of code
+    if (typeof window.playKeyClick === 'function') window.playKeyClick();
     const count = 3 + Math.floor(Math.random() * 3);
     for (let i = 0; i < count; i++) {
-        if (hackerCodePos >= hackerPayloadCode.length) {
-            hackerCodePos = 0; // Wrap around
-        }
-        
-        const char = hackerPayloadCode[hackerCodePos];
-        hackerCodePos++;
-        
+        if (hackerCodePos >= hackerPayloadCode.length) hackerCodePos = 0;
+        const char = hackerPayloadCode[hackerCodePos++];
         if (char === '\n') {
-            hackerLines.push("");
+            addHackerLine('', '#33ff33');
         } else {
-            // Append to last line
-            if (hackerLines.length === 0) hackerLines.push("");
-            hackerLines[hackerLines.length - 1] += char;
+            if (hackerLines.length === 0) addHackerLine('', '#33ff33');
+            hackerLines[hackerLines.length - 1].text += char;
         }
-    }
-    
-    // Prune old lines if they exceed height limit
-    const maxVisibleLines = Math.floor(tvCanvas.height / 18) - 2;
-    while (hackerLines.length > maxVisibleLines) {
-        hackerLines.shift();
     }
 }
 
 function renderHackerTerminal() {
-    // Clear screen with a slight trail
-    tvCtx.fillStyle = "rgba(5, 10, 5, 0.15)";
-    tvCtx.fillRect(0, 0, tvCanvas.width, tvCanvas.height);
-    
     const now = Date.now();
     
-    // Auto-scroll logs if the user is idle
-    if (now - lastHackerAutoLog > 1200) {
-        lastHackerAutoLog = now;
-        
-        // Add a random log line
-        const log = hackerLogs[hackerLogIdx];
-        hackerLogIdx = (hackerLogIdx + 1) % hackerLogs.length;
-        
-        hackerLines.push(log);
-        if (window.playKeyClick) window.playKeyClick();
-        
-        // Prune old lines
-        const maxVisibleLines = Math.floor(tvCanvas.height / 18) - 2;
-        while (hackerLines.length > maxVisibleLines) {
-            hackerLines.shift();
+    // ── 1. GLITCH CHECK ──────────────────────────────────────
+    if (!hackerGlitching && (now - lastHackerGlitch) > hackerGlitchNextIn) {
+        hackerGlitching = true;
+        hackerGlitchEnd = now + 100 + Math.random() * 180;
+        lastHackerGlitch = now;
+        hackerGlitchNextIn = 15000 + Math.random() * 20000;
+        if (window.playNoise) window.playNoise(0.12, 0.07);
+    }
+    if (hackerGlitching && now > hackerGlitchEnd) hackerGlitching = false;
+    
+    // ── 2. BACKGROUND ────────────────────────────────────────
+    tvCtx.fillStyle = 'rgba(3, 8, 3, 0.18)';
+    tvCtx.fillRect(0, 0, tvCanvas.width, tvCanvas.height);
+    
+    // ── 3. GLITCH FRAME ──────────────────────────────────────
+    if (hackerGlitching) {
+        tvCtx.font = '11px monospace';
+        const glitchChars = '█▓▒░│─┼╬╔╗╚╝═║ABCDEFabcdef0123456789!@#$%^&*';
+        const cols = Math.floor(tvCanvas.width / 8);
+        const rows = Math.floor(tvCanvas.height / 13);
+        const glitchColors = ['#00ff00','#ff0077','#00ffff','#ffff00','#ffffff','#ff8800'];
+        for (let r = 0; r < rows; r++) {
+            if (Math.random() > 0.45) continue;
+            tvCtx.fillStyle = glitchColors[Math.floor(Math.random() * glitchColors.length)];
+            for (let c = 0; c < cols; c++) {
+                tvCtx.fillText(glitchChars[Math.floor(Math.random() * glitchChars.length)], c * 8, r * 13 + 11);
+            }
+        }
+        return;
+    }
+    
+    // ── 4. UPDATE LIVE STATS ─────────────────────────────────
+    if (now - hackerStats.lastUpdate > 900) {
+        hackerStats.lastUpdate = now;
+        hackerStats.cpu     = Math.max(5,  Math.min(99, hackerStats.cpu     + (Math.random()-0.45)*12));
+        hackerStats.mem     = Math.max(10, Math.min(95, hackerStats.mem     + (Math.random()-0.50)*5));
+        hackerStats.netUp   = Math.max(0.1, hackerStats.netUp   + (Math.random()-0.5)*1.5);
+        hackerStats.netDown = Math.max(0.1, hackerStats.netDown + (Math.random()-0.5)*2.0);
+        hackerStats.packets += Math.floor(Math.random() * 900);
+    }
+    
+    // ── 5. ANIMATE PROGRESS BAR ──────────────────────────────
+    if (hackerProgressBar.active && now - hackerProgressBar.lastUpdate > 80) {
+        hackerProgressBar.lastUpdate = now;
+        hackerProgressBar.progress = Math.min(100, hackerProgressBar.progress + hackerProgressBar.speed);
+        if (hackerProgressBar.progress >= 100) {
+            hackerProgressBar.active = false;
+            addHackerLine(`[OK] ${hackerProgressBar.label} complete.`, '#00ff88');
         }
     }
     
-    // Blink cursor
+    // ── 6. COMMAND SEQUENCE STATE MACHINE ────────────────────
+    if (hackerPhase === 'idle') {
+        if (now - lastHackerAutoLog > 1100) {
+            lastHackerAutoLog = now;
+            const log = hackerIdleLogs[hackerIdleLogIdx % hackerIdleLogs.length];
+            hackerIdleLogIdx++;
+            addHackerLine(log);
+            if (window.playKeyClick) window.playKeyClick();
+            // Trigger progress bars on relevant logs
+            if (!hackerProgressBar.active) {
+                if (log.includes('Downloading')) {
+                    hackerProgressBar = {active:true, label:'Download',    progress:0, speed:1.2+Math.random(),     lastUpdate:now};
+                } else if (log.includes('brute force')) {
+                    hackerProgressBar = {active:true, label:'Brute force', progress:0, speed:0.6+Math.random()*0.8, lastUpdate:now};
+                } else if (log.includes('Decrypting')) {
+                    hackerProgressBar = {active:true, label:'Decryption',  progress:0, speed:0.9+Math.random(),     lastUpdate:now};
+                }
+            }
+        }
+        if (now > hackerCmdPauseEnd + 4000) {
+            // Start next command sequence
+            hackerPhase = 'typing_cmd';
+            const cmdObj = hackerCommands[hackerCmdIdx % hackerCommands.length];
+            hackerCmdTarget = `[root@cybernode]# ${cmdObj.cmd}`;
+            hackerCmdOutput = cmdObj.output;
+            hackerCmdTyped  = '';
+            hackerCmdOutputIdx = 0;
+            hackerCmdIdx++;
+            lastHackerCmdTick = now;
+            addHackerLine('', '#33ff33');
+        }
+    } else if (hackerPhase === 'typing_cmd') {
+        if (now - lastHackerCmdTick > 55) {
+            lastHackerCmdTick = now;
+            if (hackerCmdTyped.length < hackerCmdTarget.length) {
+                hackerCmdTyped += hackerCmdTarget[hackerCmdTyped.length];
+                if (window.playKeyClick) window.playKeyClick();
+                if (hackerLines.length > 0) {
+                    hackerLines[hackerLines.length - 1].text = hackerCmdTyped;
+                } else {
+                    addHackerLine(hackerCmdTyped, '#ffffff');
+                }
+            } else {
+                hackerPhase = 'pausing';
+                hackerCmdPauseEnd = now + 300 + Math.random() * 500;
+            }
+        }
+    } else if (hackerPhase === 'pausing') {
+        if (now > hackerCmdPauseEnd) {
+            hackerPhase = 'showing_output';
+            lastHackerCmdTick = now;
+        }
+    } else if (hackerPhase === 'showing_output') {
+        if (now - lastHackerCmdTick > 200) {
+            lastHackerCmdTick = now;
+            if (hackerCmdOutputIdx < hackerCmdOutput.length) {
+                const ln = hackerCmdOutput[hackerCmdOutputIdx++];
+                addHackerLine(ln.text, ln.color);
+            } else {
+                addHackerLine('', '#33ff33');
+                hackerPhase = 'idle';
+                hackerCmdPauseEnd = now;
+            }
+        }
+    }
+    
+    // ── 7. CURSOR BLINK ──────────────────────────────────────
     if (now - lastHackerCursorBlink > 500) {
         hackerCursorBlink = !hackerCursorBlink;
         lastHackerCursorBlink = now;
     }
     
-    // Draw text lines
-    tvCtx.fillStyle = "#33ff33"; // Classic terminal green
-    tvCtx.font = "12px monospace";
-    tvCtx.shadowColor = "#33ff33";
-    tvCtx.shadowBlur = 4;
+    // ── 8. LAYOUT AREAS ──────────────────────────────────────
+    const panelW    = 172;
+    const textAreaW = tvCanvas.width - panelW - 18;
+    const lineH     = 16;
+    const startY    = 18;
     
-    const lineHeight = 18;
+    // ── 9. DRAW LOG LINES ─────────────────────────────────────
+    tvCtx.font     = '11px monospace';
+    tvCtx.shadowBlur = 3;
     for (let i = 0; i < hackerLines.length; i++) {
-        let text = hackerLines[i];
-        // Draw last line cursor
-        if (i === hackerLines.length - 1 && hackerCursorBlink) {
-            text += "_";
+        const ln = hackerLines[i];
+        tvCtx.fillStyle  = ln.color || '#33ff33';
+        tvCtx.shadowColor = ln.color || '#33ff33';
+        let text = ln.text;
+        if (i === hackerLines.length - 1 && hackerCursorBlink && hackerPhase !== 'typing_cmd') {
+            text += '█';
         }
-        tvCtx.fillText(text, 15, 25 + i * lineHeight);
+        tvCtx.fillText(text, 10, startY + i * lineH, textAreaW);
     }
     
-    // Reset shadow for next renderers
+    // ── 10. DRAW PROGRESS BAR ────────────────────────────────
+    if (hackerProgressBar.active) {
+        const filled = Math.floor((hackerProgressBar.progress / 100) * 28);
+        const empty  = 28 - filled;
+        const bar    = '[' + '='.repeat(filled) + (filled < 28 ? '>' : '') + ' '.repeat(Math.max(0, empty-1)) + ']';
+        tvCtx.fillStyle  = '#ff8800';
+        tvCtx.shadowColor = '#ff8800';
+        tvCtx.shadowBlur  = 4;
+        tvCtx.fillText(`${hackerProgressBar.label}: ${bar} ${Math.floor(hackerProgressBar.progress)}%`, 10, tvCanvas.height - 12);
+    }
+    
+    // ── 11. DRAW STATS PANEL ─────────────────────────────────
+    const px = tvCanvas.width - panelW - 4;
+    const py = 12;
+    const ph = 148;
+    
+    tvCtx.fillStyle = 'rgba(0, 18, 0, 0.75)';
+    tvCtx.fillRect(px, py, panelW, ph);
+    tvCtx.strokeStyle = '#33ff33';
+    tvCtx.shadowColor = '#33ff33';
+    tvCtx.shadowBlur  = 5;
+    tvCtx.lineWidth   = 1;
+    tvCtx.strokeRect(px, py, panelW, ph);
+    
+    const statBar = (val, max, len=10) => '█'.repeat(Math.round((val/max)*len)) + '░'.repeat(len - Math.round((val/max)*len));
+    const cpuColor = hackerStats.cpu > 80 ? '#ff4444' : hackerStats.cpu > 60 ? '#ff8800' : '#33ff33';
+    const memColor = hackerStats.mem > 80 ? '#ff4444' : '#33ff33';
+    
+    tvCtx.font = '10px monospace';
+    const panelLines = [
+        {text:'╔ NODE STATUS ════╗', color:'#00ffcc'},
+        {text:`CPU ${statBar(hackerStats.cpu,100,8)} ${Math.floor(hackerStats.cpu)}%`, color:cpuColor},
+        {text:`MEM ${statBar(hackerStats.mem,100,8)} ${Math.floor(hackerStats.mem)}%`, color:memColor},
+        {text:`↑ ${hackerStats.netUp.toFixed(1).padStart(4)} MB/s`, color:'#44aaff'},
+        {text:`↓ ${hackerStats.netDown.toFixed(1).padStart(4)} MB/s`, color:'#44aaff'},
+        {text:`PKT ${hackerStats.packets.toLocaleString()}`, color:'#ff8800'},
+        {text:`PID ${hackerFakeNetwork.pid||28419}`, color:'#cc88ff'},
+        {text:`TGT ${hackerFakeNetwork.targetIP||'192.168.1.x'}`, color:'#ff4444'},
+        {text:`HST ${hackerFakeNetwork.hostname||'node-01.local'}`, color:'#ff4444'},
+        {text:'╚═══════════════╝', color:'#00ffcc'},
+    ];
+    panelLines.forEach((ln, i) => {
+        tvCtx.fillStyle  = ln.color;
+        tvCtx.shadowColor = ln.color;
+        tvCtx.shadowBlur  = 2;
+        tvCtx.fillText(ln.text, px + 6, py + 14 + i * 14);
+    });
+    
     tvCtx.shadowBlur = 0;
 }
 
