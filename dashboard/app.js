@@ -1858,6 +1858,13 @@ function startPolling() {
 // Init
 // ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Restore sidebar collapsed preference on desktop
+  if (window.innerWidth >= 801 && localStorage.getItem('sidebarCollapsed') === 'true') {
+    const drawer = document.getElementById('more-drawer');
+    if (drawer) drawer.classList.add('sidebar-collapsed');
+    document.body.classList.add('sidebar-collapsed');
+  }
+
   initLockScreen();
   // Synchronous login bypass for headless screenshots/testing
   if (window.location.search.includes('bypass_auth=1')) {
@@ -2095,18 +2102,34 @@ async function checkBreach() {
 
 // --- DRAWER NAVIGATION ---
 function toggleDrawer() {
-  const drawer = document.getElementById('more-drawer');
-  const backdrop = document.getElementById('drawer-backdrop');
-  _drawerOpen = !_drawerOpen;
-  
-  if (_drawerOpen) {
-    drawer.classList.add('open');
-    backdrop.classList.add('open');
-    document.body.style.overflow = 'hidden';
+  if (window.innerWidth >= 801) {
+    // Desktop: collapse/expand sidebar
+    const drawer = document.getElementById('more-drawer');
+    const isCollapsed = drawer.classList.contains('sidebar-collapsed');
+    if (isCollapsed) {
+      drawer.classList.remove('sidebar-collapsed');
+      document.body.classList.remove('sidebar-collapsed');
+      localStorage.setItem('sidebarCollapsed', 'false');
+    } else {
+      drawer.classList.add('sidebar-collapsed');
+      document.body.classList.add('sidebar-collapsed');
+      localStorage.setItem('sidebarCollapsed', 'true');
+    }
   } else {
-    drawer.classList.remove('open');
-    backdrop.classList.remove('open');
-    document.body.style.overflow = '';
+    // Mobile: open/close bottom drawer
+    const drawer = document.getElementById('more-drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    _drawerOpen = !_drawerOpen;
+    
+    if (_drawerOpen) {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    } else {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    }
   }
 }
 

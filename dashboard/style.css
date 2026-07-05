@@ -1344,8 +1344,8 @@ svg {
 
 /* --- RESPONSIVE DESKTOP OVERRIDES --- */
 @media (min-width: 801px) {
-    /* Hide bottom nav and hamburger on desktop */
-    .bottom-nav, .btn-hamburger { display: none !important; }
+    /* Hide bottom nav on desktop */
+    .bottom-nav { display: none !important; }
     
     /* Transform Mobile Drawer into a permanent Desktop Left Sidebar */
     .drawer {
@@ -1504,13 +1504,22 @@ svg {
 }
 
 /* Custom Scrollbar styling */
+::-webkit-scrollbar {
+    width: 12px !important;
+    height: 12px !important;
+}
 ::-webkit-scrollbar-thumb {
-    background: var(--border) !important;
+    background: var(--primary-color, #ffcc00) !important;
     border-radius: 0px !important;
-    border: 1px solid var(--bg-primary) !important;
+    border: 2px solid var(--border, #111) !important;
+    box-shadow: none !important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--pink, #ff007f) !important;
 }
 ::-webkit-scrollbar-track {
-    background: var(--bg-primary) !important;
+    background: var(--bg-secondary, #e8e6df) !important;
+    border-left: 2px solid var(--border, #111) !important;
 }
 
 /* Mobile Header Layout */
