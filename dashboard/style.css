@@ -70,10 +70,27 @@ body::before {
 }
 
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-secondary); }
-::-webkit-scrollbar-thumb { background: #2a2a45; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a55; }
+html, body, * {
+    scrollbar-width: auto;
+    scrollbar-color: var(--primary-color, #ffcc00) var(--bg-secondary, #e8e6df);
+}
+::-webkit-scrollbar {
+    width: 12px !important;
+    height: 12px !important;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color, #ffcc00) !important;
+    border-radius: 0px !important;
+    border: 2px solid var(--border, #111) !important;
+    box-shadow: none !important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--pink, #ff007f) !important;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #e8e6df) !important;
+    border-left: 2px solid var(--border, #111) !important;
+}
 
 /* ══════════════════════════════════ HEADER ═══ */
 .header {
@@ -1503,24 +1520,6 @@ svg {
     border-left: 8px solid var(--red) !important;
 }
 
-/* Custom Scrollbar styling */
-::-webkit-scrollbar {
-    width: 12px !important;
-    height: 12px !important;
-}
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color, #ffcc00) !important;
-    border-radius: 0px !important;
-    border: 2px solid var(--border, #111) !important;
-    box-shadow: none !important;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--pink, #ff007f) !important;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-secondary, #e8e6df) !important;
-    border-left: 2px solid var(--border, #111) !important;
-}
 
 /* Mobile Header Layout */
 @media (max-width: 800px) {
