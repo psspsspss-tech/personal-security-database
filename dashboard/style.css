@@ -1787,37 +1787,66 @@ input:checked + .slider-toggle:before {
     box-shadow: 0 0 5px var(--cyan);
 }
 
-/* --- 8-BIT OFFLINE TV --- */
+/* --- 8-BIT OFFLINE TV CABINET --- */
 #offline-tv {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  background: #000;
-  z-index: 99999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'JetBrains Mono', monospace;
-  overflow: hidden;
-}
-
-.crt-screen {
-  position: relative;
-  width: 100%; height: 100%;
-  background: radial-gradient(circle at center, #111 0%, #000 100%);
+  background: #060608;
+  z-index: 999999;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+/* CRT monitor bezel frame */
+.crt-screen {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 4 / 3;
+  background: #000;
+  border: 12px solid #222;
+  border-radius: 16px;
+  box-shadow: 
+    0 10px 30px rgba(0,0,0,0.8),
+    inset 0 0 40px rgba(0,0,0,1),
+    0 0 0 4px var(--border);
+  overflow: hidden;
+  display: flex;
   justify-content: center;
   align-items: center;
-  color: #fff;
+}
+
+/* Adjust size on very tall or wide viewports to fit */
+@media (max-height: 700px) {
+  .crt-screen {
+    max-width: 500px;
+  }
 }
 
 .scanlines {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
   background-size: 100% 4px, 6px 100%;
   pointer-events: none;
   z-index: 10;
+}
+
+/* Curvature simulation overlay */
+.crt-screen::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+  z-index: 11;
+  pointer-events: none;
 }
 
 .crt-screen::after {
@@ -1827,35 +1856,72 @@ input:checked + .slider-toggle:before {
   top: 0; left: 0; bottom: 0; right: 0;
   background: rgba(18, 16, 16, 0.1);
   opacity: 0;
-  z-index: 10;
+  z-index: 12;
   pointer-events: none;
   animation: flicker 0.15s infinite;
 }
 
 @keyframes flicker {
-  0% { opacity: 0.02; }
-  50% { opacity: 0.05; }
-  100% { opacity: 0.02; }
+  0% { opacity: 0.015; }
+  50% { opacity: 0.04; }
+  100% { opacity: 0.015; }
 }
 
 #tv-content {
   text-align: center;
   z-index: 2;
-  animation: bounce 10s infinite linear alternate;
-}
-
-@keyframes bounce {
-  0% { transform: translate(-20vw, -20vh); }
-  25% { transform: translate(20vw, -10vh); }
-  50% { transform: translate(10vw, 20vh); }
-  75% { transform: translate(-20vw, 10vh); }
-  100% { transform: translate(-10vw, -20vh); }
+  color: #fff;
 }
 
 .glitch-text {
-  font-size: 60px;
+  font-size: 40px;
   font-weight: bold;
   position: relative;
   color: #0ff;
   text-shadow: 0 0 10px #0ff;
+}
+
+/* Responsive UI control layout */
+.tv-hud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 10px;
+}
+
+.tv-hud-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 100%;
+  max-width: 800px;
+  margin-top: 15px;
+  gap: 15px;
+}
+
+/* Stacking for smaller screens */
+@media (max-width: 768px) {
+  .tv-hud-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+  }
+  .tv-hud-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .tv-hud-footer > div {
+    max-width: 100% !important;
+    text-align: center;
+  }
+  .tv-hud-footer button {
+    width: 100%;
+  }
+  .glitch-text {
+    font-size: 32px;
+  }
 }

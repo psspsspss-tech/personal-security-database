@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=189" />
+  <link rel="stylesheet" href="style.css?v=190" />
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
 <style>
@@ -1931,53 +1931,48 @@
 </style>
 
 <!-- 8-Bit Offline TV Overlay -->
-<div id="offline-tv" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999; background: #000;">
-  <div class="crt-screen" style="width: 100%; height: 100%; position: relative;">
+<div id="offline-tv" style="display: none;">
+  <!-- HUD Header -->
+  <div class="tv-hud-header">
+    <div style="background: rgba(0,240,255,0.1); border: 2px solid var(--cyan); color: var(--cyan); padding: 8px 12px; font-weight: bold; text-shadow: 0 0 5px var(--cyan); box-shadow: 3px 3px 0px var(--cyan); display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 14px; letter-spacing: 1px; font-family: monospace;">SYSTEM OFFLINE</span>
+      <span style="font-size: 10px; opacity: 0.8;" id="tv-channel-title">CHANNEL 01: MATRIX REINFORCED</span>
+    </div>
+    <div style="background: rgba(255,0,127,0.1); border: 2px solid var(--pink); color: var(--pink); padding: 8px 12px; font-weight: bold; font-size: 11px; text-shadow: 0 0 5px var(--pink); box-shadow: 3px 3px 0px var(--pink); font-family: monospace;">
+      <span>SIGNAL LOSS: CRT MODE ACTIVE</span>
+    </div>
+  </div>
+
+  <!-- CRT Monitor screen -->
+  <div class="crt-screen">
     <div class="scanlines"></div>
     <canvas id="tv-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
     <video id="tv-video" src="https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4" loop playsinline style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; filter: sepia(0.6) contrast(1.5) grayscale(0.3);"></video>
     
-    <div id="tv-movie-controls" style="display: none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(0,0,0,0.8); border: 2px solid var(--border); padding: 10px 20px; border-radius: 8px; font-family: monospace; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); font-weight: bold; text-align: center;">
-        <div id="tv-movie-title" style="margin-bottom: 5px; font-size: 14px;">Playing Local Stream</div>
-        <div style="font-size: 11px; color: #888;">Mousemove to reveal controls • Click to pause/play</div>
+    <div id="tv-movie-controls" style="display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(0,0,0,0.85); border: 2px solid var(--border); padding: 8px 16px; border-radius: 4px; font-family: monospace; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); font-weight: bold; text-align: center; font-size: 11px;">
+        <div id="tv-movie-title" style="margin-bottom: 3px; font-size: 12px;">Playing Local Stream</div>
+        <div style="font-size: 9px; color: #888;">Mousemove to reveal controls • Click to pause/play</div>
     </div>
 
-    <!-- Cyber HUD Overlay -->
-    <div id="tv-overlay-ui" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 30px; box-sizing: border-box; z-index: 5; pointer-events: none;">
-      
-      <!-- Top Bar: Signal Info -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-        <div style="background: rgba(0,240,255,0.1); border: 2px solid var(--cyan); color: var(--cyan); padding: 10px 15px; font-weight: bold; text-shadow: 0 0 5px var(--cyan); box-shadow: 3px 3px 0px var(--cyan); display: flex; flex-direction: column; gap: 4px;">
-          <span style="font-size: 18px; letter-spacing: 1px;">SYSTEM OFFLINE</span>
-          <span style="font-size: 11px; opacity: 0.8;" id="tv-channel-title">CHANNEL 01: MATRIX REINFORCED</span>
-        </div>
-        <div style="background: rgba(255,0,127,0.1); border: 2px solid var(--pink); color: var(--pink); padding: 8px 12px; font-weight: bold; font-size: 12px; text-shadow: 0 0 5px var(--pink); box-shadow: 3px 3px 0px var(--pink);">
-          <span>SIGNAL LOSS: CRT MODE ACT</span>
-        </div>
-      </div>
-
-      <!-- Center: Screen Glitch curvature text (only shown on static/signal loss) -->
-      <div id="tv-content" style="text-align: center; display: none;">
-        <h1 class="glitch-text" data-text="NO SIGNAL" style="font-size: 80px; margin: 0; font-family: monospace; letter-spacing: 5px;">NO SIGNAL</h1>
-        <p style="margin-top: 15px; font-size: 18px; color: var(--cyan); font-weight: bold; text-shadow: 0 0 5px var(--cyan); letter-spacing: 2px;">WAITING FOR BACKEND HEARTBEAT...</p>
-      </div>
-
-      <!-- Bottom Bar: Control Guidance & Actions -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; pointer-events: auto;">
-        <div style="background: rgba(0,0,0,0.85); border: 2px solid var(--border); padding: 12px 18px; color: #fff; font-size: 12px; line-height: 1.6; max-width: 320px; box-shadow: 4px 4px 0 var(--border);">
-          <div style="font-weight: bold; color: var(--pink); margin-bottom: 6px; text-transform: uppercase;">📡 Control Panel (HUD)</div>
-          <div style="color: #aaa;">• Press <span style="color: var(--cyan); font-weight: bold;">[C]</span> or <span style="color: var(--cyan); font-weight: bold;">Tap Screen</span> to change TV Channel.</div>
-          <div style="color: #aaa;">• Use <span style="color: var(--cyan); font-weight: bold;">Arrows / WASD</span> to control retro games.</div>
-          <div style="color: #aaa;">• Watch local streams via index sonar scans.</div>
-        </div>
-        
-        <!-- Dismiss / Return Button -->
-        <button class="btn-primary" onclick="dismissTv()" style="padding: 15px 30px; font-size: 14px; font-weight: bold; font-family: monospace; text-shadow: 0 0 5px rgba(0,0,0,0.3); background: var(--pink); color: #fff; border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); cursor: pointer; transform: translate(0, 0); transition: 0.1s;">
-          DISMISS TV OVERLAY
-        </button>
-      </div>
-
+    <!-- Center Screen overlay (only shown when static/signal loss) -->
+    <div id="tv-content" style="text-align: center; display: none; z-index: 5;">
+      <h1 class="glitch-text" data-text="NO SIGNAL" style="font-family: monospace; letter-spacing: 5px;">NO SIGNAL</h1>
+      <p style="margin-top: 10px; font-size: 13px; color: var(--cyan); font-weight: bold; text-shadow: 0 0 5px var(--cyan); letter-spacing: 1px;">WAITING FOR BACKEND HEARTBEAT...</p>
     </div>
+  </div>
+
+  <!-- HUD Footer -->
+  <div class="tv-hud-footer">
+    <div style="background: rgba(0,0,0,0.85); border: 2px solid var(--border); padding: 10px 15px; color: #fff; font-size: 11px; line-height: 1.5; max-width: 450px; box-shadow: 4px 4px 0 var(--border); flex: 1; box-sizing: border-box;">
+      <div style="font-weight: bold; color: var(--pink); margin-bottom: 4px; text-transform: uppercase; font-size: 12px;">📡 Console Bezel HUD</div>
+      <div style="color: #aaa;">• Press <span style="color: var(--cyan); font-weight: bold;">[C]</span> or <span style="color: var(--cyan); font-weight: bold;">Tap Screen</span> to switch TV channels.</div>
+      <div style="color: #aaa;">• Use <span style="color: var(--cyan); font-weight: bold;">Arrows / WASD / Swipe Gestures</span> to play Snake.</div>
+      <div style="color: #aaa;">• Watch local streams via index sonar scans.</div>
+    </div>
+    
+    <button class="btn-primary" onclick="dismissTv()" style="padding: 12px 24px; font-size: 13px; font-weight: bold; font-family: monospace; text-shadow: 0 0 5px rgba(0,0,0,0.3); background: var(--pink); color: #fff; border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      DISMISS OVERLAY
+    </button>
   </div>
 </div>
 </body>
