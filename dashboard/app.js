@@ -1875,6 +1875,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+function initMobileBattery() {
+  const badge = document.getElementById('mobile-battery-indicator');
+  const icon = document.getElementById('mobile-battery-icon');
+  const text = document.getElementById('mobile-battery-text');
+  
+  if (navigator.getBattery && badge && icon && text) {
+    navigator.getBattery().then(battery => {
+      badge.style.display = 'flex';
+      
+      function update() {
+        const pct = Math.round(battery.level * 100);
+        text.textContent = `${pct}%`;
+        
+        if (battery.charging) {
+          icon.textContent = '🔌';
+        } else {
+          if (pct > 80) icon.textContent = '🔋';
+          else if (pct > 30) icon.textContent = '🪫';
+          else icon.textContent = '⚠️';
+        }
+      }
+      
+      update();
+      battery.addEventListener('levelchange', update);
+      battery.addEventListener('chargingchange', update);
+    });
+  }
+}
+
 function startApp() {
   const urlParams = new URLSearchParams(window.location.search);
   const targetTab = urlParams.get('tab') || 'overview';
@@ -1882,6 +1911,7 @@ function startApp() {
   loadAlertSettings();
   startPolling();
   startResourceChartLoop();
+  initMobileBattery();
   
   // Start scrolling IDS log feed
   if (typeof startIdsFeed === 'function') {
