@@ -540,6 +540,15 @@ def serve_agent():
     return send_from_directory(str(ROOT_DIR), "agent.py", mimetype="text/plain")
 
 
+@app.route("/nethunter_agent.py")
+def serve_nethunter_agent():
+    """Serve the nethunter_agent.py script so remote Kali nodes can auto-update."""
+    scripts_dir = ROOT_DIR / "scripts"
+    if (scripts_dir / "nethunter_agent.py").exists():
+        return send_from_directory(str(scripts_dir), "nethunter_agent.py", mimetype="text/plain")
+    return send_from_directory(str(ROOT_DIR), "nethunter_agent.py", mimetype="text/plain")
+
+
 # ─────────────────────────────────────────────
 # API Routes
 # ─────────────────────────────────────────────
