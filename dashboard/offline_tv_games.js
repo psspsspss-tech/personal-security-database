@@ -1,5 +1,5 @@
 // 8-Bit CRT TV Channels Engine
-let tvChannel = 0; // 0 = Matrix Rain, 1 = Snake Game, 2 = Hacker Terminal, 3 = Procedural TV
+let tvChannel = 0; // 0 = Matrix Rain, 1 = Snake Game, 2 = Hacker Terminal
 let tvAnimFrame;
 let tvCanvas;
 let tvCtx;
@@ -197,7 +197,7 @@ function handleTvInput(e) {
         if (typeof nextChannel === 'function') {
             nextChannel();
         } else {
-            tvChannel = (tvChannel + 1) % 4;
+            tvChannel = (tvChannel + 1) % 3;
             resetChannels();
         }
         return;
@@ -246,14 +246,10 @@ function resetChannels() {
         startSnake();
     } else if (tvChannel === 2) {
         initHackerTerminal();
-    } else if (tvChannel === 3) {
-        initProceduralTv();
     }
     
-    // Stop any story audio when leaving Channel 4 (8-Bit Cyber TV)
-    if (tvChannel !== 3) {
-        stopStoryAudio();
-    }
+    // Safety stop for any active story audio when switching channels
+    stopStoryAudio();
     
     const video = document.getElementById('tv-video');
     const canvas = document.getElementById('tv-canvas');
@@ -262,17 +258,8 @@ function resetChannels() {
     if (video && canvas) {
         video.style.display = 'none';
         video.pause();
-        
-        if (tvChannel === 3) {
-            canvas.style.display = 'block';
-            if (movieControls) {
-                movieControls.style.display = 'flex';
-                updateShowControlsUI();
-            }
-        } else {
-            if (movieControls) movieControls.style.display = 'none';
-            canvas.style.display = 'block';
-        }
+        if (movieControls) movieControls.style.display = 'none';
+        canvas.style.display = 'block';
     }
 }
 
@@ -375,7 +362,6 @@ function renderTvLoop() {
         if (tvChannel === 0) renderMatrix();
         else if (tvChannel === 1) renderSnake();
         else if (tvChannel === 2) renderHackerTerminal();
-        else if (tvChannel === 3) renderProceduralTv();
     }
     tvLoopId = requestAnimationFrame(renderTvLoop);
 }

@@ -2,8 +2,7 @@
 const tvChannels = [
     { type: 'matrix', title: 'Matrix Rain' },
     { type: 'snake', title: 'Snake Game' },
-    { type: 'hacker', title: 'Hacker Terminal' },
-    { type: 'procedural', title: '8-Bit Cyber TV' }
+    { type: 'hacker', title: 'Hacker Terminal' }
 ];
 
 var isOfflineMode = false;
