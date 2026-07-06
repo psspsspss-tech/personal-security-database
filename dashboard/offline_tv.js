@@ -144,6 +144,7 @@ function triggerOffline() {
         if (typeof window.startTvLoop === 'function') {
             window.startTvLoop();
         }
+        showTvControls();
     }
 }
 
@@ -197,6 +198,17 @@ async function checkConnection() {
 let tvControlsTimeout = null;
 let tvControlsHidden = false;
 
+function updateTvDismissButton() {
+    const btn = document.querySelector('.tv-dismiss-btn');
+    if (!btn) return;
+    if (tvManualMode) {
+        btn.style.display = 'block';
+        btn.innerHTML = '✕<br>CLOSE<br>TV';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
 function showTvControls() {
     const ui = document.getElementById("tv-overlay-ui");
     if (ui) {
@@ -204,6 +216,7 @@ function showTvControls() {
         ui.style.pointerEvents = "auto";
     }
     tvControlsHidden = false;
+    updateTvDismissButton();
     resetTvControlsTimer();
 }
 

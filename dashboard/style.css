@@ -323,18 +323,52 @@ html, body, * {
 
 /* ══════════════════════════════════ ALERTS BAR ═══ */
 .alerts-bar {
-  background: rgba(255, 68, 85, 0.08);
-  border-bottom: 1px solid rgba(255, 68, 85, 0.25);
-  padding: 10px 28px;
+  background: var(--red) !important;
+  border: 3px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+  border-radius: 0 !important;
+  margin: 14px 28px 4px 28px !important;
+  padding: 10px 16px !important;
   animation: slideDown 0.3s ease;
 }
-@media (max-width: 600px) { .alerts-bar { padding: 10px 16px; } }
-@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.alert-banner { display: flex; align-items: center; gap: 10px; }
-.alert-icon { width: 18px; height: 18px; color: var(--red); flex-shrink: 0; }
-.alert-banner span { font-size: 13px; color: #ffaaaa; flex: 1; }
-.alert-dismiss { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 0 4px; transition: color 0.2s; }
-.alert-dismiss:hover { color: var(--red); }
+@media (max-width: 900px) { .alerts-bar { margin: 10px 12px 0 12px !important; padding: 8px 12px !important; } }
+@keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.alert-banner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.alert-icon {
+  width: 20px !important;
+  height: 20px !important;
+  color: var(--border) !important;
+  flex-shrink: 0 !important;
+}
+.alert-banner span {
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: var(--border) !important;
+  flex: 1 !important;
+}
+.alert-dismiss {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--border) !important;
+  cursor: pointer !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  padding: 0 4px !important;
+  margin: 0 !important;
+  transition: transform 0.1s ease !important;
+}
+.alert-dismiss:hover {
+  transform: scale(1.2) !important;
+  color: #fff !important;
+}
 
 /* ══════════════════════════════════ NAV TABS ═══ */
 .nav-tabs {
@@ -1205,7 +1239,7 @@ body {
     background-size: 40px 40px !important;
 }
 
-.stat-card, .tool-card, .device-card, .panel, .header, .bottom-nav, .modal-content, .drawer, .alert-banner {
+.stat-card, .tool-card, .device-card, .panel, .header, .bottom-nav, .modal-content, .drawer {
     border: 3px solid var(--border) !important;
     box-shadow: var(--shadow) !important;
     border-radius: 0 !important;
