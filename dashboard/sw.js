@@ -7,7 +7,7 @@
  * - This means every restart of the server delivers fresh dashboard to all devices
  */
 
-const CACHE_NAME = 'security-dashboard-v192';
+const CACHE_NAME = 'security-dashboard-v193';
 
 // Files to pre-cache for offline fallback
 const PRECACHE_URLS = [
@@ -20,6 +20,8 @@ const PRECACHE_URLS = [
   '/crash.js',
   '/gamba_plus.js',
   '/tetris.js',
+  '/hangman.js',
+  '/hackerman.js',
   '/offline_tv.js',
   '/offline_tv_games.js',
   '/radio_comm.js',
