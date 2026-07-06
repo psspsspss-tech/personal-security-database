@@ -10,58 +10,58 @@ var isOfflineMode = false;
 var tvDismissed = false;
 
 // --- WEB AUDIO SYNTHESIZER ---
-let audioCtx = null;
+let tvAudioCtx = null;
 let humOsc = null;
 let humGain = null;
 let staticNode = null;
 let staticGain = null;
 
 function initAudio() {
-    if (audioCtx) return;
+    if (tvAudioCtx) return;
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        audioCtx = new AudioCtx();
+        tvAudioCtx = new AudioCtx();
         
         // 1. Low ambient hum
-        humOsc = audioCtx.createOscillator();
-        humGain = audioCtx.createGain();
+        humOsc = tvAudioCtx.createOscillator();
+        humGain = tvAudioCtx.createGain();
         humOsc.type = 'sawtooth';
-        humOsc.frequency.setValueAtTime(55, audioCtx.currentTime); // Low A
-        humGain.gain.setValueAtTime(0.015, audioCtx.currentTime);
+        humOsc.frequency.setValueAtTime(55, tvAudioCtx.currentTime); // Low A
+        humGain.gain.setValueAtTime(0.015, tvAudioCtx.currentTime);
         
         // Filter out high harsh frequencies from the hum
-        const filter = audioCtx.createBiquadFilter();
+        const filter = tvAudioCtx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(100, audioCtx.currentTime);
+        filter.frequency.setValueAtTime(100, tvAudioCtx.currentTime);
 
         humOsc.connect(filter);
         filter.connect(humGain);
-        humGain.connect(audioCtx.destination);
+        humGain.connect(tvAudioCtx.destination);
         humOsc.start();
         
         // 2. White noise generator for static effect
-        const bufferSize = 2 * audioCtx.sampleRate;
-        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const bufferSize = 2 * tvAudioCtx.sampleRate;
+        const noiseBuffer = tvAudioCtx.createBuffer(1, bufferSize, tvAudioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
             output[i] = Math.random() * 2 - 1;
         }
         
-        staticNode = audioCtx.createBufferSource();
+        staticNode = tvAudioCtx.createBufferSource();
         staticNode.buffer = noiseBuffer;
         staticNode.loop = true;
         
-        staticGain = audioCtx.createGain();
-        staticGain.gain.setValueAtTime(0.008, audioCtx.currentTime);
+        staticGain = tvAudioCtx.createGain();
+        staticGain.gain.setValueAtTime(0.008, tvAudioCtx.currentTime);
         
-        const staticFilter = audioCtx.createBiquadFilter();
+        const staticFilter = tvAudioCtx.createBiquadFilter();
         staticFilter.type = 'bandpass';
-        staticFilter.frequency.setValueAtTime(800, audioCtx.currentTime);
-        staticFilter.Q.setValueAtTime(1.0, audioCtx.currentTime);
+        staticFilter.frequency.setValueAtTime(800, tvAudioCtx.currentTime);
+        staticFilter.Q.setValueAtTime(1.0, tvAudioCtx.currentTime);
         
         staticNode.connect(staticFilter);
         staticFilter.connect(staticGain);
-        staticGain.connect(audioCtx.destination);
+        staticGain.connect(tvAudioCtx.destination);
         staticNode.start();
     } catch (err) {
         console.warn('Web Audio API not supported or blocked:', err);
@@ -69,48 +69,48 @@ function initAudio() {
 }
 
 function resumeAudio() {
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
+    if (tvAudioCtx && tvAudioCtx.state === 'suspended') {
+        tvAudioCtx.resume();
     }
 }
 
 function playBeep(freq, type, duration, volume = 0.1) {
-    if (!audioCtx) return;
+    if (!tvAudioCtx) return;
     resumeAudio();
     try {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = tvAudioCtx.createOscillator();
+        const gain = tvAudioCtx.createGain();
         osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.frequency.setValueAtTime(freq, tvAudioCtx.currentTime);
+        gain.gain.setValueAtTime(volume, tvAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, tvAudioCtx.currentTime + duration);
         
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(tvAudioCtx.destination);
         osc.start();
-        osc.stop(audioCtx.currentTime + duration);
+        osc.stop(tvAudioCtx.currentTime + duration);
     } catch (e) {}
 }
 
 function playNoise(duration, volume = 0.1) {
-    if (!audioCtx) return;
+    if (!tvAudioCtx) return;
     resumeAudio();
     try {
-        const bufferSize = audioCtx.sampleRate * duration;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const bufferSize = tvAudioCtx.sampleRate * duration;
+        const buffer = tvAudioCtx.createBuffer(1, bufferSize, tvAudioCtx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
             data[i] = Math.random() * 2 - 1;
         }
-        const source = audioCtx.createBufferSource();
+        const source = tvAudioCtx.createBufferSource();
         source.buffer = buffer;
         
-        const gain = audioCtx.createGain();
-        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        const gain = tvAudioCtx.createGain();
+        gain.gain.setValueAtTime(volume, tvAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, tvAudioCtx.currentTime + duration);
         
         source.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(tvAudioCtx.destination);
         source.start();
     } catch (e) {}
 }
