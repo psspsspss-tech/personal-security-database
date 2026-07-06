@@ -128,7 +128,7 @@
       <span id="mobile-battery-icon">🔋</span>
       <span id="mobile-battery-text">--%</span>
     </div>
-    <div id="status-indicator" class="status-pill">
+    <div id="status-indicator" class="status-pill" onclick="if(typeof watchTV==='function')watchTV()" style="cursor: pointer;">
       <div class="pulse-dot"></div>
       <span>Live</span>
     </div>
@@ -1857,16 +1857,16 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
   <script src="blackjack.js"></script>
   <script src="casino_engine.js"></script>
-  <script src="hangman.js?v=195"></script>
-  <script src="hackerman.js?v=195"></script>
+  <script src="hangman.js?v=196"></script>
+  <script src="hackerman.js?v=196"></script>
   <script src="crash.js"></script>
   <script src="gamba_plus.js"></script>
   <script src="tetris.js"></script>
-  <script src="offline_tv.js?v=195"></script>
-  <script src="offline_tv_games.js?v=195"></script>
-  <script src="radio_comm.js?v=195"></script>
+  <script src="offline_tv.js?v=196"></script>
+  <script src="offline_tv_games.js?v=196"></script>
+  <script src="radio_comm.js?v=196"></script>
 
-  <script src="app.js?v=195"></script>
+  <script src="app.js?v=196"></script>
 
 <div class="modal-overlay" id="media-modal-overlay" style="display:none; background:rgba(0,0,0,0.95); z-index:9999;" onclick="closeMediaPlayer()">
   <div style="position:absolute; top:20px; right:30px; cursor:pointer; color:var(--danger); font-size:40px;" onclick="closeMediaPlayer()">✕</div>
