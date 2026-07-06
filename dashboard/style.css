@@ -327,11 +327,11 @@ html, body, * {
   border: 3px solid var(--border) !important;
   box-shadow: var(--shadow) !important;
   border-radius: 0 !important;
-  margin: 14px 28px 4px 28px !important;
+  margin: 0 0 20px 0 !important;
   padding: 10px 16px !important;
   animation: slideDown 0.3s ease;
 }
-@media (max-width: 900px) { .alerts-bar { margin: 10px 12px 0 12px !important; padding: 8px 12px !important; } }
+@media (max-width: 900px) { .alerts-bar { margin: 0 0 16px 0 !important; padding: 8px 12px !important; } }
 @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .alert-banner {
   display: flex !important;
