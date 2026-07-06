@@ -19,7 +19,8 @@ let staticGain = null;
 function initAudio() {
     if (audioCtx) return;
     try {
-        audioCtx = new AudioContext();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioCtx();
         
         // 1. Low ambient hum
         humOsc = audioCtx.createOscillator();
@@ -302,6 +303,21 @@ function setupTvInteractions() {
                 resetTvControlsTimer();
             }
         });
+    }
+
+    // Add manual trigger click listener to status indicator badge in the dashboard header
+    const statusIndicator = document.getElementById('status-indicator');
+    if (statusIndicator) {
+        statusIndicator.style.cursor = 'pointer';
+        const triggerHandler = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (typeof watchTV === 'function') {
+                watchTV();
+            }
+        };
+        statusIndicator.addEventListener('click', triggerHandler);
+        statusIndicator.addEventListener('touchstart', triggerHandler, {passive: true});
     }
 }
 
