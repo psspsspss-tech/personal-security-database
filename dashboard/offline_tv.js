@@ -6,8 +6,8 @@ const tvChannels = [
     { type: 'procedural', title: '8-Bit Cyber TV' }
 ];
 
-let isOfflineMode = false;
-let tvDismissed = false;
+var isOfflineMode = false;
+var tvDismissed = false;
 
 // --- WEB AUDIO SYNTHESIZER ---
 let audioCtx = null;
@@ -19,7 +19,6 @@ let staticGain = null;
 function initAudio() {
     if (audioCtx) return;
     try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioContext();
         
         // 1. Low ambient hum
@@ -132,19 +131,54 @@ window.playBeep = playBeep;
 window.playKeyClick = playKeyClick;
 window.playChannelSwitchSound = playChannelSwitchSound;
 
+function triggerOffline() {
+    if (!isOfflineMode && !tvDismissed) {
+        isOfflineMode = true;
+        const tvEl = document.getElementById("offline-tv");
+        if (tvEl) tvEl.style.display = "flex";
+        document.body.style.overflow = "hidden"; // Prevent scrolling while TV is on
+        if (typeof resetChannels === 'function') {
+            resetChannels();
+        }
+        if (typeof window.startTvLoop === 'function') {
+            window.startTvLoop();
+        }
+    }
+}
+
 function initOfflineTV() {
+    // Listen for browser offline events
+    window.addEventListener('offline', () => {
+        triggerOffline();
+    });
+    window.addEventListener('online', () => {
+        checkConnection();
+    });
+
+    // Check immediately on script load
+    if (typeof navigator.onLine !== 'undefined' && !navigator.onLine) {
+        triggerOffline();
+    }
+
     // Ping the backend every 2 seconds to check if we are online
     setInterval(checkConnection, 2000);
 }
 
 async function checkConnection() {
+    // If the browser reports offline, trigger immediately
+    if (typeof navigator.onLine !== 'undefined' && !navigator.onLine) {
+        triggerOffline();
+        return;
+    }
+
     try {
         const res = await fetch("/api/status");
         if (res.ok) {
             tvDismissed = false; // Reset dismissal when back online
             if (isOfflineMode) {
                 isOfflineMode = false;
-                document.getElementById("offline-tv").style.display = "none";
+                const tvEl = document.getElementById("offline-tv");
+                if (tvEl) tvEl.style.display = "none";
                 document.body.style.overflow = "auto";
                 const tvVideo = document.getElementById("tv-video");
                 if (tvVideo) tvVideo.pause();
@@ -154,18 +188,7 @@ async function checkConnection() {
             throw new Error("Server returned non-200");
         }
     } catch (e) {
-        if (!isOfflineMode && !tvDismissed) {
-            isOfflineMode = true;
-            document.getElementById("offline-tv").style.display = "flex";
-            document.body.style.overflow = "hidden"; // Prevent scrolling while TV is on
-            if (typeof resetChannels === 'function') {
-                resetChannels();
-            }
-            if (typeof window.startTvLoop === 'function') {
-                window.startTvLoop();
-            }
-            showTvControls();
-        }
+        triggerOffline();
     }
 }
 

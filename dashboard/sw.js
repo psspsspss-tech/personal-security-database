@@ -13,8 +13,8 @@ const CACHE_NAME = 'security-dashboard-v192';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/style.css?v=189',
-  '/app.js?v=189',
+  '/style.css',
+  '/app.js',
   '/blackjack.js',
   '/casino_engine.js',
   '/crash.js',
@@ -28,7 +28,7 @@ const PRECACHE_URLS = [
   '/icon-512.png'
 ];
 
-// â”€â”€ Install: cache core files â”€â”€
+// ── Install: cache core files ──
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS))
@@ -36,7 +36,7 @@ self.addEventListener('install', event => {
   self.skipWaiting(); // Activate immediately, don't wait for old SW
 });
 
-// â”€â”€ Activate: clean up old caches â”€â”€
+// ── Activate: clean up old caches ──
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -48,7 +48,7 @@ self.addEventListener('activate', event => {
   self.clients.claim(); // Take control of all open tabs immediately
 });
 
-// â”€â”€ Fetch: Network First strategy â”€â”€
+// ── Fetch: Network First strategy ──
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -62,7 +62,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
-        // Got fresh response â€” update the cache
+        // Got fresh response — update the cache
         if (networkResponse && networkResponse.status === 200) {
           const cloned = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
@@ -70,13 +70,13 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // Network failed (offline) â€” serve from cache
-        return caches.match(event.request);
+        // Network failed (offline) — serve from cache using ignoreSearch
+        return caches.match(event.request, { ignoreSearch: true });
       })
   );
 });
 
-// â”€â”€ Listen for "SKIP_WAITING" message (sent by app.js on update) â”€â”€
+// ── Listen for "SKIP_WAITING" message (sent by app.js on update) ──
 self.addEventListener('message', event => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
