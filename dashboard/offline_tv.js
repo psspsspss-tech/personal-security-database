@@ -272,20 +272,7 @@ function nextChannel() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", initOfflineTV);
-
-// Listen for keyboard or clicks to change channel
-document.addEventListener('keydown', (e) => {
-    if (isOfflineMode) {
-        showTvControls();
-        if (e.key === 'c' || e.key === 'C') {
-            nextChannel();
-        }
-    }
-});
-
-// For mobile taps on TV
-window.addEventListener('load', () => {
+function setupTvInteractions() {
     const tvContainer = document.getElementById('offline-tv');
     if (tvContainer) {
         const handleInteraction = (e) => {
@@ -315,5 +302,27 @@ window.addEventListener('load', () => {
                 resetTvControlsTimer();
             }
         });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initOfflineTV);
+} else {
+    initOfflineTV();
+}
+
+if (document.readyState === 'complete') {
+    setupTvInteractions();
+} else {
+    window.addEventListener('load', setupTvInteractions);
+}
+
+// Listen for keyboard to change channel
+document.addEventListener('keydown', (e) => {
+    if (isOfflineMode) {
+        showTvControls();
+        if (e.key === 'c' || e.key === 'C') {
+            nextChannel();
+        }
     }
 });

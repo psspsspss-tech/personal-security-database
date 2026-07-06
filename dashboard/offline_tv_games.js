@@ -1975,7 +1975,13 @@ function renderStoryMode() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function bootstrapTvEngine() {
     initTvEngine();
     requestAnimationFrame(renderTvLoop);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", bootstrapTvEngine);
+} else {
+    bootstrapTvEngine();
+}
