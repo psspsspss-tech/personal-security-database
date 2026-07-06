@@ -8,6 +8,7 @@ const tvChannels = [
 
 var isOfflineMode = false;
 var tvDismissed = false;
+var tvManualMode = false;
 
 // --- WEB AUDIO SYNTHESIZER ---
 let tvAudioCtx = null;
@@ -176,7 +177,8 @@ async function checkConnection() {
         const res = await fetch("/api/status");
         if (res.ok) {
             tvDismissed = false; // Reset dismissal when back online
-            if (isOfflineMode) {
+            // Only auto-close if we are not in manual override mode
+            if (isOfflineMode && !tvManualMode) {
                 isOfflineMode = false;
                 const tvEl = document.getElementById("offline-tv");
                 if (tvEl) tvEl.style.display = "none";
@@ -234,6 +236,7 @@ window.resetTvControlsTimer = resetTvControlsTimer;
 function dismissTv() {
     tvDismissed = true;
     isOfflineMode = false;
+    tvManualMode = false; // Reset manual override mode
     document.getElementById("offline-tv").style.display = "none";
     document.body.style.overflow = "auto";
     const tvVideo = document.getElementById("tv-video");
@@ -252,6 +255,7 @@ function watchTV() {
     // Manually open the TV overlay regardless of connectivity
     tvDismissed = false;
     isOfflineMode = true;
+    tvManualMode = true; // Enable manual override mode
     document.getElementById("offline-tv").style.display = "flex";
     document.body.style.overflow = "hidden";
     if (typeof resetChannels === 'function') {
