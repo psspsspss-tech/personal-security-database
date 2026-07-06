@@ -849,6 +849,8 @@ function hackerTypeKey() {
 
 function renderHackerTerminal() {
     const now = Date.now();
+    tvCtx.textAlign = 'left';
+    tvCtx.textBaseline = 'alphabetic';
     
     // ── 1. GLITCH CHECK ──────────────────────────────────────
     if (!hackerGlitching && (now - lastHackerGlitch) > hackerGlitchNextIn) {
@@ -1022,6 +1024,8 @@ function renderHackerTerminal() {
     const memColor = hackerStats.mem > 80 ? '#ff4444' : '#33ff33';
     
     tvCtx.font = '10px monospace';
+    tvCtx.textAlign = 'left';
+    tvCtx.textBaseline = 'alphabetic';
     const panelLines = [
         {text:'╔ NODE STATUS ════╗', color:'#00ffcc'},
         {text:`CPU ${statBar(hackerStats.cpu,100,8)} ${Math.floor(hackerStats.cpu)}%`, color:cpuColor},
