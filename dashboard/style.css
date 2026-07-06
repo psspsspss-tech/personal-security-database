@@ -2226,3 +2226,81 @@ input:checked + .slider-toggle:before {
   .crt-cabinet { padding: 14px; }
   .tv-top-bar, .tv-control-strip { flex-shrink: 0; }
 }
+
+/* ── Casino Responsive Grids ── */
+.casino-grid-hangman {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+.casino-grid-hackerman {
+  display: grid !important;
+  grid-template-columns: 1.2fr 1fr !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+@media (max-width: 800px) {
+  .casino-grid-hangman, .casino-grid-hackerman {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+}
+
+/* ── CRT Fullscreen Mode ── */
+#offline-tv.fullscreen-active {
+  padding: 0 !important;
+  gap: 0 !important;
+  background: #000 !important;
+}
+#offline-tv.fullscreen-active .tv-top-bar,
+#offline-tv.fullscreen-active .tv-control-strip {
+  display: none !important;
+}
+#offline-tv.fullscreen-active .crt-cabinet {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  background: #000 !important;
+}
+#offline-tv.fullscreen-active .crt-screen {
+  width: 100vw !important;
+  height: 100vh !important;
+  aspect-ratio: auto !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Floating Exit button in Fullscreen */
+.tv-fs-exit-btn {
+  display: none;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 100000;
+  background: rgba(17, 17, 17, 0.85) !important;
+  color: var(--yellow) !important;
+  border: 2px solid var(--yellow) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  padding: 6px 12px !important;
+  cursor: pointer !important;
+  text-transform: uppercase !important;
+  box-shadow: none !important;
+}
+#offline-tv.fullscreen-active .tv-fs-exit-btn {
+  display: block;
+}
+.tv-fs-exit-btn:hover {
+  background: var(--yellow) !important;
+  color: #000 !important;
+}

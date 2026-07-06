@@ -358,3 +358,16 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+function toggleTvFullscreen() {
+    const tv = document.getElementById('offline-tv');
+    if (!tv) return;
+    
+    tv.classList.toggle('fullscreen-active');
+    
+    // Trigger canvas resize so the matrix rain / games draw correctly in full screen!
+    if (typeof resizeTvCanvas === 'function') {
+        resizeTvCanvas();
+    }
+}
+window.toggleTvFullscreen = toggleTvFullscreen;

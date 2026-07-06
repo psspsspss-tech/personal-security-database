@@ -193,6 +193,13 @@ function resizeTv() {
 function handleTvInput(e) {
     if (!isOfflineMode) return;
     
+    if (e.key.toLowerCase() === 'f') {
+        if (typeof toggleTvFullscreen === 'function') {
+            toggleTvFullscreen();
+        }
+        return;
+    }
+    
     if (e.key.toLowerCase() === 'c') {
         if (typeof nextChannel === 'function') {
             nextChannel();

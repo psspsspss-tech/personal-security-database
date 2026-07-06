@@ -944,7 +944,7 @@
         <span class="card-badge" id="hangman-game-status" style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:800; background:rgba(255,0,128,0.1); color:var(--pink); border:1.5px solid var(--pink); padding:3px 8px; letter-spacing:0.5px;">STANDBY — SYSTEM OFFLINE</span>
       </div>
       
-      <div class="card-body" style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+      <div class="card-body casino-grid-hangman" style="padding: 20px;">
         
         <!-- Left Column: Visualizer & Console Logs -->
         <div style="display:flex; flex-direction:column; gap:15px; width:100%;">
@@ -1072,7 +1072,7 @@
         <span class="card-badge" id="hackerman-game-status" style="font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:800; background:rgba(0,255,136,0.1); color:var(--green); border:1.5px solid var(--green); padding:3px 8px; letter-spacing:0.5px;">STANDBY — TERMINAL LOCKED</span>
       </div>
       
-      <div class="card-body" style="padding: 20px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; align-items: start;">
+      <div class="card-body casino-grid-hackerman" style="padding: 20px;">
         <!-- Left Column: Terminal Address Grid -->
         <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
           <div style="display:flex; justify-content:space-between; align-items:center; font-family:monospace; font-size:11px; color:#55ff55;">
@@ -1888,16 +1888,16 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
   <script src="blackjack.js"></script>
   <script src="casino_engine.js"></script>
-  <script src="hangman.js?v=203"></script>
-  <script src="hackerman.js?v=203"></script>
+  <script src="hangman.js?v=204"></script>
+  <script src="hackerman.js?v=204"></script>
   <script src="crash.js"></script>
   <script src="gamba_plus.js"></script>
   <script src="tetris.js"></script>
-  <script src="offline_tv.js?v=203"></script>
-  <script src="offline_tv_games.js?v=203"></script>
-  <script src="radio_comm.js?v=203"></script>
+  <script src="offline_tv.js?v=204"></script>
+  <script src="offline_tv_games.js?v=204"></script>
+  <script src="radio_comm.js?v=204"></script>
 
-  <script src="app.js?v=203"></script>
+  <script src="app.js?v=204"></script>
 
 <div class="modal-overlay" id="media-modal-overlay" style="display:none; background:rgba(0,0,0,0.95); z-index:9999;" onclick="closeMediaPlayer()">
   <div style="position:absolute; top:20px; right:30px; cursor:pointer; color:var(--danger); font-size:40px;" onclick="closeMediaPlayer()">✕</div>
@@ -1991,6 +1991,7 @@
 
     <div class="crt-screen">
       <div class="scanlines"></div>
+      <button class="tv-fs-exit-btn" id="tv-fullscreen-exit-btn" onclick="toggleTvFullscreen()">✕ Exit Fullscreen</button>
       <canvas id="tv-canvas"></canvas>
       <video id="tv-video" src="https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4"
              loop playsinline></video>
@@ -2026,6 +2027,11 @@
       <div class="tv-control-row">
         <kbd class="tv-key">ANY KEY</kbd>
         <span>— type in hacker terminal</span>
+      </div>
+      <div class="tv-control-row" style="margin-top: 10px; border-top: 2px solid var(--border); padding-top: 8px; justify-content: center;">
+        <button onclick="toggleTvFullscreen()" style="width: 100%; padding: 8px 12px; font-weight: 800; font-family: var(--font-mono); font-size: 11px; background: var(--cyan); border: 2px solid var(--border); box-shadow: 2px 2px 0 var(--border); cursor: pointer; text-transform: uppercase; margin: 0;">
+          🖥️ Fullscreen Mode [F]
+        </button>
       </div>
     </div>
 
