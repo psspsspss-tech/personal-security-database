@@ -66,6 +66,11 @@ const shows = [
 let touchStartX = 0;
 let touchStartY = 0;
 
+// FPS counter trackers
+let lastFpsTime = 0;
+let frameCount = 0;
+let currentFps = 60;
+
 function initTvEngine() {
     tvCanvas = document.getElementById("tv-canvas");
     if (!tvCanvas) return;
@@ -75,6 +80,33 @@ function initTvEngine() {
     resizeTv();
     
     document.addEventListener("keydown", handleTvInput);
+
+    // Stop propagation on top bar and control strip to prevent accidental channel switching
+    const topBar = document.querySelector('.tv-top-bar');
+    if (topBar) {
+        topBar.addEventListener('click', (e) => e.stopPropagation());
+        topBar.addEventListener('touchstart', (e) => e.stopPropagation());
+    }
+    const controlStrip = document.querySelector('.tv-control-strip');
+    if (controlStrip) {
+        controlStrip.addEventListener('click', (e) => e.stopPropagation());
+        controlStrip.addEventListener('touchstart', (e) => e.stopPropagation());
+    }
+
+    // Set up channel dot clicks
+    const dots = document.querySelectorAll('.tv-dot');
+    dots.forEach((dot, index) => {
+        const handler = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (typeof tvChannel !== 'undefined') {
+                tvChannel = index;
+                resetChannels();
+            }
+        };
+        dot.addEventListener('click', handler);
+        dot.addEventListener('touchstart', handler, {passive: false});
+    });
     
     // Intercept clicks directly on the TV canvas to interact with games/stories
     // Calling stopPropagation stops parent offline-tv container from switching channels
@@ -190,11 +222,25 @@ function handleTvInput(e) {
 }
 
 function resetChannels() {
+    if (typeof window.playChannelSwitchSound === 'function') {
+        window.playChannelSwitchSound();
+    }
+    
     // Update the channel header title
     const channelTitleEl = document.getElementById("tv-channel-title");
     if (channelTitleEl && typeof tvChannels !== 'undefined' && tvChannels[tvChannel]) {
         channelTitleEl.textContent = `CHANNEL 0${tvChannel + 1}: ${tvChannels[tvChannel].title.toUpperCase()}`;
     }
+
+    // Update active class on dots
+    const dots = document.querySelectorAll('.tv-dot');
+    dots.forEach((dot, index) => {
+        if (index === tvChannel) {
+            dot.classList.add('active');
+        } else {
+            dot.classList.remove('active');
+        }
+    });
 
     if (tvChannel === 1) {
         startSnake();
@@ -313,6 +359,18 @@ function renderTvLoop() {
         tvLoopId = null;
         return;
     }
+    
+    // FPS computation
+    const now = Date.now();
+    frameCount++;
+    if (now - lastFpsTime >= 1000) {
+        currentFps = Math.round((frameCount * 1000) / (now - lastFpsTime));
+        frameCount = 0;
+        lastFpsTime = now;
+        const fpsEl = document.getElementById("tv-fps-counter");
+        if (fpsEl) fpsEl.textContent = `${currentFps}fps`;
+    }
+
     if (tvCanvas && tvCtx) {
         if (tvChannel === 0) renderMatrix();
         else if (tvChannel === 1) renderSnake();

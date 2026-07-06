@@ -1932,48 +1932,89 @@
 
 <!-- 8-Bit Offline TV Overlay -->
 <div id="offline-tv" style="display: none;">
-  <!-- HUD Header -->
-  <div class="tv-hud-header">
-    <div style="background: rgba(0,240,255,0.1); border: 2px solid var(--cyan); color: var(--cyan); padding: 8px 12px; font-weight: bold; text-shadow: 0 0 5px var(--cyan); box-shadow: 3px 3px 0px var(--cyan); display: flex; flex-direction: column; gap: 2px;">
-      <span style="font-size: 14px; letter-spacing: 1px; font-family: monospace;">SYSTEM OFFLINE</span>
-      <span style="font-size: 10px; opacity: 0.8;" id="tv-channel-title">CHANNEL 01: MATRIX REINFORCED</span>
+
+  <!-- ══ NEO-BRUTALIST TOP BAR ══ -->
+  <div class="tv-top-bar">
+    <div class="tv-status-badge tv-status-badge--system">
+      <span class="tv-badge-title">⬛ SYSTEM OFFLINE</span>
+      <span class="tv-badge-sub" id="tv-channel-title">CHANNEL 01: MATRIX RAIN</span>
     </div>
-    <div style="background: rgba(255,0,127,0.1); border: 2px solid var(--pink); color: var(--pink); padding: 8px 12px; font-weight: bold; font-size: 11px; text-shadow: 0 0 5px var(--pink); box-shadow: 3px 3px 0px var(--pink); font-family: monospace;">
-      <span>SIGNAL LOSS: CRT MODE ACTIVE</span>
+    <div class="tv-channel-dots">
+      <span class="tv-dot" data-ch="0"></span>
+      <span class="tv-dot" data-ch="1"></span>
+      <span class="tv-dot" data-ch="2"></span>
+      <span class="tv-dot" data-ch="3"></span>
+    </div>
+    <div class="tv-status-badge tv-status-badge--signal">
+      <span>◼ SIGNAL LOSS</span>
+      <span class="tv-badge-sub">CRT MODE ACTIVE</span>
     </div>
   </div>
 
-  <!-- CRT Monitor screen -->
-  <div class="crt-screen">
-    <div class="scanlines"></div>
-    <canvas id="tv-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
-    <video id="tv-video" src="https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4" loop playsinline style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; filter: sepia(0.6) contrast(1.5) grayscale(0.3);"></video>
-    
-    <div id="tv-movie-controls" style="display: none; position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 20; background: rgba(0,0,0,0.85); border: 2px solid var(--border); padding: 8px 16px; border-radius: 4px; font-family: monospace; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); font-weight: bold; text-align: center; font-size: 11px;">
-        <div id="tv-movie-title" style="margin-bottom: 3px; font-size: 12px;">Playing Local Stream</div>
-        <div style="font-size: 9px; color: #888;">Mousemove to reveal controls • Click to pause/play</div>
-    </div>
+  <!-- ══ CRT BEZEL (the actual screen) ══ -->
+  <div class="crt-cabinet">
+    <!-- Brutalist bezel decorations -->
+    <div class="crt-bezel-corner crt-bezel-corner--tl">CH</div>
+    <div class="crt-bezel-corner crt-bezel-corner--tr" id="tv-fps-counter">60fps</div>
+    <div class="crt-bezel-corner crt-bezel-corner--bl">CRT-V2</div>
+    <div class="crt-bezel-corner crt-bezel-corner--br">◉ REC</div>
 
-    <!-- Center Screen overlay (only shown when static/signal loss) -->
-    <div id="tv-content" style="text-align: center; display: none; z-index: 5;">
-      <h1 class="glitch-text" data-text="NO SIGNAL" style="font-family: monospace; letter-spacing: 5px;">NO SIGNAL</h1>
-      <p style="margin-top: 10px; font-size: 13px; color: var(--cyan); font-weight: bold; text-shadow: 0 0 5px var(--cyan); letter-spacing: 1px;">WAITING FOR BACKEND HEARTBEAT...</p>
+    <div class="crt-screen">
+      <div class="scanlines"></div>
+      <canvas id="tv-canvas"></canvas>
+      <video id="tv-video" src="https://archive.org/download/Popeye_forPresident/Popeye_forPresident_512kb.mp4"
+             loop playsinline></video>
+
+      <!-- Movie controls overlay -->
+      <div id="tv-movie-controls" class="tv-movie-controls">
+        <div id="tv-movie-title" class="tv-movie-title">Playing Local Stream</div>
+        <div class="tv-movie-hint">Mousemove to reveal controls • Click to pause/play</div>
+      </div>
+
+      <!-- No-signal overlay -->
+      <div id="tv-content" class="tv-no-signal">
+        <h1 class="glitch-text" data-text="NO SIGNAL">NO SIGNAL</h1>
+        <p class="tv-no-signal-sub">WAITING FOR BACKEND HEARTBEAT...</p>
+      </div>
     </div>
   </div>
 
-  <!-- HUD Footer -->
-  <div class="tv-hud-footer">
-    <div style="background: rgba(0,0,0,0.85); border: 2px solid var(--border); padding: 10px 15px; color: #fff; font-size: 11px; line-height: 1.5; max-width: 450px; box-shadow: 4px 4px 0 var(--border); flex: 1; box-sizing: border-box;">
-      <div style="font-weight: bold; color: var(--pink); margin-bottom: 4px; text-transform: uppercase; font-size: 12px;">📡 Console Bezel HUD</div>
-      <div style="color: #aaa;">• Press <span style="color: var(--cyan); font-weight: bold;">[C]</span> or <span style="color: var(--cyan); font-weight: bold;">Tap Screen</span> to switch TV channels.</div>
-      <div style="color: #aaa;">• Use <span style="color: var(--cyan); font-weight: bold;">Arrows / WASD / Swipe Gestures</span> to play Snake.</div>
-      <div style="color: #aaa;">• Watch local streams via index sonar scans.</div>
+  <!-- ══ NEO-BRUTALIST CONTROL STRIP ══ -->
+  <div class="tv-control-strip">
+
+    <!-- Channel switcher -->
+    <div class="tv-control-panel tv-control-panel--accent">
+      <div class="tv-panel-label">📺 CONTROLS</div>
+      <div class="tv-control-row">
+        <kbd class="tv-key">C</kbd>
+        <span>or tap screen — next channel</span>
+      </div>
+      <div class="tv-control-row">
+        <kbd class="tv-key">↑↓←→</kbd>
+        <span>/ WASD / swipe — Snake</span>
+      </div>
+      <div class="tv-control-row">
+        <kbd class="tv-key">ANY KEY</kbd>
+        <span>— type in hacker terminal</span>
+      </div>
     </div>
-    
-    <button class="btn-primary" onclick="dismissTv()" style="padding: 12px 24px; font-size: 13px; font-weight: bold; font-family: monospace; text-shadow: 0 0 5px rgba(0,0,0,0.3); background: var(--pink); color: #fff; border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center;">
-      DISMISS OVERLAY
+
+    <!-- Channel guide -->
+    <div class="tv-control-panel">
+      <div class="tv-panel-label">📡 CHANNEL GUIDE</div>
+      <div class="tv-guide-row"><span class="tv-guide-ch">CH 01</span><span>Matrix Rain</span></div>
+      <div class="tv-guide-row"><span class="tv-guide-ch">CH 02</span><span>Snake Game</span></div>
+      <div class="tv-guide-row"><span class="tv-guide-ch">CH 03</span><span>Hacker Terminal</span></div>
+      <div class="tv-guide-row"><span class="tv-guide-ch">CH 04</span><span>8-Bit Cyber TV</span></div>
+    </div>
+
+    <!-- Dismiss button -->
+    <button class="tv-dismiss-btn" onclick="dismissTv()">
+      ✕<br>BACK<br>ONLINE
     </button>
+
   </div>
+
 </div>
 </body>
 </html>
