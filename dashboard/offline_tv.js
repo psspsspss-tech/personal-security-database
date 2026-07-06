@@ -215,6 +215,11 @@ function showTvControls() {
         ui.style.opacity = "1";
         ui.style.pointerEvents = "auto";
     }
+    const fsBtn = document.getElementById("tv-fullscreen-exit-btn");
+    if (fsBtn) {
+        fsBtn.style.opacity = "1";
+        fsBtn.style.pointerEvents = "auto";
+    }
     tvControlsHidden = false;
     updateTvDismissButton();
     resetTvControlsTimer();
@@ -226,6 +231,11 @@ function hideTvControls() {
     if (ui) {
         ui.style.opacity = "0";
         ui.style.pointerEvents = "none";
+    }
+    const fsBtn = document.getElementById("tv-fullscreen-exit-btn");
+    if (fsBtn) {
+        fsBtn.style.opacity = "0";
+        fsBtn.style.pointerEvents = "none";
     }
     tvControlsHidden = true;
 }

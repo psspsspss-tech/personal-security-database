@@ -2296,6 +2296,7 @@ input:checked + .slider-toggle:before {
   cursor: pointer !important;
   text-transform: uppercase !important;
   box-shadow: none !important;
+  transition: opacity 0.25s ease, background 0.1s ease, color 0.1s ease !important;
 }
 #offline-tv.fullscreen-active .tv-fs-exit-btn {
   display: block;
