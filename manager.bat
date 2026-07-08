@@ -51,7 +51,7 @@ cls
 echo  [*] Checking for old server instances...
 call :kill_ports
 echo  [*] Starting server...
-start "" "https://localhost:8767"
+start "" "https://127.0.0.1:8767"
 cd /d "%~dp0backend"
 python server.py
 pause
@@ -65,7 +65,7 @@ cd /d "%~dp0backend"
 :: Start using pythonw to hide console window
 start "" pythonw server.py
 echo  [OK] Server is now running silently in the background!
-start "" "https://localhost:8767"
+start "" "https://127.0.0.1:8767"
 timeout /t 2 >nul
 goto :menu
 

@@ -61,7 +61,7 @@ set LOCAL_IP=%LOCAL_IP: =%
 echo.
 echo  =======================================================
 echo   Dashboard URLs:
-echo     This PC  :  https://localhost:8767
+echo     This PC  :  https://127.0.0.1:8767
 echo     Network  :  https://%LOCAL_IP%:8767
 echo  =======================================================
 echo   Scan the QR code in the dashboard to open on mobile
@@ -73,7 +73,7 @@ echo.
 REM ─── Launch Flask server and open browser ───
 cd /d "%~dp0backend"
 timeout /t 2 /nobreak >nul
-start "" "https://localhost:8767"
+start "" "https://127.0.0.1:8767"
 python server.py
 
 pause
