@@ -3400,8 +3400,10 @@ if __name__ == "__main__":
             
     threading.Thread(target=run_adhoc_server, daemon=True).start()
 
-    cert_path = "z14-55n.tailfffdbc.ts.net.crt"
-    key_path = "z14-55n.tailfffdbc.ts.net.key"
+    # Robust SSL certificate path resolution
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    cert_path = os.path.join(base_dir, "z14-55n.tailfffdbc.ts.net.crt")
+    key_path = os.path.join(base_dir, "z14-55n.tailfffdbc.ts.net.key")
     if os.path.exists(cert_path) and os.path.exists(key_path):
         print(f"  [SSL] Loading Tailscale HTTPS Certificates: {cert_path}")
         app.run(host="0.0.0.0", port=8767, debug=False, use_reloader=False, ssl_context=(cert_path, key_path))
