@@ -472,3 +472,8 @@ multi-byte UTF-8 sequences when files were saved through the editor.
 #### Bug Fixes & Timeout Resolutions
 - **Closed tag typo repair**: Fixed a literal `\n` string print bug at the bottom-left of `dashboard/index.html` directly preceding the `</body>` tag.
 - **Orphaned process port release**: Terminated a legacy background Node process on port `8766` that was orphaned under the deleted C: drive path, resolving `Read timed out` connection errors in the Cache Vault.
+
+#### Aegis Shield Integration & Launcher Fixes
+- **Aegis Shield**: Successfully merged the standalone Aegis Shield Antivirus code into the main Security Suite. Added backend endpoints (/api/aegis/*) for scanning processes, removing startup items, clearing temp folders, and triggering Windows Defender scans.
+- **UI Updates**: Injected the Aegis Shield tab and panel cleanly into the Neo-Brutalist dashboard without breaking recent modules (Hackerman, CRT Monitor).
+- **start.bat Fixes**: Rewrote start.bat to correctly check for existing servers on the active ports (8767, 8768) and requested Administrator privileges natively using a PowerShell elevation check to ensure the server always boots with high-integrity rights.
