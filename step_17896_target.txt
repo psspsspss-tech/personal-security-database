@@ -1,0 +1,17 @@
+.bj-card {
+    width: 80px;
+    height: 120px;
+    background: #111;
+    border: 2px solid;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+    user-select: none;
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+}

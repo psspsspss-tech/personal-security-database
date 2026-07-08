@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GhostTrack | OSINT Terminal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="grid-background"></div>
+    
+    <div class="scanlines"></div>
+
+    <header class="top-nav">
+        <div class="logo">
+            <i class="fa-solid fa-ghost"></i>
+            <span>GHOST<strong>TRACK</strong></span>
+        </div>
+        <div class="status-indicator">
+            <div class="dot green"></div>
+            <span>SYSTEM ONLINE</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="omni-search-container">
+            <h1 class="glitch" data-text="OMNI-SCANNER">OMNI-SCANNER</h1>
+            <p class="subtitle">Enter an IP Address, Username, Phone Number, or Email to begin tracing.</p>
+            
+            <div class="search-box">
+                <i class="fa-solid fa-crosshairs target-icon"></i>
+                <input type="text" id="omniInput" placeholder="Target Identifier..." autocomplete="off">
+                <button id="scanBtn" class="btn-primary">
+                    <span>INITIATE SCAN</span>
+                    <i class="fa-solid fa-bolt"></i>
+                </button>
+            </div>
+            
+            <div class="exif-upload-container" style="margin-top: 15px; text-align: center;">
+                <label for="exifUpload" class="exif-label" style="cursor: pointer; color: var(--neon-green); font-family: 'JetBrains Mono'; font-size: 0.9rem; text-decoration: underline;">
+                    <i class="fa-solid fa-camera"></i> Or upload an image for EXIF Forensics
+                </label>
+                <input type="file" id="exifUpload" accept="image/jpeg, image/png, image/jpg" style="display: none;">
+            </div>
+            
+            <div id="loading" class="hidden">
+                <div class="loader"></div>
+                <span class="loading-text">Extracting Intelligence...</span>
+            </div>
+        </section>
+
+        <section id="resultsSection" class="results-container hidden">
+            <div class="result-header">
+                <h2><i class="fa-solid fa-microchip"></i> INTELLIGENCE REPORT</h2>
+                <div class="target-badge" id="targetBadge">IP: 192.168.1.1</div>
+            </div>
+            
+            <div class="dashboard-grid" id="dashboardGrid">
+                <!-- Dynamic Content Injected Here -->
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

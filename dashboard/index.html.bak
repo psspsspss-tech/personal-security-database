@@ -1,0 +1,1138 @@
+
+    <div class="tool-card" onclick="showTab('doomscroll'); loadDoomScroll();" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px;">
+      <svg style="width: 40px; height: 40px; margin-bottom: 10px; color:var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      <span style="font-weight: 700;">DoomScroll</span>
+    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#00d4ff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SecCenter" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+  <title>Security Command Center</title>
+  <meta name="description" content="Personal cybersecurity dashboard — monitor your network, devices, and system security in real time." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=22" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<style>
+/* DoomScroll Final CSS */
+.doom-col { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+@media (max-width: 900px) {
+    #doom-col-3 { display: none !important; }
+}
+@media (max-width: 600px) {
+    #doom-col-2 { display: none !important; }
+    #doomscroll-container { padding: 10px !important; gap: 10px !important; }
+}
+
+.doom-card {
+    break-inside: avoid;
+    margin-bottom: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    color: var(--text);
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.doom-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+    box-shadow: 0 8px 25px rgba(0,255,204,0.2);
+}
+.doom-media {
+    width: 100%;
+    display: block;
+    background: #000;
+}
+.doom-content {
+    padding: 15px;
+}
+.doom-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+.doom-meta {
+    font-size: 11px;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+}
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ HEADER ═══ -->
+<header class="header" id="header">
+  <div class="header-left">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M16 2L4 8v8c0 7.18 5.17 13.89 12 16 6.83-2.11 12-8.82 12-16V8L16 2z" fill="url(#shield-grad)" />
+          <path d="M12 16l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="shield-grad" x1="4" y1="2" x2="28" y2="34" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#00d4ff"/>
+              <stop offset="100%" stop-color="#7b2ff7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div>
+        <span class="logo-title">SECURITY COMMAND CENTER</span>
+        <span class="logo-sub">Personal Defense System</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <div class="security-score-mini" id="score-mini">
+      <div class="score-ring-mini">
+        <svg viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="24" stroke="#1a1a2e" stroke-width="6" fill="none"/>
+          <circle cx="30" cy="30" r="24" id="score-ring-path" stroke="url(#score-grad)" stroke-width="6"
+                  fill="none" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="150.8"
+                  transform="rotate(-90 30 30)"/>
+          <defs>
+            <linearGradient id="score-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#00d4ff"/>
+              <stop offset="100%" stop-color="#7b2ff7"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="score-value-mini" id="score-value-mini">--</span>
+      </div>
+      <div>
+        <div class="score-label">Security Score</div>
+        <div class="score-status" id="score-status-label">Scanning...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div id="status-indicator" class="status-pill">
+      <div class="pulse-dot"></div>
+      <span>Live</span>
+    </div>
+    <button class="btn-scan" id="btn-scan" onclick="triggerScan()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      <span class="scan-text">Scan Now</span>
+    </button>
+    <div class="time-display" id="time-display"></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════ ALERTS BAR ═══ -->
+<div class="alerts-bar" id="alerts-bar" style="display:none">
+  <div class="alert-banner" id="alert-banner">
+    <svg viewBox="0 0 20 20" fill="currentColor" class="alert-icon"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+    <span id="alert-text">Unknown device detected on your network!</span>
+    <button onclick="dismissAlertBar()" class="alert-dismiss">✕</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ LOGIN SCREEN ═══ -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 11V7a4 4 0 00-8 0v4M5 11h14v10H5V11z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>SECURE ACCESS</h2>
+    <p>Enter Master PIN to authenticate</p>
+    <div class="login-inputs" id="login-inputs">
+      <div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div>
+      <div class="pin-dot" id="dot-3"></div>
+      <div class="pin-dot" id="dot-4"></div>
+    </div>
+    
+    <div class="numpad">
+      <button class="num-btn" onclick="addPin('1')">1</button>
+      <button class="num-btn" onclick="addPin('2')">2</button>
+      <button class="num-btn" onclick="addPin('3')">3</button>
+      <button class="num-btn" onclick="addPin('4')">4</button>
+      <button class="num-btn" onclick="addPin('5')">5</button>
+      <button class="num-btn" onclick="addPin('6')">6</button>
+      <button class="num-btn" onclick="addPin('7')">7</button>
+      <button class="num-btn" onclick="addPin('8')">8</button>
+      <button class="num-btn" onclick="addPin('9')">9</button>
+      <div class="num-spacer"></div>
+      <button class="num-btn" onclick="addPin('0')">0</button>
+      <button class="num-btn action-btn" onclick="removePin()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+      </button>
+    </div>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MAIN CONTENT ═══ -->
+<main class="main">
+
+  <!-- ──────────── OVERVIEW TAB ──────────── -->
+  <section id="panel-overview" class="panel active">
+
+    <!-- Stat Cards Row -->
+    <div class="stat-grid">
+      <div class="stat-card" id="card-score">
+        <div class="stat-card-icon icon-blue">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-value" id="stat-score">--</div>
+          <div class="stat-label">Security Score</div>
+          <div class="stat-sub" id="stat-score-sub">Calculating...</div>
+        </div>
+      </div>
+
+      <div class="stat-card" id="card-devices">
+        <div class="stat-card-icon icon-purple">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-value" id="stat-devices">--</div>
+          <div class="stat-label">Network Devices</div>
+          <div class="stat-sub" id="stat-devices-sub">Scanning...</div>
+        </div>
+      </div>
+
+      <div class="stat-card" id="card-firewall">
+        <div class="stat-card-icon icon-green">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/></svg>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-value" id="stat-firewall">--</div>
+          <div class="stat-label">Firewall</div>
+          <div class="stat-sub" id="stat-firewall-sub">Checking...</div>
+        </div>
+      </div>
+
+      <div class="stat-card" id="card-av">
+        <div class="stat-card-icon icon-cyan">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="stat-card-body">
+          <div class="stat-value" id="stat-av">--</div>
+          <div class="stat-label">Antivirus</div>
+          <div class="stat-sub" id="stat-av-sub">Checking...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="overview-grid">
+
+      <!-- Security Score Gauge -->
+      <div class="card gauge-card">
+        <div class="card-header">
+          <h2 class="card-title">Security Score</h2>
+          <span class="card-badge" id="gauge-updated">Updating...</span>
+        </div>
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 200 130">
+            <defs>
+              <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff4444"/>
+                <stop offset="50%" stop-color="#ffbb00"/>
+                <stop offset="100%" stop-color="#00ff88"/>
+              </linearGradient>
+            </defs>
+            <!-- Track -->
+            <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="#1a1a2e" stroke-width="16" stroke-linecap="round"/>
+            <!-- Fill -->
+            <path id="gauge-fill" d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="url(#gauge-grad)"
+                  stroke-width="16" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+            <!-- Score text -->
+            <text x="100" y="100" text-anchor="middle" fill="#fff" font-size="36" font-weight="800" font-family="Inter" id="gauge-score">--</text>
+            <text x="100" y="118" text-anchor="middle" fill="#888" font-size="10" font-family="Inter">OUT OF 100</text>
+            <!-- Labels -->
+            <text x="18" y="128" fill="#ff4444" font-size="9" font-family="Inter">0</text>
+            <text x="92" y="30" fill="#ffbb00" font-size="9" font-family="Inter" text-anchor="middle">50</text>
+            <text x="182" y="128" fill="#00ff88" font-size="9" font-family="Inter" text-anchor="end">100</text>
+          </svg>
+        </div>
+        <div class="deductions-list" id="deductions-list">
+          <div class="deduction-item loading">Calculating security posture...</div>
+        </div>
+      </div>
+
+      <!-- System Info -->
+      <div class="card system-card">
+        <div class="card-header">
+          <h2 class="card-title">System Status</h2>
+          <div class="status-dot-green"></div>
+        </div>
+        <div class="sys-grid" id="sys-grid">
+          <div class="sys-row loading-row"><div class="loading-bar"></div></div>
+          <div class="sys-row loading-row"><div class="loading-bar"></div></div>
+          <div class="sys-row loading-row"><div class="loading-bar"></div></div>
+        </div>
+
+        <div class="resource-bars">
+          <div class="resource-bar-item">
+            <div class="resource-label">
+              <span>CPU Usage</span>
+              <span id="cpu-val">--%</span>
+            </div>
+            <div class="resource-track"><div class="resource-fill cpu-fill" id="cpu-bar" style="width:0%"></div></div>
+          </div>
+          <div class="resource-bar-item">
+            <div class="resource-label">
+              <span>Memory Usage</span>
+              <span id="mem-val">--%</span>
+            </div>
+            <div class="resource-track"><div class="resource-fill mem-fill" id="mem-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Alerts -->
+      <div class="card alerts-card">
+        <div class="card-header">
+          <h2 class="card-title">Recent Alerts</h2>
+          <button class="btn-sm" onclick="showTab('alerts')">View All</button>
+        </div>
+        <div class="alerts-list" id="overview-alerts">
+          <div class="empty-state">No alerts — you're clear! ✓</div>
+        </div>
+      </div>
+
+    </div>
+  
+    <!-- Live Resource Graphs -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header"><h2 class="card-title">Live System Resources</h2></div>
+      <div style="padding:20px;">
+        <canvas id="resourceChart" height="80"></canvas>
+      </div>
+    </div>
+
+    <!-- The Infinite Tarpit -->
+    <div class="card" style="border: 1px solid #bb86fc; box-shadow: 0 4px 15px rgba(187,134,252,0.1); margin-top:20px;">
+      <div style="font-size:16px; font-weight:700; color:#bb86fc; margin-bottom:12px; display:flex; justify-content:space-between;">
+        <span>The Infinite Tarpit</span>
+        <button onclick="refreshTarpitLogs()" style="background:#bb86fc; color:#000; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">↻ Refresh</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Active defense fake SSH server. Automated port scanners getting trapped will be displayed here.</p>
+      <div id="tarpit-logs" style="background:#000; padding:10px; border-radius:8px; border:1px solid #333; height:200px; overflow-y:auto; font-family:monospace; font-size:12px; color:#bb86fc;">
+        Waiting for victims...
+      </div>
+    </div>
+
+    <!-- Ransomware Tripwire -->
+    <div class="card" style="border: 1px solid #cf6679; box-shadow: 0 4px 15px rgba(207,102,121,0.1); margin-top:20px;">
+      <div style="font-size:16px; font-weight:700; color:#cf6679; margin-bottom:12px; display:flex; justify-content:space-between;">
+        <span>Ransomware Tripwire</span>
+        <span id="tripwire-badge" style="background:var(--green); color:#000; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:bold;">ARMED</span>
+      </div>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Monitoring the Honey File <code>Desktop\Passwords_DO_NOT_OPEN</code>. If a rogue process touches it, the alarm sounds.</p>
+      <div id="tripwire-logs" style="background:#000; padding:10px; border-radius:8px; border:1px solid #333; height:200px; overflow-y:auto; font-family:monospace; font-size:12px; color:var(--green);">
+        [System] Tripwire armed and monitoring file hashes.
+      </div>
+    </div>
+\n</section>
+
+  <!-- ──────────── NETWORK TAB ──────────── -->
+  <section id="panel-network" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Network Devices</h1>
+        <span class="panel-sub" id="network-sub">Scanning your local network...</span>
+      </div>
+      <div class="toolbar-actions">
+        <div class="legend">
+          <span class="legend-dot green"></span>Approved
+          <span class="legend-dot red"></span>Unknown
+          <span class="legend-dot blue"></span>This Device
+        </div>
+        <button class="btn-primary" onclick="triggerScan()">🔄 Rescan</button>
+      </div>
+    </div>
+
+    <div class="device-grid" id="device-grid">
+      <div class="device-loading">
+        <div class="spinner"></div>
+        <p>Scanning your network...</p>
+      </div>
+    </div>
+
+    <!-- Whitelist Manager -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h2 class="card-title">Add Device to Whitelist</h2>
+      </div>
+      <div class="whitelist-form">
+        <input type="text" id="wl-mac" placeholder="MAC Address (e.g. AA:BB:CC:DD:EE:FF)" class="form-input" />
+        <input type="text" id="wl-name" placeholder="Device Name (e.g. My Phone)" class="form-input" />
+        <input type="text" id="wl-notes" placeholder="Notes (optional)" class="form-input" />
+        <button class="btn-primary" onclick="addToWhitelist()">✓ Approve Device</button>
+      </div>
+      <div id="wl-message" class="form-message"></div>
+    </div>
+  </section>
+
+  <!-- ──────────── PORTS TAB ──────────── -->
+  <section id="panel-ports" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Open Network Ports</h1>
+        <span class="panel-sub">Ports currently listening on this device</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="ports-table">
+          <thead>
+            <tr>
+  <!-- ──────────── EVENT LOG TAB ──────────── -->
+  <section id="panel-eventlog" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Security Event Logs</h1>
+        <span class="panel-sub">Failed logins, lockouts, and account changes from Windows Security Log</span>
+      </div>
+      <div class="toolbar-actions">
+        <select id="evtlog-hours" class="form-input" style="width:auto" onchange="loadEventLog()">
+          <option value="24">Last 24 hours</option>
+          <option value="48">Last 48 hours</option>
+          <option value="72">Last 72 hours</option>
+          <option value="168">Last 7 days</option>
+        </select>
+      </div>
+    </div>
+    <div id="evtlog-summary" class="stat-grid" style="margin-bottom:20px"></div>
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Recent Security Events</h2></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Time</th><th>Event</th><th>Severity</th><th>Username</th><th>Details</th></tr></thead>
+          <tbody id="evtlog-tbody"><tr><td colspan="5" class="table-loading">Loading event log...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── DNS & VPN TAB ──────────── -->
+  <section id="panel-dns" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">DNS &amp; VPN Security</h1>
+        <span class="panel-sub">DNS server privacy, VPN status, and network leak detection</span>
+      </div>
+    </div>
+    <div id="dns-content">
+      <div class="device-loading"><div class="spinner"></div><p>Checking DNS &amp; VPN...</p></div>
+    </div>
+  </section>
+
+  <!-- ──────────── PROCESSES TAB ──────────── -->
+  <section id="panel-processes" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Process Monitor</h1>
+        <span class="panel-sub">All running processes with active network connections</span>
+      </div>
+      <div class="toolbar-actions">
+        <label style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="show-safe-procs" onchange="loadProcesses()"> Show safe processes
+        </label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Process</th><th>PID</th><th>Risk</th><th>CPU</th><th>RAM (MB)</th><th>Outbound</th><th>Reasons</th></tr></thead>
+          <tbody id="proc-tbody"><tr><td colspan="7" class="table-loading">Loading processes...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── SETUP ALERTS TAB ──────────── -->
+  <section id="panel-setup" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Setup Phone Alerts</h1>
+        <span class="panel-sub">Get instant Telegram notifications on your phone when threats are detected</span>
+      </div>
+    </div>
+
+    <div class="setup-grid">
+      <!-- Step 1 -->
+      <div class="setup-step card">
+        <div class="setup-step-num">1</div>
+        <h3>Create a Telegram Bot</h3>
+        <p>Open Telegram and search for <code>@BotFather</code>. Send it <code>/newbot</code> and follow the instructions. Copy the <strong>bot token</strong> it gives you.</p>
+        <a href="https://t.me/BotFather" target="_blank" class="btn-primary" style="display:inline-block;text-decoration:none;margin-top:10px">Open @BotFather</a>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="setup-step card">
+        <div class="setup-step-num">2</div>
+        <h3>Enter Your Bot Token</h3>
+        <p>Paste the token from BotFather below, then click "Auto-detect Chat ID" after sending any message to your new bot.</p>
+        <div style="margin-top:12px">
+          <input type="text" id="tg-token" placeholder="123456789:ABCdef..." class="form-input" style="width:100%;margin-bottom:8px" />
+          <button class="btn-primary" onclick="autoDetectChatId()">Auto-detect Chat ID</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="setup-step card">
+        <div class="setup-step-num">3</div>
+        <h3>Enter Your Chat ID</h3>
+        <p>Your Chat ID is auto-filled if you clicked above. Or find it at <code>api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code> after messaging your bot.</p>
+        <div style="margin-top:12px">
+          <input type="text" id="tg-chatid" placeholder="Chat ID (e.g. 123456789)" class="form-input" style="width:100%;margin-bottom:8px" />
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="setup-step card">
+        <div class="setup-step-num">4</div>
+        <h3>Save &amp; Test</h3>
+        <p>Save your settings, then send a test message to confirm everything works.</p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-primary" onclick="saveTelegramConfig()">Save Settings</button>
+          <button class="btn-approve" onclick="sendTestTelegram()">Send Test Message</button>
+        </div>
+        <div id="tg-status" class="form-message" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- Alert toggles -->
+    <div class="card mt-4">
+      <div class="card-header"><h2 class="card-title">Alert Settings</h2></div>
+      <div class="alert-toggles" id="alert-toggles">
+        <div class="toggle-row">
+          <div><div class="toggle-label">Unknown Device on Network</div><div class="toggle-sub">Alert when a new unknown device joins your WiFi</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="alert-unknown" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Brute Force Login Attempts</div><div class="toggle-sub">Alert when 5+ failed login attempts detected</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="alert-bruteforce" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">Firewall Disabled</div><div class="toggle-sub">Alert when Windows Firewall is turned off</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="alert-firewall" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="toggle-label">High-Risk Process Detected</div><div class="toggle-sub">Alert when an unknown process opens suspicious connections</div></div>
+          <label class="toggle-switch"><input type="checkbox" id="alert-process" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <button class="btn-primary" style="margin-top:16px" onclick="saveAlertSettings()">Save Alert Settings</button>
+    </div>
+  </section>
+
+              <th>Port</th>
+              <th>Address</th>
+              <th>Process</th>
+              <th>PID</th>
+              <th>Risk</th>
+            </tr>
+          </thead>
+          <tbody id="ports-tbody">
+            <tr><td colspan="5" class="table-loading">Loading port data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ports-legend">
+        <span class="risk-badge risk-high">High Risk</span> = Ports 21, 23, 135, 139, 445, 3389, 5900 (commonly exploited)
+        <br/>
+        <span class="risk-badge risk-low">Normal</span> = Standard service ports
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── ALERTS TAB ──────────── -->
+  <section id="panel-alerts" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Security Alerts</h1>
+        <span class="panel-sub">History of detected threats and anomalies</span>
+      </div>
+    </div>
+    <div id="alerts-container">
+      <div class="empty-state-large">
+        <div class="empty-icon">🛡️</div>
+        <h3>All Clear!</h3>
+        <p>No security alerts recorded. Your system looks clean.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── BREACH CHECK TAB ──────────── -->
+  <section id="panel-breach" class="panel">
+    <div class="breach-hero">
+      <div class="breach-icon">🔑</div>
+      <h1>Account Breach Checker</h1>
+      <p>Check if your email address has appeared in any known data breaches using the Have I Been Pwned database.</p>
+
+      <div class="breach-form">
+        <input type="email" id="breach-email" placeholder="Enter your email address..." class="breach-input" />
+        <button class="btn-breach" onclick="checkBreach()" id="btn-breach">Check Now</button>
+      </div>
+      <p class="breach-note">Your email is sent directly to the HIBP API. We don't store it.</p>
+    </div>
+    <div id="breach-result"></div>
+  </section>
+
+  <!-- ──────────── SECURITY GUIDE TAB ──────────── -->
+  <section id="panel-guide" class="panel">
+    <h1 class="panel-heading">Security Hardening Guide</h1>
+    <p class="panel-sub">Follow these steps to maximize your protection. Run <code>harden_windows.ps1</code> to automate many of these.</p>
+
+    <div class="guide-grid">
+
+      <div class="guide-card priority-critical">
+        <div class="guide-priority">CRITICAL</div>
+        <div class="guide-icon">🔥</div>
+        <h3>Run the Hardening Script</h3>
+        <p>Run <code>scripts\harden_windows.ps1</code> as Administrator. It automatically locks down Windows Firewall, disables legacy protocols, enables audit logging, and more.</p>
+        <div class="guide-cmd">PowerShell -ExecutionPolicy Bypass -File scripts\harden_windows.ps1</div>
+      </div>
+
+      <div class="guide-card priority-high">
+        <div class="guide-priority">HIGH</div>
+        <div class="guide-icon">🔐</div>
+        <h3>Enable 2FA on All Accounts</h3>
+        <p>Two-factor authentication stops 99.9% of automated attacks. Enable it on: Google, Microsoft, banking, social media, and any email accounts.</p>
+        <ul>
+          <li>Use an authenticator app (Google Authenticator, Authy)</li>
+          <li>Avoid SMS 2FA — SIM swapping is a real threat</li>
+          <li>Save backup codes in a safe place</li>
+        </ul>
+      </div>
+
+      <div class="guide-card priority-high">
+        <div class="guide-priority">HIGH</div>
+        <div class="guide-icon">🛡️</div>
+        <h3>Use a VPN for Public Networks</h3>
+        <p>Your internet traffic is visible on public WiFi. A VPN encrypts it end-to-end.</p>
+        <ul>
+          <li><strong>Recommended:</strong> ProtonVPN (free tier), Mullvad, or Windscribe</li>
+          <li>Enable "kill switch" so traffic stops if VPN drops</li>
+          <li>Never use free VPNs — they sell your data</li>
+        </ul>
+      </div>
+
+      <div class="guide-card priority-high">
+        <div class="guide-priority">HIGH</div>
+        <div class="guide-icon">🔒</div>
+        <h3>Use a Password Manager</h3>
+        <p>Reusing passwords is how most accounts get hacked.</p>
+        <ul>
+          <li><strong>Free:</strong> Bitwarden (open source, excellent)</li>
+          <li><strong>Paid:</strong> 1Password, Dashlane</li>
+          <li>Use a unique, 16+ character password for every site</li>
+          <li>Enable breach alerts in your password manager</li>
+        </ul>
+      </div>
+
+      <div class="guide-card priority-medium">
+        <div class="guide-priority">MEDIUM</div>
+        <div class="guide-icon">📡</div>
+        <h3>Secure Your Router</h3>
+        <ul>
+          <li>Change the default router admin password</li>
+          <li>Use WPA3 or WPA2 encryption (never WEP)</li>
+          <li>Disable WPS (easily brute-forced)</li>
+          <li>Enable the router firewall</li>
+          <li>Create a separate Guest network for IoT devices</li>
+          <li>Update router firmware regularly</li>
+        </ul>
+      </div>
+
+      <div class="guide-card priority-medium">
+        <div class="guide-priority">MEDIUM</div>
+        <div class="guide-icon">🌐</div>
+        <h3>Enable DNS-over-HTTPS</h3>
+        <p>Encrypts your DNS lookups so your ISP can't see what sites you visit.</p>
+        <div class="guide-cmd">Settings → Network & Internet → DNS → Use Custom DNS → 1.1.1.1 → Enable DNS-over-HTTPS</div>
+      </div>
+
+      <div class="guide-card priority-medium">
+        <div class="guide-priority">MEDIUM</div>
+        <div class="guide-icon">💾</div>
+        <h3>Encrypt Your Drive</h3>
+        <p>BitLocker prevents data theft if your device is stolen.</p>
+        <div class="guide-cmd">Control Panel → System & Security → BitLocker Drive Encryption → Turn On</div>
+      </div>
+
+      <div class="guide-card priority-low">
+        <div class="guide-priority">LOW</div>
+        <div class="guide-icon">📱</div>
+        <h3>Android Security Tips</h3>
+        <ul>
+          <li>Keep Android and apps updated</li>
+          <li>Only install apps from the Play Store</li>
+          <li>Enable "Find My Device"</li>
+          <li>Use a strong PIN or biometrics</li>
+          <li>Review app permissions regularly</li>
+          <li>Enable Google Play Protect</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ──────────── BT RADAR TAB ──────────── -->
+  <section id="panel-bluetooth" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Bluetooth Radar</h1>
+        <span class="panel-sub">Live physical surveillance from your NetHunter device</span>
+      </div>
+      <div class="toolbar-actions">
+        <div class="legend">
+          <span class="legend-dot" style="background:var(--success-color)"></span>Active Sensor
+        </div>
+        <button class="btn-primary" onclick="loadBluetooth()">🔄 Refresh</button>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header">
+        <h2 class="card-title">Nearby Devices</h2>
+        <span class="card-badge" id="bt-reporter-badge" style="background:var(--bg-lighter)">Sensor: Offline</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Device Name</th><th>MAC Address</th></tr></thead>
+          <tbody id="bt-tbody">
+            <tr><td colspan="2" class="table-loading">Waiting for sensor data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── TOOLKIT TAB ──────────── -->
+  <section id="panel-toolkit" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Offensive & Diagnostic Toolkit</h1>
+        <span class="panel-sub">Run tools directly from your devices</span>
+      </div>
+    </div>
+    
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><h2 class="card-title">Diagnostic & Attack Tools</h2></div>
+      <div style="padding: 16px;">
+        <input type="text" id="toolkit-target" placeholder="Target IP or Domain (e.g. 192.168.1.1)" class="form-input" style="width: 100%; max-width: 400px; margin-bottom: 12px;">
+        
+        <h4 style="margin-bottom: 8px; color: var(--text-secondary);">Reconnaissance</h4>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button class="btn-primary" onclick="runToolkitCommand('ping')">Ping</button>
+          <button class="btn-primary" onclick="runToolkitCommand('traceroute')">Traceroute</button>
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('nmap')">Nmap Scan</button>
+        </div>
+
+        <h4 style="margin-bottom: 8px; color: var(--text-secondary);">Vulnerability Scanners</h4>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('nikto')">Nikto Web Scan</button>
+          <button class="btn-danger" style="background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="runToolkitCommand('sqlmap')">SQLMap Test</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">Terminal Output</h2></div>
+      <div style="padding: 16px;">
+        <pre id="toolkit-output" style="background: #111; color: #0f0; padding: 12px; border-radius: 4px; overflow-x: auto; min-height: 200px;">Waiting for command...</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ──────────── CONNECT DEVICES TAB ──────────── -->
+  <section id="panel-connect" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Connect Devices</h1>
+        <span class="panel-sub">Monitor iOS, Android, and Windows devices from this central dashboard</span>
+      </div>
+      <button class="btn-primary" onclick="loadAgents()">Refresh</button>
+    </div>
+
+    <!-- QR Code + URL Card -->
+    <div class="dns-grid" style="margin-bottom:20px">
+      <div class="card" style="text-align:center;padding:28px">
+        <h3 style="margin-bottom:12px;font-size:15px">Scan to Open Dashboard</h3>
+        <div id="qr-code" style="display:inline-block;background:#fff;padding:12px;border-radius:12px;margin-bottom:12px"></div>
+        <div style="font-family:var(--font-mono);font-size:13px;color:var(--cyan)" id="net-url">Loading...</div>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Open this URL on any device on your WiFi</p>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2 class="card-title">Connected Agents</h2></div>
+        <div id="agents-summary" style="display:flex;gap:16px;margin-bottom:16px">
+          <div style="text-align:center"><div class="stat-value" id="agents-online-count" style="font-size:28px">0</div><div class="stat-label">Online</div></div>
+          <div style="text-align:center"><div class="stat-value" id="agents-offline-count" style="font-size:28px;color:var(--text-muted)">0</div><div class="stat-label">Offline</div></div>
+          <div style="text-align:center"><div class="stat-value" id="agents-total-count" style="font-size:28px">0</div><div class="stat-label">Total</div></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted)">Agents check in every 30 seconds. Offline = no heartbeat for 2+ minutes.</p>
+      </div>
+    </div>
+
+    <!-- Platform Setup Cards -->
+    <div class="setup-grid" id="platform-setup">
+      <!-- iOS -->
+      <div class="setup-step card">
+        <div class="setup-step-num" style="background:linear-gradient(135deg,#555,#999)">📱</div>
+        <h3>iPhone / iPad (iOS)</h3>
+        <p>No app install needed. Just open the dashboard in Safari and add it to your Home Screen.</p>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:2;padding-left:16px;margin-top:10px">
+          <li>Open Safari → go to the URL above</li>
+          <li>Tap the <strong>Share</strong> button (box with arrow)</li>
+          <li>Tap <strong>"Add to Home Screen"</strong></li>
+          <li>Tap <strong>Add</strong> — it's installed!</li>
+        </ol>
+      </div>
+
+      <!-- Android -->
+      <div class="setup-step card">
+        <div class="setup-step-num" style="background:linear-gradient(135deg,#3ddc84,#00a693)">🤖</div>
+        <h3>Android (Deep Monitoring)</h3>
+        <p>Install Termux to run the agent and report battery, CPU, WiFi and security data to this dashboard.</p>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:2;padding-left:16px;margin-top:10px">
+          <li>Install Termux from <a href="https://f-droid.org" target="_blank" style="color:var(--cyan)">f-droid.org</a></li>
+          <li><code>pkg update && pkg install python</code></li>
+          <li><code>pip install psutil requests</code></li>
+          <li id="android-dl-step">Download: <code id="android-agent-url">loading...</code></li>
+          <li><code>python agent.py</code></li>
+        </ol>
+      </div>
+
+      <!-- Windows -->
+      <div class="setup-step card">
+        <div class="setup-step-num" style="background:linear-gradient(135deg,#0078d4,#00bcf2)">🖥️</div>
+        <h3>Other Windows PC</h3>
+        <p>Copy the agent script to any Windows PC on your network to monitor it remotely.</p>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:2;padding-left:16px;margin-top:10px">
+          <li>Install Python from <a href="https://python.org" target="_blank" style="color:var(--cyan)">python.org</a></li>
+          <li><code>pip install psutil requests</code></li>
+          <li id="win-dl-step">Download: <code id="win-agent-url">loading...</code></li>
+          <li><code>python agent.py</code></li>
+        </ol>
+      </div>
+
+      <!-- Kali NetHunter -->
+      <div class="setup-step card">
+        <div class="setup-step-num" style="background:linear-gradient(135deg,#555555,#111111)">🐉</div>
+        <h3>Kali NetHunter (Toolkit)</h3>
+        <p>Download your NetHunter scripts to add your phone to the surveillance net.</p>
+        <ol style="font-size:12px;color:var(--text-secondary);line-height:2;padding-left:16px;margin-top:10px">
+          <li>Open Kali Terminal</li>
+          <li><code>wget <span id="nethunter-agent-url">loading...</span></code></li>
+          <li><code>python3 nethunter_bt_agent.py</code></li>
+          <li>Or navigate to <code>/api/toolkit/</code> to upload your tools.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Agents Table -->
+    <div class="card">
+      <div class="card-header"><h2 class="card-title">All Remote Agents</h2></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Device</th><th>Platform</th><th>IP</th><th>Status</th><th>CPU</th><th>RAM</th><th>Battery</th><th>Last Seen</th><th></th></tr></thead>
+          <tbody id="agents-tbody"><tr><td colspan="9" class="table-loading">No agents connected yet. Follow the setup steps above.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+
+<section id="panel-media" class="panel">
+  <style>
+    #cinema-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 9998;
+      backdrop-filter: blur(5px);
+    }
+    .bloody-sweet-container {
+      position: relative;
+      z-index: 9999;
+      background: linear-gradient(145deg, #1a0000 0%, #000000 100%);
+      border: 1px solid #4a0000;
+      box-shadow: 0 0 40px rgba(255, 0, 0, 0.1), inset 0 0 20px rgba(255, 0, 0, 0.05);
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .bloody-sweet-input {
+      width: 100%;
+      max-width: 600px;
+      padding: 16px 24px;
+      border-radius: 30px;
+      border: 2px solid #330000;
+      background: rgba(0, 0, 0, 0.8);
+      color: #ffcccc;
+      font-size: 16px;
+      outline: none;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      transition: all 0.3s;
+    }
+    .bloody-sweet-input:focus {
+      border-color: #ff0000;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.3), inset 0 0 10px rgba(0,0,0,0.8);
+    }
+    .bloody-sweet-btn {
+      padding: 16px 32px;
+      border-radius: 30px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #8b0000 0%, #ff0000 100%);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+      transition: all 0.3s;
+    }
+    .bloody-sweet-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(255, 0, 0, 0.6);
+    }
+    .bloody-sweet-btn:disabled {
+      background: #333;
+      color: #777;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .cinema-btn {
+      background: transparent;
+      border: 1px solid #555;
+      color: #aaa;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s;
+    }
+    .cinema-btn:hover, .cinema-btn.active {
+      border-color: #ff0000;
+      color: #ff0000;
+      box-shadow: 0 0 10px rgba(255,0,0,0.2);
+    }
+    .player-glow {
+      box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
+    }
+  </style>
+
+  <div id="cinema-overlay"></div>
+
+  <div class="panel-toolbar" style="position:relative; z-index:9999;">
+    <div class="panel-title-group">
+      <h1 class="panel-heading" style="color:#ff3333; text-shadow: 0 0 10px rgba(255,0,0,0.5);">Bloody Sweet</h1>
+      <span class="panel-sub" style="color:#aa5555;">The ultimate untraceable media experience.</span>
+    </div>
+    <button onclick="toggleCinemaMode()" id="btn-cinema" class="cinema-btn">Cinema Mode</button>
+  </div>
+  
+  <div class="bloody-sweet-container" id="bs-container">
+    <div style="display:flex; justify-content:center; gap:15px; margin-bottom:30px; align-items:center; flex-wrap:wrap;">
+      <input type="url" id="media-url-input" class="bloody-sweet-input" placeholder="Drop any link here..." />
+      <button onclick="extractAndPlayMedia()" class="bloody-sweet-btn" id="btn-play-media">Play</button>
+    </div>
+    
+    <div id="media-player-container" class="player-glow" style="display:none; background:#000; border-radius:12px; border:1px solid #330000; overflow:hidden; position:relative; aspect-ratio:16/9; max-width:900px; margin:0 auto;">
+      <div id="media-title" style="position:absolute; top:0; left:0; right:0; background:linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); color:#ffdddd; margin:0; padding:15px; text-align:left; font-size:16px; font-weight:bold; z-index:10; pointer-events:none; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">Loading...</div>
+      <!-- Video or iframe injected here -->
+    </div>
+  </div>
+</section>
+
+
+<section id="panel-doomscroll" class="panel" style="padding:0;">
+  <div class="panel-toolbar" style="background: rgba(10,10,15,0.95); border-bottom: 1px solid #333; position:sticky; top:0; z-index:100; backdrop-filter:blur(10px);">
+    <div class="panel-title-group">
+      <h1 class="panel-heading" style="color:var(--primary);">DoomScroll</h1>
+      <span class="panel-sub" style="color:#888;">The ultimate unified hive-mind feed.</span>
+    </div>
+    <button onclick="loadDoomScroll()" class="btn-primary" style="background:var(--primary); color:#000; border:none; padding:8px 15px; border-radius:20px; font-weight:bold;">Refresh</button>
+  </div>
+  <div id="doomscroll-container" class="masonry-grid" style="max-width:1400px; margin:0 auto;">
+    <!-- Cards injected here -->
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay" style="display:none" onclick="closeModal()">
+  <div class="modal" id="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title">Device Details</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ TOAST ═══ -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════ BOTTOM NAV & DRAWER ═══ -->
+<!-- The More Drawer -->
+<div id="more-drawer" class="drawer">
+  <div class="drawer-header">
+    <div class="drawer-handle"></div>
+    <h3>More Tools</h3>
+  </div>
+  <div class="drawer-grid">
+    <button class="drawer-item" onclick="showTab('ports'); closeDrawer()">
+      <div class="drawer-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z" clip-rule="evenodd"/></svg></div>
+      <span>Open Ports</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('alerts'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--red)"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
+      <span>Alerts</span>
+      <span class="badge" id="alert-badge" style="display:none">0</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('breach'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--purple)"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg></div>
+      <span>Breaches</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('bluetooth'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg></div>
+      <span>BT Radar</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('eventlog'); closeDrawer()">
+      <div class="drawer-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg></div>
+      <span>Event Logs</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('dns'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--cyan)"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16A8 8 0 0010 2zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd"/></svg></div>
+      <span>DNS/VPN</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('processes'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--orange)"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg></div>
+      <span>Processes</span>
+      <span class="badge" id="proc-badge" style="display:none">!</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('connect'); closeDrawer()">
+      <div class="drawer-icon" style="color:var(--green)"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2a1 1 0 011-1zM5 5h10v10H5V5z" clip-rule="evenodd"/></svg></div>
+      <span>Connect</span>
+    </button>
+    <button class="drawer-item" onclick="showTab('setup'); closeDrawer()">
+      <div class="drawer-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
+      <span>Settings</span>
+    </button>
+  </div>
+</div>
+<div id="drawer-backdrop" onclick="closeDrawer()"></div>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" id="tab-overview" onclick="showTab('overview')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-tab" id="tab-network" onclick="showTab('network')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+    <span>Radar</span>
+  </button>
+  <button class="nav-tab" id="tab-toolkit" onclick="showTab('toolkit')">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"/></svg>
+    <span>Toolkit</span>
+  </button>
+  <button class="nav-tab" id="nav-more" onclick="toggleDrawer()">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"/></svg>
+    <span>More</span>
+  </button>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+<script src="app.js?v=22"></script>
+
+<div class="modal-overlay" id="media-modal-overlay" style="display:none; background:rgba(0,0,0,0.95); z-index:9999;" onclick="closeMediaPlayer()">
+  <div style="position:absolute; top:20px; right:30px; cursor:pointer; color:var(--danger); font-size:40px;" onclick="closeMediaPlayer()">✕</div>
+  <div style="width:90%; max-width:1200px; margin: 100px auto; background:#000; border:2px solid var(--border); border-radius:12px; overflow:hidden;" onclick="event.stopPropagation()">
+    <div style="padding:15px; background:#111; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+      <h3 id="media-title" style="margin:0; color:var(--cyan); font-family:var(--font-mono);">Secure Media Player</h3>
+      <span style="color:var(--green); font-size:12px; font-family:monospace;">● SECURE DIRECT STREAM</span>
+    </div>
+    <video id="secure-video-player" controls autoplay style="width:100%; max-height:75vh; outline:none; background:#000;"></video>
+  </div>
+</div>
+
+<!-- DoomScroll Modal -->
+<div id="doom-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; backdrop-filter:blur(10px);">
+    <div style="position:absolute; top:15px; right:30px; font-size:40px; color:var(--primary); cursor:pointer;" onclick="closeDoomModal()">&times;</div>
+    <div id="doom-modal-content" style="width:80%; height:85%; margin:4% auto; background:#111; border:1px solid var(--primary); border-radius:12px; overflow:hidden; box-shadow:0 0 30px rgba(0,255,204,0.2);"></div>
+</div>
+
+
+<div id="radar-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:rgba(10,10,15,0.95); border:1px solid var(--cyan); border-radius:8px; padding:20px; width:600px; color:#fff; box-shadow: 0 0 20px var(--cyan);">
+     <h2 style="margin-top:0; border-bottom:1px solid var(--cyan); padding-bottom:10px; display:flex; justify-content:space-between;">
+        📡 Network Sonar 
+        <button onclick="runRadarScan()" style="background:var(--cyan); color:#000; padding:5px 15px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:14px;">SCAN</button>
+     </h2>
+     <div id="radar-results" style="margin-top:20px; height:350px; overflow-y:auto; font-family:monospace; background:#000; padding:10px; border-radius:4px;">
+        Click SCAN to initiate an ARP sweep on the local subnet...
+     </div>
+     <button onclick="document.getElementById('radar-modal').style.display='none'" style="margin-top:20px; width:100%; padding:10px; background:#333; color:#fff; border:none; cursor:pointer; border-radius:4px;">CLOSE</button>
+  </div>
+</div>
+
+<!-- CACHE MODAL -->
+<div id="cache-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:rgba(10,10,15,0.95); border:1px solid var(--cyan); border-radius:8px; padding:20px; width:700px; color:#fff; box-shadow: 0 0 20px var(--cyan); max-height:80vh; overflow:hidden; display:flex; flex-direction:column;">
+     <h2 style="margin-top:0; border-bottom:1px solid var(--cyan); padding-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        💾 The Cache Vault 
+        <span style="font-size:12px; color:#888;">Local Disk Storage</span>
+     </h2>
+     
+     <div style="display:flex; gap:10px; margin-top:10px;">
+        <input type="text" id="cache-magnet-input" placeholder="Paste magnet link to permanently cache..." style="flex:1; background:#000; border:1px solid #333; color:#fff; padding:10px; border-radius:4px;">
+        <button onclick="addCacheTask()" style="background:var(--cyan); color:#000; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;">DOWNLOAD</button>
+     </div>
+     
+     <div id="cache-results" style="margin-top:20px; flex:1; overflow-y:auto; background:#000; padding:10px; border-radius:4px;">
+        Loading cache...
+     </div>
+     
+     <button onclick="document.getElementById('cache-modal').style.display='none'" style="margin-top:20px; width:100%; padding:10px; background:#333; color:#fff; border:none; cursor:pointer; border-radius:4px;">CLOSE</button>
+  </div>
+</div>
+
+<div id="tripwire-alert-screen" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(255,0,0,0.95); z-index:999999; flex-direction:column; justify-content:center; align-items:center; color:white;">
+  <svg style="width:100px; height:100px; margin-bottom:20px; animation: pulse 1s infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+  <h1 style="font-size:60px; font-family:monospace; margin:0; text-align:center;">CRITICAL BREACH DETECTED</h1>
+  <p style="font-size:24px; font-family:monospace; margin-bottom:30px;" id="tripwire-alert-text">Ransomware Tripwire triggered!</p>
+  <button onclick="resetTripwireAlarm()" style="padding:15px 30px; font-size:20px; font-weight:bold; font-family:monospace; background:#000; color:var(--danger); border:2px solid var(--danger); cursor:pointer; border-radius:8px;">DISMISS & RESET ALARM</button>
+</div>
+<style>
+@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+</style>
+\n</body>
+
+
+</html>

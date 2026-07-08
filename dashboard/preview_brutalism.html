@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option B: Neo-Brutalism Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f0ea;
+    --card-bg: #ffffff;
+    --border: #111111;
+    --text: #111111;
+    --text-muted: #444444;
+    --pink: #ff3366;
+    --green: #00e699;
+    --yellow: #ffcc00;
+    --shadow: 8px 8px 0px #111111;
+  }
+
+  body {
+    margin: 0; padding: 0; 
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    background-image: 
+      linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* NAVBAR */
+  .navbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px;
+    border-bottom: 4px solid var(--border);
+    background: var(--card-bg);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .brand { font-size: 26px; font-weight: 700; text-transform: uppercase; letter-spacing: -1px; }
+  .brand span { background: var(--yellow); padding: 4px 8px; border: 3px solid var(--border); border-radius: 4px; box-shadow: 2px 2px 0 var(--border); margin-right: 8px; }
+  
+  .nav-links { display: flex; gap: 20px; }
+  .nav-link { 
+    color: var(--text); text-decoration: none; font-weight: 700; 
+    padding: 8px 16px; border: 3px solid transparent; 
+    transition: 0.1s; text-transform: uppercase;
+  }
+  .nav-link:hover, .nav-link.active { 
+    border-color: var(--border); background: var(--pink); color: #fff;
+    box-shadow: 4px 4px 0 var(--border);
+  }
+
+  /* MAIN LAYOUT */
+  .container { padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+  
+  .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+  h1 { font-size: 48px; margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: -2px; }
+  .status-badge { 
+    background: var(--green); color: var(--text); border: 3px solid var(--border); 
+    padding: 10px 20px; font-weight: 700; text-transform: uppercase; box-shadow: 4px 4px 0 var(--border); 
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+
+  /* CARDS */
+  .card {
+    background: var(--card-bg);
+    border: 4px solid var(--border);
+    padding: 30px;
+    box-shadow: var(--shadow);
+    transition: 0.1s;
+    position: relative;
+  }
+  .card:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px var(--border); }
+
+  .card.card-pink:hover { box-shadow: 12px 12px 0px var(--pink); }
+  .card.card-green:hover { box-shadow: 12px 12px 0px var(--green); }
+
+  .card-title { font-size: 16px; font-weight: 700; text-transform: uppercase; border-bottom: 3px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+  .card-value { font-size: 64px; font-weight: 700; margin: 0; letter-spacing: -3px; }
+  .card-desc { font-size: 16px; font-weight: 500; margin-top: 10px; background: #eee; display: inline-block; padding: 4px 8px; border: 2px solid var(--border); }
+
+  /* ALERTS LIST */
+  .alerts-section { margin-top: 60px; }
+  .alert-item {
+    background: #fff; border: 4px solid var(--border);
+    padding: 20px; margin-bottom: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 6px 6px 0 rgba(0,0,0,0.1);
+    transition: 0.1s;
+  }
+  .alert-item:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow); }
+  
+  .alert-tag { background: var(--pink); color: #fff; padding: 4px 8px; font-weight: bold; border: 2px solid var(--border); display: inline-block; margin-bottom: 10px; }
+  
+  .btn-action { 
+    background: var(--yellow); border: 3px solid var(--border); color: var(--text); 
+    padding: 12px 24px; font-family: 'Space Grotesk'; font-weight: 700; font-size: 16px;
+    cursor: pointer; transition: 0.1s; text-transform: uppercase; box-shadow: 4px 4px 0 var(--border);
+  }
+  .btn-action:hover { background: var(--text); color: #fff; box-shadow: 6px 6px 0 var(--pink); }
+  .btn-action:active { transform: translate(4px, 4px); box-shadow: 0 0 0 transparent; }
+
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="brand"><span>!</span> Security Command</div>
+  <div class="nav-links">
+    <a href="#" class="nav-link active">Overview</a>
+    <a href="#" class="nav-link">Radar</a>
+    <a href="#" class="nav-link">Toolkit</a>
+    <a href="#" class="nav-link">Terminal</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="header-section">
+    <div>
+      <h1>System Overview</h1>
+      <p style="color: var(--text-muted); font-weight: 500; font-size: 18px; margin-top: 10px;">ALL SYSTEMS RUNNING OPTIMALLY.</p>
+    </div>
+    <div class="status-badge">● PROTECTION ON</div>
+  </div>
+
+  <div class="grid">
+    <div class="card card-green">
+      <div class="card-title">Security Score</div>
+      <div class="card-value">92<span style="font-size: 24px;">/100</span></div>
+      <div class="card-desc">Excellent Posture</div>
+    </div>
+    
+    <div class="card card-pink">
+      <div class="card-title">Active Devices</div>
+      <div class="card-value">14</div>
+      <div class="card-desc">Scanning continuously</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Firewall Status</div>
+      <div class="card-value" style="font-size: 42px; margin-top: 20px;">SECURE</div>
+      <div class="card-desc">All profiles active</div>
+    </div>
+  </div>
+
+  <div class="alerts-section">
+    <h2 style="font-size: 32px; font-weight: 700; text-transform: uppercase; margin-bottom: 20px; border-bottom: 4px solid var(--border); padding-bottom: 10px; display: inline-block;">Recent Activity</h2>
+    
+    <div class="alert-item">
+      <div>
+        <div class="alert-tag">⚠ UNKNOWN DEVICE</div>
+        <div style="font-weight: 700; font-size: 20px;">IP: 192.168.1.15 | MAC: 00:1A:2B:3C:4D:5E</div>
+      </div>
+      <button class="btn-action">Investigate</button>
+    </div>
+
+    <div class="alert-item" style="background: var(--green);">
+      <div>
+        <div class="alert-tag" style="background: #fff; color: var(--text);">✔ SCAN COMPLETED</div>
+        <div style="font-weight: 700; font-size: 20px;">No vulnerabilities found on main router.</div>
+      </div>
+      <button class="btn-action" style="background: #fff;">View Log</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option A: Synthwave Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05030a;
+    --card-bg: rgba(20, 15, 40, 0.4);
+    --border: rgba(0, 212, 255, 0.15);
+    --border-hover: rgba(0, 212, 255, 0.6);
+    --text: #e0d8ff;
+    --text-muted: #8a82aa;
+    --cyan: #00d4ff;
+    --magenta: #ff00ff;
+    --green: #00ff88;
+    --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.2);
+    --glow-magenta: 0 0 20px rgba(255, 0, 255, 0.2);
+  }
+
+  body {
+    margin: 0; padding: 0; 
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(0, 212, 255, 0.08), transparent 25%),
+      radial-gradient(circle at 85% 30%, rgba(255, 0, 255, 0.08), transparent 25%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* NAVBAR */
+  .navbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5, 3, 10, 0.8);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .brand { font-size: 24px; font-weight: 700; background: linear-gradient(90deg, var(--cyan), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-links { display: flex; gap: 30px; }
+  .nav-link { color: var(--text); text-decoration: none; font-weight: 500; transition: 0.3s; padding: 8px 16px; border-radius: 20px; }
+  .nav-link:hover, .nav-link.active { background: rgba(0, 212, 255, 0.1); color: var(--cyan); box-shadow: var(--glow-cyan); }
+
+  /* MAIN LAYOUT */
+  .container { padding: 40px; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+  
+  .header-section { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
+  h1 { font-size: 42px; margin: 0; font-weight: 300; }
+  .status-badge { background: rgba(0, 255, 136, 0.1); color: var(--green); border: 1px solid var(--green); padding: 8px 16px; border-radius: 30px; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+  /* CARDS */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 30px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0; transition: 0.4s;
+  }
+  .card:hover { transform: translateY(-8px); border-color: var(--border-hover); box-shadow: var(--glow-cyan); }
+  .card:hover::before { opacity: 1; }
+
+  .card-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 15px; }
+  .card-value { font-size: 48px; font-weight: 700; margin: 0; color: #fff; }
+  .card-desc { font-size: 14px; color: var(--green); margin-top: 10px; }
+
+  /* ALERTS LIST */
+  .alerts-section { margin-top: 40px; }
+  .alert-item {
+    background: rgba(255, 0, 255, 0.05); border: 1px solid rgba(255, 0, 255, 0.2);
+    border-radius: 12px; padding: 20px; margin-bottom: 15px;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: 0.3s;
+  }
+  .alert-item:hover { background: rgba(255, 0, 255, 0.1); box-shadow: var(--glow-magenta); border-color: var(--magenta); }
+  .btn-action { 
+    background: transparent; border: 1px solid var(--cyan); color: var(--cyan); 
+    padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-family: 'Outfit'; font-weight: 500;
+  }
+  .btn-action:hover { background: var(--cyan); color: #000; box-shadow: var(--glow-cyan); }
+
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="brand">SECURITY COMMAND CENTER</div>
+  <div class="nav-links">
+    <a href="#" class="nav-link active">Overview</a>
+    <a href="#" class="nav-link">Radar</a>
+    <a href="#" class="nav-link">Toolkit</a>
+    <a href="#" class="nav-link">Terminal</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="header-section">
+    <div>
+      <h1>System Overview</h1>
+      <p style="color: var(--text-muted); margin-top: 10px;">All systems running optimally. Monitoring active.</p>
+    </div>
+    <div class="status-badge">● LIVE PROTECTION ON</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Security Score</div>
+      <div class="card-value" style="color: var(--cyan);">92<span style="font-size: 20px; color: var(--text-muted)">/100</span></div>
+      <div class="card-desc">Excellent Posture</div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">Active Devices</div>
+      <div class="card-value">14</div>
+      <div class="card-desc" style="color: var(--text-muted)">Scanning network continuously</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Firewall Status</div>
+      <div class="card-value">SECURE</div>
+      <div class="card-desc">All profiles active</div>
+    </div>
+  </div>
+
+  <div class="alerts-section">
+    <h2 style="font-weight: 400; margin-bottom: 20px;">Recent Activity</h2>
+    
+    <div class="alert-item">
+      <div>
+        <div style="color: var(--magenta); font-weight: bold; margin-bottom: 5px;">⚠ Unknown Device Detected</div>
+        <div style="color: var(--text-muted); font-size: 14px;">IP: 192.168.1.15 | MAC: 00:1A:2B:3C:4D:5E</div>
+      </div>
+      <button class="btn-action">Investigate</button>
+    </div>
+
+    <div class="alert-item" style="border-color: rgba(0,212,255,0.2); background: rgba(0,212,255,0.05);">
+      <div>
+        <div style="color: var(--cyan); font-weight: bold; margin-bottom: 5px;">✔ Scan Completed</div>
+        <div style="color: var(--text-muted); font-size: 14px;">No vulnerabilities found on main router.</div>
+      </div>
+      <button class="btn-action">View Log</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -4424,3 +4424,134 @@ window.startIdsFeed = function() {
 
   _idsTimer = realTimer;
 };
+
+// Aegis Shield (Antivirus / System Protection)
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+async function aegisRefresh() {
+  document.getElementById('aegis-status-indicator').innerHTML = `<div class="spinner" style="width:16px;height:16px;display:inline-block;"></div> <span style="margin-left:8px;">Scanning...</span>`;
+  try {
+    const res = await fetch(`${API}/aegis/scan`);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const aegis = data.data;
+
+    // Render Processes
+    let phtml = '';
+    if (aegis.processes && aegis.processes.length > 0) {
+        const sorted = [...aegis.processes].sort((a,b) => (a.suspicious === b.suspicious) ? 0 : a.suspicious ? -1 : 1);
+        phtml = sorted.map(p => `
+          <tr style="${p.suspicious ? 'background: rgba(255,51,102,0.1); border-left: 2px solid var(--danger);' : ''}">
+            <td>${p.pid}</td>
+            <td><strong>${p.name}</strong></td>
+            <td><span style="font-family: monospace; font-size: 11px;">${p.path}</span></td>
+            <td>${p.suspicious ? '<span style="color:var(--danger)">Suspicious</span>' : '<span style="color:var(--success)">OK</span>'}</td>
+            <td>
+              <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="aegisKillProcess(${p.pid})">Kill</button>
+            </td>
+          </tr>
+        `).join('');
+    } else {
+        phtml = `<tr><td colspan="5" style="text-align:center;">No processes found.</td></tr>`;
+    }
+    document.getElementById('aegis-processes-table').innerHTML = phtml;
+
+    // Render Startup
+    let shtml = '';
+    if (aegis.startup && aegis.startup.length > 0) {
+        shtml = aegis.startup.map(s => `
+          <tr>
+            <td><strong>${s.name}</strong></td>
+            <td><span style="font-family: monospace; font-size: 11px; word-break: break-all;">${s.path}</span></td>
+            <td>
+              <button class="btn" style="padding:4px 8px; font-size:12px;" onclick="aegisDisableStartup('${s.name}')">Disable</button>
+            </td>
+          </tr>
+        `).join('');
+    } else {
+        shtml = `<tr><td colspan="3" style="text-align:center;">No startup items found.</td></tr>`;
+    }
+    document.getElementById('aegis-startup-table').innerHTML = shtml;
+
+    // Render Status Indicator
+    document.getElementById('aegis-status-indicator').innerHTML = `
+      <span style="color: ${aegis.hosts_ok ? 'var(--success)' : 'var(--danger)'}; font-weight: bold;">
+        Hosts File: ${aegis.hosts_ok ? 'OK' : 'Hijacked!'}
+      </span>
+    `;
+
+  } catch (e) {
+    console.error('Aegis fetch failed:', e);
+    showToast('Failed to load Aegis data.', 'error');
+    document.getElementById('aegis-status-indicator').innerHTML = `<span style="color:var(--danger)">Error</span>`;
+  }
+}
+
+async function aegisKillProcess(pid) {
+  if (!confirm(`Are you sure you want to terminate process ${pid}?`)) return;
+  try {
+    const res = await fetch(`${API}/aegis/kill`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pid })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+    aegisRefresh();
+  } catch (e) {
+    showToast(`Error killing process: ${e.message}`, 'error');
+  }
+}
+
+async function aegisDisableStartup(name) {
+  if (!confirm(`Disable startup item '${name}'?`)) return;
+  try {
+    const res = await fetch(`${API}/aegis/disable_startup`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+    aegisRefresh();
+  } catch (e) {
+    showToast(`Error disabling startup item: ${e.message}`, 'error');
+  }
+}
+
+async function aegisCleanTemp() {
+  if (!confirm(`Wipe all temporary files?`)) return;
+  try {
+    const res = await fetch(`${API}/aegis/clean_temp`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+  } catch (e) {
+    showToast(`Error cleaning temp files: ${e.message}`, 'error');
+  }
+}
+
+async function aegisResetHosts() {
+  if (!confirm(`Reset Windows Hosts file to default?`)) return;
+  try {
+    const res = await fetch(`${API}/aegis/reset_hosts`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+    aegisRefresh();
+  } catch (e) {
+    showToast(`Error resetting hosts file: ${e.message}`, 'error');
+  }
+}
+
+async function aegisTriggerScan() {
+  showToast('Triggering Defender Scan...', 'info');
+  try {
+    const res = await fetch(`${API}/aegis/defender_scan`, { method: 'POST' });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+  } catch (e) {
+    showToast(`Error triggering scan: ${e.message}`, 'error');
+  }
+}

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kali Linux Installer Node Guide</title>
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --card-bg: #121216;
+      --text: #e1e1e6;
+      --text-muted: #82828c;
+      --green: #39ff14;
+      --cyan: #00f0ff;
+      --pink: #ff007f;
+      --border: #ff007f;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 15px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      border-bottom: 3px double var(--pink);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+    h1 {
+      font-size: 24px;
+      color: var(--pink);
+      margin: 0;
+      letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+    }
+    .subtitle {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--cyan);
+      margin: 5px 0 0 0;
+    }
+    .section {
+      background: var(--card-bg);
+      border: 2px solid #222;
+      border-left: 5px solid var(--cyan);
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 4px 4px 0px #000;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--cyan);
+      margin-top: 0;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-size: 10px;
+      font-family: monospace;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 12px;
+    }
+    .warning {
+      border-left-color: var(--pink);
+      background: rgba(255, 0, 127, 0.05);
+    }
+    .warning .section-title {
+      color: var(--pink);
+    }
+    .code-box {
+      background: #000;
+      border: 1px solid #333;
+      padding: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      color: var(--green);
+      overflow-x: auto;
+      margin: 10px 0;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .copy-btn {
+      display: inline-block;
+      background: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+      font-family: monospace;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: monospace;
+      border-top: 1px solid #222;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📡 KALI INSTALLATION NODE GUIDE</h1>
+      <div class="subtitle">SECURITY COMMAND CENTER OPERATOR PROTOCOL</div>
+    </header>
+
+    <div class="section warning">
+      <div class="section-title">⚠️ WARNING: DO NOT WIPE WINDOWS</div>
+      <p style="margin:0; font-size:13px;">To keep your current Personal Security Suite dashboard, files, and Windows OS intact, we will configure a <strong>Dual Boot</strong> installation. Please follow the partitioning step carefully!</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span class="badge">STEP 1</span> Rufus ISO Burner
+      </div>
+      <ol>
+        <li>Open the Rufus utility on your desktop.</li>
+        <li>Select your 32GB USB drive in the <strong>Device</strong> dropdown.</li>
+        <li>Click <strong>Select</strong> and choose your downloaded Kali Linux installer ISO.</li>
+        <li>Ensure the partition scheme is set to <strong>MBR</strong> (or GPT depending on system defaults) and target is <strong>BIOS or UEFI</strong>.</li>
+        <li>Click <strong>START</strong> at the bottom. Once finished, it will read <strong>READY</strong>. Unplug the USB.</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span class="badge">STEP 2</span> Shrink D: Drive Partition
+      </div>
+      <p style="margin:0 0 10px 0; font-size:13px;">Kali needs empty, unallocated disk space to install itself. We will take some space from your 34GB free D: drive partition.</p>
+      <ol>
+        <li>Press <code>Win + X</code> on Windows and select <strong>Disk Management</strong>.</li>
+        <li>Locate your <strong>D: Drive</strong> volume block in the bottom list.</li>
+        <li>Right-click on it and choose <strong>Shrink Volume</strong>.</li>
+        <li>In the shrink input box, enter <strong><code>25000</code></strong> (makes a ~25GB space).</li>
+        <li>Click <strong>Shrink</strong>. You will now see a black volume box labeled <strong>Unallocated Space</strong>. <em>Leave it empty!</em></li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span class="badge">STEP 3</span> Boot into the USB Installer
+      </div>
+      <ol>
+        <li>Plug the bootable USB back into your PC.</li>
+        <li>Select restart or shut down.</li>
+        <li>As the PC boots up, immediately tap the <strong><code>F12</code></strong> key rapidly (the Acer boot menu trigger).</li>
+        <li>In the boot menu, select your <strong>USB Flash Drive</strong> and press Enter.</li>
+        <li>Select <strong>Graphical Install</strong> from the GRUB menu.</li>
+      </ol>
+    </div>
+
+    <div class="section warning">
+      <div class="section-title">🛑 STEP 4: Disk Partitioning (CRITICAL)</div>
+      <p style="margin:0 0 10px 0; font-size:13px;">When the installer asks how you want to partition the disks:</p>
+      <ol>
+        <li>Do <strong>NOT</strong> select "Guided - use entire disk" (that wipes Windows!).</li>
+        <li>Choose **<code>Guided - use the largest continuous free space</code>**.</li>
+        <li>This tells Kali to install itself directly inside the Unallocated space we shrunk in Step 2. Your Windows partition will remain completely untouched.</li>
+        <li>Proceed with default files layout, write changes to disk, and authorize GRUB bootloader installation when prompted.</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span class="badge">STEP 5</span> Start NetHunter Agent
+      </div>
+      <p style="margin:0 0 10px 0; font-size:13px;">Once logged into Kali Linux, open the terminal and launch the agent node:</p>
+      <ol>
+        <li>Clone/copy the agent script or run:
+          <div class="code-box" id="code1">sudo apt update && sudo apt install -y python3-pip
+pip install requests</div>
+        </li>
+        <li>Open the <code>nethunter_agent.py</code> script file and verify line 16 points to your Host IP:
+          <div class="code-box" id="code2">SERVER_URL = "http://192.168.1.10:8767"</div>
+        </li>
+        <li>Launch the agent surveillance loop:
+          <div class="code-box" id="code3">sudo python3 nethunter_agent.py</div>
+        </li>
+      </ol>
+      <p style="margin:0; font-size:13px; color:var(--green);">The Kali Linux machine will now show up green in your main dashboard select list and activate the remote shell!</p>
+    </div>
+
+    <footer>
+      SEC-CENTER NETWORK OPERATIONS NODE BACKUP GUIDE
+    </footer>
+  </div>
+</body>
+</html>

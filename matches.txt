@@ -1,0 +1,36 @@
+### D. PWA Cache-Busting Alignment & App Build
+- Bumped PWA cache namespace to `security-dashboard-v128`.
+- Bumped service worker cache to `security-dashboard-v129` to force client refresh.
+  - Stored devices in a frontend cache and implemented detailed connection modals showing hostnames, OS fingerprint guesses, randomized private MAC indicators, and helpful device identification guidelines.
+- **Background Status Cache & Load Optimizations**:
+  - Dynamically constructs and generates a unique QR code and URL anchor linking directly to the PC's offline local LAN IP on port `8768`, enabling users to scan and load the suite offline on local WiFi networks without needing Tailscale DNS resolution. Bypassed browser cache by bumping style.css version queries to `v=135`.
+### G. Walkie-Talkie Reliability, OSINT Scan Fixes, Offline Quick-Start, and CRT Layout Updates (June 28-29, 2026)
+- **OSINT Scanner Response Mapping & Input Validation Feedback**:
+  - Fixed a dashboard-wide issue where all OSINT searches (Username, Email, IP, etc.) returned a generic "OSINT scan failed" error toast because the backend `/api/osint/scan` endpoint did not include the root `"ok": true` field required by the frontend.
+  - Integrated an animated vertical radar scanner sweep line running across the telemetry grid at 60 FPS.
+  - Bumped CSS/JS cache queries to `?v=143` and service worker namespace to `security-dashboard-v145` to guarantee instant delivery.
+### I. Live Resource Chart Fix, Cache Vault Disk Selector, Sandbox Tests, & OSINT Radar Visuals (July 1, 2026)
+#### Cache Vault — Custom Disk Path Selector
+- Added a new **📁 Folder:** input row above the magnet link input inside the Cache Vault modal (`index.html`).
+- Saved path is **persisted to `localStorage`** via `saveCachePathPref()` and auto-restored on every modal open via `loadCachePathPref()` (called inside `openCacheModal()`).
+- `addCacheTask()` now appends `?path=<disk_path>` to the `/cache/add` request, passing the chosen directory directly to the Node.js WebTorrent service.
+- The WebTorrent `/cache/add` route in `torrent_service.mjs` already supported `req.query.path` and calls `fs.mkdirSync(path, { recursive: true })` to create the folder if it doesn't exist.
+#### Sandbox Test Buttons — Wired Up
+- `runSandboxTest(module)` now correctly posts to `/api/system/sandbox-test` and surfaces results as color-coded toast notifications.
+- **Infinite Tarpit** test: opens a raw socket to port 22/2222 and validates the fake OpenSSH banner response.
+#### OSINT GhostTrack — Phone Trace Radar Visual
+- Phone number OSINT results now render a **live animated radar canvas** at the top of the results card:
+  - Phone number, carrier, and region overlaid as centered text on the radar canvas.
+- Added `startPhoneRadar(canvasId)` function which starts the radar loop and self-terminates when the canvas element is removed from the DOM.
+#### OSINT GhostTrack — IP Trace Enhancements
+- Results grid layout changed from `grid-template-columns: 1fr` to `repeat(auto-fit, minmax(260px, 1fr))` for a responsive multi-column card layout across all OSINT result types.
+#### Cache Vault — Non-Blocking Caching Operations
+- **Asynchronous Magnet Initialization**: Refactored the WebTorrent `/cache/add` endpoint in `torrent_service.mjs` to register metadata and error handlers asynchronously and return immediately. This eliminates dashboard network freezes caused by blocking on metadata downloads from peers.
+- **Safe Telemetry Access**: Wrapped property lookups in `/cache/list` with strict fallback checks, preventing server crashes when parsing unpopulated or resolving torrent objects.
+- **Service Offline Notifications**: Modified the frontend client `fetchCacheList` method to display an aesthetic warning modal inside the Cache Vault tab if the background Node.js Cache Engine process is offline or initializing.
+### O. HTML Parsing Race Condition & Cache Invalidation Fix (July 1, 2026)
+- **Race Condition Resolution**: Wrapped the cache-modal close button override inside a `DOMContentLoaded` event listener, preventing a script execution crash on load that halted the declaration of downstream variables and loops (including `startResourceChartLoop`).
+- **Asset Version Bumps**: Updated `style.css?v=147` and `app.js?v=147` inside `dashboard/index.html` and `sw.js` to ensure the browser immediately retrieves and executes the latest dashboard assets instead of loading stale cached scripts.
+- **PWA Asset Version Bumps**: Incremented cache validation to `v=148` in `index.html` and `sw.js` to immediately apply stylesheet updates without requiring manual cache clears.
+- **Cache-Busting Update**: Incremented the PWA service worker cache namespace and style/app script queries to `v=149` in both `dashboard/index.html` and `dashboard/sw.js` to ensure the client browsers immediately invalidate cached dark mode stylesheets and render the updated light theme interface.
+- **Service Worker Cache Bump**: Incremented service worker and script query variables to `v=150` (`security-dashboard-v150`) to prompt instant client upgrades.

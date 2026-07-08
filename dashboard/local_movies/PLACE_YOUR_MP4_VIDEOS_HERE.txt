@@ -1,0 +1,2 @@
+Drop your personal movie, anime, or series video files (.mp4, .webm, .mkv) in this directory. 
+The 8-Bit TV will list and play them directly from the local server when offline!

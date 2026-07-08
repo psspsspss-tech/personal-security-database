@@ -1,0 +1,5 @@
+  <script src="blackjack.js"></script>
+  <script src="casino_engine.js"></script>
+  <script src="crash.js"></script>
+  <script src="roulette.js"></script>
+</body>

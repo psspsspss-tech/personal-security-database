@@ -1748,6 +1748,77 @@
   </div>
 </section>
 
+
+  <!-- ──────────── AEGIS SHIELD TAB ──────────── -->
+  <section id="panel-aegis" class="panel">
+    <div class="card-header">
+      <h2 class="card-title">Aegis Shield Antivirus</h2>
+      <span class="card-badge">System Protection</span>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="action-bar" style="margin-top: 20px;">
+      <button class="btn btn-primary" onclick="aegisTriggerScan()">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 2v2M10 14v2M2 10h2M14 10h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Defender Scan
+      </button>
+      <button class="btn btn-danger" onclick="aegisCleanTemp()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        Clean Temp
+      </button>
+      <button class="btn" onclick="aegisResetHosts()">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+        Reset Hosts File
+      </button>
+      <div id="aegis-status-indicator" style="margin-left:auto; display:flex; align-items:center; gap:8px;"></div>
+    </div>
+
+    <!-- Active Threats/Processes Table -->
+    <div class="card" style="margin-top: 30px;">
+      <div class="card-header">
+        <h3 class="card-title">Running Processes</h3>
+        <button class="btn" onclick="aegisRefresh()" style="padding:4px 8px; font-size:12px;">Refresh</button>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>PID</th>
+              <th>Process Name</th>
+              <th>Path</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="aegis-processes-table">
+            <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Startup Items -->
+    <div class="card" style="margin-top: 30px;">
+      <div class="card-header">
+        <h3 class="card-title">Startup Items</h3>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Target Path</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="aegis-startup-table">
+            <tr><td colspan="3" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- ═══════════════════════════════════════════ MODAL ═══ -->

@@ -1,0 +1,2 @@
+      <button id="casino-tab-btn-blackjack" onclick="switchCasinoGame('blackjack')" class="casino-tab-btn" style="flex: 1; padding: 12px; font-weight: 800; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase; cursor: pointer; border: 3px solid #111; background: var(--bg-card); color: var(--text-primary); box-shadow: 4px 4px 0px #111; transition: 0.2s;">🃏 Blackjack</button>
+    </div>

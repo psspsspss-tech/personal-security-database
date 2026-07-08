@@ -1,0 +1,55 @@
+  <!-- Cyber Casino Section -->
+  <section id="panel-casino" class="panel">
+    <div class="panel-toolbar" style="justify-content: space-between;">
+      <div class="panel-title-group">
+        <h1 class="panel-heading">Cyber Casino Hub</h1>
+        <span class="panel-sub">Offline Tactical Minigames</span>
+      </div>
+      <div style="text-align: right; margin-right: 20px;">
+        <span style="font-size: 14px; color: var(--text-muted);">BALANCE</span><br>
+        <strong class="cyber-credits-display" style="font-size: 24px; color: var(--cyan); text-shadow: 0 0 10px rgba(0,255,204,0.5);">-- CC</strong>
+      </div>
+    </div>
+    
+    <div class="card" style="border-color: var(--cyan); margin-bottom:20px;">
+      <div class="card-header" style="background:rgba(0,255,204,0.05);">
+        <h2 class="card-title" style="color:var(--cyan);">Crash</h2>
+      </div>
+      <div class="card-body" style="padding: 20px; text-align: center;">
+        <div id="crash-display-area" style="position: relative; background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 0; margin-bottom: 20px; overflow: hidden; height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <canvas id="crash-canvas" width="600" height="300" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></canvas>
+            <div id="crash-multiplier" style="position: relative; z-index: 2; font-size: 64px; font-weight: bold; font-family: monospace; color: var(--cyan); text-shadow: 0 0 15px currentColor; margin-top: -20px;">1.00x</div>
+            <div id="crash-msg" style="position: relative; z-index: 2; color: var(--text-muted); margin-top: 10px; font-size: 18px; font-weight: bold;">Place your bet to start!</div>
+        </div>
+        <div>
+            <input type="number" id="crash-bet" value="50" min="1" class="text-input" style="width: 100px; display: inline-block; margin-right: 10px; text-align: center;" placeholder="Bet">
+            <button id="btn-crash-bet" class="btn-primary" onclick="startCrashGame()">BET</button>
+            <button id="btn-crash-cashout" class="btn-primary" onclick="cashOutCrash()" style="display: none; background: var(--green);">CASH OUT</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card" style="border-color: var(--orange); margin-bottom:20px;">
+      <div class="card-header" style="background:rgba(255,102,0,0.05);">
+        <h2 class="card-title" style="color:var(--orange);">Roulette</h2>
+      </div>
+      <div class="card-body" style="padding: 20px; text-align: center;">
+        <div style="background: #000; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; position: relative;">
+            <canvas id="roulette-canvas" width="400" height="400" style="max-width: 100%; height: auto; display: block; margin: 0 auto; filter: drop-shadow(0 0 15px var(--orange));"></canvas>
+            <div id="roulette-result" style="font-size: 48px; font-weight: bold; font-family: monospace; color: var(--text); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.7); border-radius: 50%; width: 80px; height: 80px; line-height: 80px;">??</div>
+            <div id="roulette-msg" style="color: var(--text-muted); margin-top: 15px; min-height: 20px; font-weight: bold; font-size: 18px;">Place your bet on a color or parity!</div>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <input type="number" id="roulette-bet" value="50" min="1" class="text-input" style="width: 100px; display: inline-block; text-align: center;" placeholder="Bet">
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn-sm" onclick="spinRoulette('red')" style="background: var(--red); color: white; width: 80px;">RED (2x)</button>
+            <button class="btn-sm" onclick="spinRoulette('black')" style="background: #333; color: white; width: 80px;">BLACK (2x)</button>
+            <button class="btn-sm" onclick="spinRoulette('even')" style="background: var(--purple); color: white; width: 80px;">EVEN (2x)</button>
+            <button class="btn-sm" onclick="spinRoulette('odd')" style="background: var(--orange); color: white; width: 80px;">ODD (2x)</button>
+            <button class="btn-sm" onclick="spinRoulette('green')" style="background: var(--green); color: white; width: 80px;">ZERO (36x)</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card" style="border-color: var(--purple); margin-bottom:20px;">

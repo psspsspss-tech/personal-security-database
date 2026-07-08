@@ -1,0 +1,67 @@
+--- CHUNK 0 (StartLine: 610, EndLine: 613) ---
+    </div>
+  </section>
+
+  <!-- ──────────────────────────────────────── CYBER CASINO TAB ──────────────────────────────────────── -->
+  <section id="panel-casino" class="panel">
+    <div class="panel-toolbar">
+      <div class="panel-title-group">
+        <h1 class="panel-heading" style="color:var(--cyan)">Cyber Casino</h1>
+        <span class="panel-sub">Gamble your security credits. Balance: <span id="casino-cc" style="color:var(--green); font-weight:bold; font-size:16px;">0 CC</span></span>
+      </div>
+    </div>
+    
+    <div class="grid">
+      <!-- Crash Game -->
+      <div class="card" style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:15px; border-color:var(--cyan);">
+        <h3 class="card-title" style="color:var(--cyan); margin:0;">SYSTEM CRASH</h3>
+        <div style="background:#0a0a14; border:1px solid var(--border); border-radius:8px; position:relative; height:250px; overflow:hidden;">
+          <canvas id="crash-canvas" width="800" height="250" style="width:100%; height:100%; display:block;"></canvas>
+          <div id="crash-multiplier" style="position:absolute; top:40%; left:50%; transform:translate(-50%, -50%); font-size:64px; font-weight:bold; color:var(--text); text-shadow: 0 0 15px var(--cyan); transition: color 0.1s;">1.00x</div>
+          <div id="crash-status" style="position:absolute; bottom:10px; width:100%; text-align:center; color:var(--text-muted); font-size:14px; font-weight:bold;">WAITING FOR BETS</div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="crash-bet" class="input" placeholder="Bet Amount (CC)" value="10" style="width:150px; font-size:16px; text-align:center;">
+          <button id="btn-crash-action" class="btn" onclick="toggleCrash()" style="flex:1; height:42px; background:var(--cyan); color:#000; font-weight:bold; font-size:16px; border:none;">PLACE BET & START</button>
+        </div>
+      </div>
+      
+      <!-- Roulette Game -->
+      <div class="card" style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:15px; border-color:var(--purple);">
+        <h3 class="card-title" style="color:var(--purple); margin:0;">NEON ROULETTE</h3>
+        <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+          
+          <div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:15px; justify-content:center;">
+            <div style="display:flex; gap:10px; height:60px;">
+              <button id="roulette-btn-red" class="btn btn-roulette" onclick="setRouletteBet('red')" style="background:var(--red); color:#fff; flex:1; font-weight:bold; font-size:16px; border:2px solid transparent;">RED (2x)</button>
+              <button id="roulette-btn-black" class="btn btn-roulette" onclick="setRouletteBet('black')" style="background:#222; color:#fff; flex:1; font-weight:bold; font-size:16px; border:2px solid transparent;">BLACK (2x)</button>
+              <button id="roulette-btn-green" class="btn btn-roulette" onclick="setRouletteBet('green')" style="background:var(--green); color:#fff; flex:1; font-weight:bold; font-size:16px; border:2px solid transparent;">GREEN (14x)</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="number" id="roulette-bet" class="input" placeholder="Bet Amount (CC)" value="10" style="width:150px; font-size:16px; text-align:center;">
+              <button id="btn-spin-roulette" class="btn" onclick="spinRoulette()" style="flex:1; height:42px; background:var(--purple); color:#fff; font-weight:bold; font-size:16px; border:none;" disabled>SPIN WHEEL</button>
+            </div>
+            <div id="roulette-status" style="font-size:14px; color:var(--text-muted); text-align:center;">Select a color and place your bet.</div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:150px;">
+             <div id="roulette-wheel" style="width:120px; height:120px; border-radius:50%; border:6px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:bold; background:#0a0a14; color:var(--text); transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1); box-shadow: 0 0 20px rgba(0,0,0,0.5);">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬ SETUP ALERTS TAB Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬Ã¢â€ â‚¬ -->
+
+--- CHUNK 1 (StartLine: 1271, EndLine: 1274) ---
+      <button class="drawer-item" onclick="showTab('casino'); closeDrawer()">
+        <div class="drawer-icon" style="color:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <span>Cyber Casino</span>
+        <span class="badge" id="casino-badge" style="background:var(--cyan); color:#000;">New</span>
+      </button>
+      <button class="drawer-item" onclick="showTab('setup'); closeDrawer()">
+        <div class="drawer-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
+        <span>Settings</span>
+      </button>
+

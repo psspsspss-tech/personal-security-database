@@ -1,0 +1,77 @@
+async function checkBreach() {
+  const email = document.getElementById('breach-email').value.trim();
+  const resultEl = document.getElementById('breach-result');
+  const btn = document.getElementById('btn-breach');
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showToast('Please enter a valid email address', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  resultEl.innerHTML = `<div style="text-align:center;padding:32px"><div class="spinner" style="margin:0 auto"></div></div>`;
+
+  try {
+    const res = await fetch(`${API}/breach-check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      resultEl.innerHTML = `<div class="breach-result-card">
+        <div class="breach-result-header">
+          <div class="breach-result-icon">⚠️</div>
+          <div class="breach-result-title">Check Unavailable</div>
+          <div class="breach-result-count">${data.error}</div>
+        </div>
+      </div>`;
+      return;
+    }
+
+    if (!data.found) {
+      resultEl.innerHTML = `<div class="breach-result-card safe">
+        <div class="breach-result-header">
+          <div class="breach-result-icon">✅</div>
+          <div class="breach-result-title" style="color:var(--green)">Good news — No breaches found!</div>
+          <div class="breach-result-count">This email was not found in any known data breaches.</div>
+        </div>
+        <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:16px">
+          Stay safe: still use a strong, unique password and enable 2FA.
+        </p>
+      </div>`;
+    } else {
+      resultEl.innerHTML = `<div class="breach-result-card danger">
+        <div class="breach-result-header">
+          <div class="breach-result-icon">⚠️</div>
+          <div class="breach-result-title" style="color:var(--red)">Breaches Detected!</div>
+          <div class="breach-result-count">Found in ${data.breach_count} known data breach(es)</div>
+        </div>
+        <div class="breach-list">
+          ${data.breaches.map(b => `<div class="breach-item">
+            <div class="breach-item-name">🔴 ${b.name}</div>
+            <div class="breach-item-date">Date: ${b.date || 'Unknown'}</div>
+            <div class="breach-item-desc">${b.description?.replace(/<[^>]*>/g, '') || ''}</div>
+          </div>`).join('')}
+        </div>
+        <div style="margin-top:20px;padding:16px;background:rgba(255,68,85,0.06);border-radius:10px;font-size:13px;color:var(--text-secondary)">
+          <strong style="color:var(--red)">Action required:</strong> Change your password for any affected services immediately and enable 2FA.
+        </div>
+      </div>`;
+    }
+  } catch (e) {
+    resultEl.innerHTML = `<div class="breach-result-card">
+      <div class="breach-result-header">
+        <div class="breach-result-icon">❌</div>
+        <div class="breach-result-title">Error</div>
+        <div class="breach-result-count">${e.message}</div>
+      </div>
+    </div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Check Now';
+  }
+}
+
