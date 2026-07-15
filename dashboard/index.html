@@ -1193,18 +1193,18 @@
           <p><strong>Objective:</strong> Beat the dealer's hand without going over 21.</p>
           <p><strong>Values:</strong> Cards 2-10 are face value. Face cards (J, Q, K) are 10. Aces are 1 or 11.</p>
           <p><strong>Play:</strong> Press HIT to draw another card, STAND to lock your total.</p>
-          <button class="casino-modal-close" onclick="document.getElementById('bj-rules').classList.remove('open')" style="background: var(--purple); color: #fff; border: 3px solid #111; box-shadow: 4px 4px 0px #111; padding: 12px 20px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;">GOT IT</button>
+          <button class="casino-modal-close" onclick="document.getElementById('bj-rules').classList.remove('open')" style="background: #7b2ff7 !important; color: #fff !important; border: 3px solid #111 !important; box-shadow: 4px 4px 0px #111 !important; padding: 12px 20px !important; font-weight: 800 !important; cursor: pointer !important; width: 100% !important; margin-top: 20px !important; font-family: 'Space Grotesk', sans-serif !important; text-transform: uppercase !important;">GOT IT</button>
         </div>
 
         <div style="display:flex; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
           <!-- Dealer Hand -->
           <div style="flex:1; min-width:180px; background:#080d12; border:2px solid var(--border); padding:15px; border-radius:8px;">
-            <h4 style="margin:0 0 10px 0; color:#fff; font-size:12px; text-transform:uppercase; font-weight:bold;">DEALER HAND (<span id="bj-dealer-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
+            <h4 style="margin:0 0 10px 0; color:#fff !important; font-size:12px; text-transform:uppercase; font-weight:bold;">DEALER HAND (<span id="bj-dealer-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
             <div id="bj-dealer-cards" style="display:flex; gap:10px; justify-content:center; min-height:100px; align-items:center;"></div>
           </div>
           <!-- Player Hand -->
           <div style="flex:1; min-width:180px; background:#080d12; border:2px solid var(--border); padding:15px; border-radius:8px;">
-            <h4 style="margin:0 0 10px 0; color:#fff; font-size:12px; text-transform:uppercase; font-weight:bold;">YOUR HAND (<span id="bj-player-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
+            <h4 style="margin:0 0 10px 0; color:#fff !important; font-size:12px; text-transform:uppercase; font-weight:bold;">YOUR HAND (<span id="bj-player-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
             <div id="bj-player-cards" style="display:flex; gap:10px; justify-content:center; min-height:100px; align-items:center;"></div>
           </div>
         </div>
@@ -2032,8 +2032,8 @@
   <button onclick="resetTripwireAlarm()" style="padding:15px 30px; font-size:20px; font-weight:bold; font-family:monospace; background:#000; color:var(--danger); border:2px solid var(--danger); cursor:pointer; border-radius:8px;">DISMISS & RESET ALARM</button>
 </div>
 <style>
-.casino-help-btn { background: var(--bg-card, #fff); color: var(--text-primary, #000); border: 2px solid #111; box-shadow: 2px 2px 0px #111; font-weight: 900; font-family: monospace; cursor: pointer; padding: 4px 10px; font-size: 16px; margin-bottom: 15px; transition: transform 0.1s; display: inline-block; }
-.casino-help-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #111; }
+.casino-help-btn { background: var(--bg-card, #fff) !important; color: var(--text-primary, #000) !important; border: 2px solid #111 !important; box-shadow: 2px 2px 0px #111 !important; font-weight: 900 !important; font-family: monospace !important; cursor: pointer !important; padding: 4px 10px !important; font-size: 16px !important; margin-bottom: 15px !important; transition: transform 0.1s !important; display: inline-block !important; border-radius: 4px !important; }
+.casino-help-btn:active { transform: translate(2px, 2px) !important; box-shadow: 0px 0px 0px #111 !important; }
 .casino-modal { display: none; }
 .casino-modal.open { display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; max-width: 90%; width: 400px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.75), 0 10px 30px rgba(0,0,0,0.5) !important; border-radius: 8px; animation: modalPop 0.2s ease-out; }
 @keyframes modalPop { 0% { opacity: 0; transform: translate(-50%, -45%); } 100% { opacity: 1; transform: translate(-50%, -50%); } }
