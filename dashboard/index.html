@@ -1185,23 +1185,23 @@
         <button class="casino-help-btn" onclick="document.getElementById('bj-rules').classList.add('open')">?</button>
 
         <!-- Rules Modal -->
-        <div id="bj-rules" class="casino-modal" style="background: #fff; color: #000; border: 3px solid #111; box-shadow: 6px 6px 0px #111; padding: 20px; text-align: left; z-index: 10;">
-          <h2>How to Play Blackjack</h2>
+        <div id="bj-rules" class="casino-modal" style="background: var(--bg-card, #fff); color: var(--text-primary, #000); border: 3px solid #111; padding: 25px; text-align: left; z-index: 10;">
+          <h2 style="margin-top: 0; color: var(--purple);">How to Play Blackjack</h2>
           <p><strong>Objective:</strong> Beat the dealer's hand without going over 21.</p>
           <p><strong>Values:</strong> Cards 2-10 are face value. Face cards (J, Q, K) are 10. Aces are 1 or 11.</p>
           <p><strong>Play:</strong> Press HIT to draw another card, STAND to lock your total.</p>
-          <button class="casino-modal-close" onclick="document.getElementById('bj-rules').classList.remove('open')">GOT IT</button>
+          <button class="casino-modal-close" onclick="document.getElementById('bj-rules').classList.remove('open')" style="background: var(--purple); color: #fff; border: 3px solid #111; box-shadow: 4px 4px 0px #111; padding: 12px 20px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;">GOT IT</button>
         </div>
 
         <div style="display:flex; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
           <!-- Dealer Hand -->
           <div style="flex:1; min-width:180px; background:#080d12; border:2px solid var(--border); padding:15px; border-radius:8px;">
-            <h4 style="margin:0 0 10px 0; color:#ccc; font-size:12px; text-transform:uppercase; font-weight:bold;">DEALER HAND (<span id="bj-dealer-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
+            <h4 style="margin:0 0 10px 0; color:#fff; font-size:12px; text-transform:uppercase; font-weight:bold;">DEALER HAND (<span id="bj-dealer-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
             <div id="bj-dealer-cards" style="display:flex; gap:10px; justify-content:center; min-height:100px; align-items:center;"></div>
           </div>
           <!-- Player Hand -->
           <div style="flex:1; min-width:180px; background:#080d12; border:2px solid var(--border); padding:15px; border-radius:8px;">
-            <h4 style="margin:0 0 10px 0; color:#ccc; font-size:12px; text-transform:uppercase; font-weight:bold;">YOUR HAND (<span id="bj-player-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
+            <h4 style="margin:0 0 10px 0; color:#fff; font-size:12px; text-transform:uppercase; font-weight:bold;">YOUR HAND (<span id="bj-player-score" style="font-weight:bold; color:#fff;">--</span>)</h4>
             <div id="bj-player-cards" style="display:flex; gap:10px; justify-content:center; min-height:100px; align-items:center;"></div>
           </div>
         </div>
@@ -1247,15 +1247,15 @@
         <button class="casino-help-btn" onclick="document.getElementById('tetris-rules').classList.add('open')" style="border-color: var(--yellow); color: var(--yellow);">❓</button>
 
         <!-- Rules Modal -->
-        <div id="tetris-rules" class="casino-modal" style="background: #fff; color: #000; border: 3px solid #111; box-shadow: 6px 6px 0px #111; padding: 20px; text-align: left; position: relative; z-index: 10;">
-          <h2>How to Play Tetris</h2>
-          <p><strong>Objective:</strong> Fit falling tetrominoes together to clear horizontal lines.</p>
-          <p><strong>Controls:</strong></p>
-          <p style="margin-left: 20px; margin-bottom: 5px;">⌨️ <strong>Arrow Keys / WASD:</strong> Left/Right to move, Down to soft drop, Up/W to rotate</p>
-          <p style="margin-left: 20px; margin-bottom: 5px;">⌨️ <strong>Spacebar:</strong> Hard drop (instant land)</p>
-          <p style="margin-left: 20px; margin-bottom: 5px;">⌨️ <strong>C / Shift:</strong> Hold piece</p>
-          <p><strong>Costs:</strong> 50 ₡ per game. Every line cleared refunds 10 ₡! Getting a Tetris (4 lines at once) pays a 100 ₡ bonus!</p>
-          <button class="casino-modal-close" onclick="document.getElementById('tetris-rules').classList.remove('open')" style="background: var(--yellow); color: #000; border-color: #111;">GOT IT</button>
+        <div id="tetris-rules" class="casino-modal" style="background: #0a0f14; color: #fff; border: 3px solid var(--yellow); padding: 25px; text-align: left; z-index: 10;">
+          <h2 style="margin-top: 0; color: var(--yellow); text-shadow: 0 0 10px var(--yellow);">How to Play Tetris</h2>
+          <p style="color: #ddd;"><strong>Objective:</strong> Fit falling tetrominoes together to clear horizontal lines.</p>
+          <p style="color: var(--yellow);"><strong>Controls:</strong></p>
+          <p style="margin-left: 20px; margin-bottom: 5px; color: #ccc;">⌨️ <strong>Arrow Keys / WASD:</strong> Left/Right to move, Down to soft drop, Up/W to rotate</p>
+          <p style="margin-left: 20px; margin-bottom: 5px; color: #ccc;">⌨️ <strong>Spacebar:</strong> Hard drop (instant land)</p>
+          <p style="margin-left: 20px; margin-bottom: 5px; color: #ccc;">⌨️ <strong>C / Shift:</strong> Hold piece</p>
+          <p style="color: #ddd;"><strong>Costs:</strong> 50 ₡ per game. Every line cleared refunds 10 ₡! Getting a Tetris (4 lines at once) pays a 100 ₡ bonus!</p>
+          <button class="casino-modal-close" onclick="document.getElementById('tetris-rules').classList.remove('open')" style="background: var(--yellow); color: #000; border: 3px solid #111; box-shadow: 4px 4px 0px #111; padding: 12px 20px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 20px; font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;">GOT IT</button>
         </div>
 
         <!-- Entry Screen / Game Start -->
@@ -2029,8 +2029,11 @@
   <button onclick="resetTripwireAlarm()" style="padding:15px 30px; font-size:20px; font-weight:bold; font-family:monospace; background:#000; color:var(--danger); border:2px solid var(--danger); cursor:pointer; border-radius:8px;">DISMISS & RESET ALARM</button>
 </div>
 <style>
+.casino-help-btn { background: var(--bg-card, #fff); color: var(--text-primary, #000); border: 2px solid #111; box-shadow: 2px 2px 0px #111; font-weight: 900; font-family: monospace; cursor: pointer; padding: 4px 10px; font-size: 16px; margin-bottom: 15px; transition: transform 0.1s; display: inline-block; }
+.casino-help-btn:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #111; }
 .casino-modal { display: none; }
-.casino-modal.open { display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-width: 90%; }
+.casino-modal.open { display: block; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; max-width: 90%; width: 400px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.75), 0 10px 30px rgba(0,0,0,0.5) !important; border-radius: 8px; animation: modalPop 0.2s ease-out; }
+@keyframes modalPop { 0% { opacity: 0; transform: translate(-50%, -45%); } 100% { opacity: 1; transform: translate(-50%, -50%); } }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 
