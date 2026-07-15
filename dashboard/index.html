@@ -1185,7 +1185,7 @@
         <button class="casino-help-btn" onclick="document.getElementById('bj-rules').classList.add('open')">?</button>
 
         <!-- Rules Modal -->
-        <div id="bj-rules" class="casino-modal">
+        <div id="bj-rules" class="casino-modal" style="background: #fff; color: #000; border: 3px solid #111; box-shadow: 6px 6px 0px #111; padding: 20px; text-align: left; z-index: 10;">
           <h2>How to Play Blackjack</h2>
           <p><strong>Objective:</strong> Beat the dealer's hand without going over 21.</p>
           <p><strong>Values:</strong> Cards 2-10 are face value. Face cards (J, Q, K) are 10. Aces are 1 or 11.</p>
@@ -1247,8 +1247,8 @@
         <button class="casino-help-btn" onclick="document.getElementById('tetris-rules').classList.add('open')" style="border-color: var(--yellow); color: var(--yellow);">❓</button>
 
         <!-- Rules Modal -->
-        <div id="tetris-rules" class="casino-modal" style="border-color: var(--yellow); color: #fff; background: #0a0f14;">
-          <h2 style="color: var(--yellow);">How to Play Tetris</h2>
+        <div id="tetris-rules" class="casino-modal" style="background: #fff; color: #000; border: 3px solid #111; box-shadow: 6px 6px 0px #111; padding: 20px; text-align: left; position: relative; z-index: 10;">
+          <h2>How to Play Tetris</h2>
           <p><strong>Objective:</strong> Fit falling tetrominoes together to clear horizontal lines.</p>
           <p><strong>Controls:</strong></p>
           <p style="margin-left: 20px; margin-bottom: 5px;">⌨️ <strong>Arrow Keys / WASD:</strong> Left/Right to move, Down to soft drop, Up/W to rotate</p>
@@ -2029,6 +2029,8 @@
   <button onclick="resetTripwireAlarm()" style="padding:15px 30px; font-size:20px; font-weight:bold; font-family:monospace; background:#000; color:var(--danger); border:2px solid var(--danger); cursor:pointer; border-radius:8px;">DISMISS & RESET ALARM</button>
 </div>
 <style>
+.casino-modal { display: none; }
+.casino-modal.open { display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; max-width: 90%; }
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 
