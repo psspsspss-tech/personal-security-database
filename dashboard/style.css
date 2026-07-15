@@ -2305,3 +2305,60 @@ input:checked + .slider-toggle:before {
   background: var(--yellow) !important;
   color: #000 !important;
 }
+
+/* Blackjack Card Styling */
+.bj-card {
+    position: relative;
+    width: 65px;
+    height: 90px;
+    background-color: #fff !important;
+    border: 2px solid;
+    border-radius: 6px;
+    display: inline-block;
+    user-select: none;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    margin: 0 2px;
+}
+.card-val {
+    position: absolute;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1;
+    font-family: 'Space Grotesk', sans-serif;
+}
+.card-val.top { top: 4px; left: 4px; text-align: left; }
+.card-val.bot { bottom: 4px; right: 4px; text-align: right; transform: rotate(180deg); }
+.card-pips {
+    position: absolute;
+    top: 22px;
+    bottom: 22px;
+    left: 12px;
+    right: 12px;
+}
+.pip {
+    position: absolute;
+    font-size: 14px;
+    line-height: 1;
+}
+.pip.top-left { top: 0; left: 0; }
+.pip.top-right { top: 0; right: 0; }
+.pip.bot-left { bottom: 0; left: 0; transform: rotate(180deg); }
+.pip.bot-right { bottom: 0; right: 0; transform: rotate(180deg); }
+.pip.top-center { top: 0; left: 50%; transform: translateX(-50%); }
+.pip.bot-center { bottom: 0; left: 50%; transform: translate(-50%, 0) rotate(180deg); }
+.pip.center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.pip.mid-left { top: 50%; left: 0; transform: translateY(-50%); }
+.pip.mid-right { top: 50%; right: 0; transform: translateY(-50%); }
+.pip.mid-top { top: 25%; left: 50%; transform: translateX(-50%); }
+.pip.mid-bot { bottom: 25%; left: 50%; transform: translate(-50%, 0) rotate(180deg); }
+.pip.mid-left-up { top: 25%; left: 0; }
+.pip.mid-right-up { top: 25%; right: 0; }
+.pip.mid-left-down { bottom: 25%; left: 0; transform: rotate(180deg); }
+.pip.mid-right-down { bottom: 25%; right: 0; transform: rotate(180deg); }
+.pip.center-large { font-size: 28px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.bj-card.hidden-card {
+    background: repeating-linear-gradient(45deg, #1a1a1a, #1a1a1a 5px, #2a2a2a 5px, #2a2a2a 10px) !important;
+    border-color: #444 !important;
+}
+
