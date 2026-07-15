@@ -9,23 +9,23 @@ let gameOver = false;
 let activeBet = 0;
 
 function setBjBet(val) {
-    const betInput = document.getElementById("bj-bet");
+    const betInput = document.getElementById("bj-bet-input");
     if (betInput) {
         betInput.value = val;
     }
 }
 
 function setBjBetMax() {
-    const betInput = document.getElementById("bj-bet");
+    const betInput = document.getElementById("bj-bet-input");
     if (betInput && typeof cyberCredits !== 'undefined') {
         betInput.value = cyberCredits;
     }
 }
 
 function toggleBetInputs(disable) {
-    const betInput = document.getElementById("bj-bet");
+    const betInput = document.getElementById("bj-bet-input");
     if (betInput) betInput.disabled = disable;
-    const betButtons = document.querySelectorAll("#bj-bet-container button");
+    const betButtons = document.querySelectorAll("#bj-betting-controls button");
     betButtons.forEach(btn => {
         btn.disabled = disable;
     });
@@ -155,11 +155,11 @@ function renderCard(card, hidden = false, delayIdx = 0) {
 }
 
 function updateUI() {
-    const dealerCardsEl = document.getElementById("dealer-cards");
-    const playerCardsEl = document.getElementById("player-cards");
-    const dealerScoreEl = document.getElementById("dealer-score");
-    const playerScoreEl = document.getElementById("player-score");
-    const msgEl = document.getElementById("bj-message");
+    const dealerCardsEl = document.getElementById("bj-dealer-cards");
+    const playerCardsEl = document.getElementById("bj-player-cards");
+    const dealerScoreEl = document.getElementById("bj-dealer-score");
+    const playerScoreEl = document.getElementById("bj-player-score");
+    const msgEl = document.getElementById("bj-msg");
 
     // Render Dealer
     dealerCardsEl.innerHTML = "";
@@ -194,15 +194,17 @@ function updateUI() {
         msgEl.innerText = "Hit or Stand?";
         msgEl.style.color = "var(--cyan)";
         msgEl.classList.remove("win-animate");
-        document.getElementById("btn-hit").disabled = false;
-        document.getElementById("btn-stand").disabled = false;
-        document.getElementById("btn-deal").style.display = "none";
+        document.getElementById("btn-bj-hit").disabled = false;
+        document.getElementById("btn-bj-stand").disabled = false;
+        document.getElementById("btn-bj-deal").style.display = "none";
+        document.getElementById("bj-gameplay-controls").style.display = "flex";
     } else {
         let dScore = calculateScore(dealerHand);
         dealerScoreEl.innerText = dScore;
-        document.getElementById("btn-hit").disabled = true;
-        document.getElementById("btn-stand").disabled = true;
-        document.getElementById("btn-deal").style.display = "inline-block";
+        document.getElementById("btn-bj-hit").disabled = true;
+        document.getElementById("btn-bj-stand").disabled = true;
+        document.getElementById("btn-bj-deal").style.display = "inline-block";
+        document.getElementById("bj-gameplay-controls").style.display = "none";
         toggleBetInputs(false);
 
         if (pScore > 21) {
@@ -246,7 +248,7 @@ function initCasino() {
         console.log("Cut card reached. Shuffling new 6-deck shoe...");
         buildDeck();
         shuffleDeck();
-        const msgEl = document.getElementById("bj-message");
+        const msgEl = document.getElementById("bj-msg");
         msgEl.innerText = "SHUFFLING NEW SHOE...";
         msgEl.style.color = "var(--purple)";
         msgEl.classList.remove("win-animate");
@@ -257,7 +259,7 @@ function initCasino() {
 }
 
 function dealHands() {
-    const betInput = document.getElementById("bj-bet");
+    const betInput = document.getElementById("bj-bet-input");
     let betAmount = 50;
     if (betInput) {
         betAmount = parseInt(betInput.value);
@@ -323,9 +325,30 @@ function stand() {
 
 // Expose to window for inline onclick attributes
 window.initCasino = initCasino;
+window.startBlackjack = initCasino;
 window.hit = hit;
+window.blackjackHit = hit;
 window.stand = stand;
+window.blackjackStand = stand;
 window.setBjBet = setBjBet;
 window.setBjBetMax = setBjBetMax;
+window.setBjBetMultiplier = function(mult) {
+    const betInput = document.getElementById("bj-bet-input");
+    if (!betInput) return;
+    if (mult === 999) {
+        if (typeof cyberCredits !== 'undefined') betInput.value = cyberCredits;
+    } else if (mult === 0.1) {
+        betInput.value = 10;
+    } else if (mult === 0.5) {
+        let val = Math.floor(parseInt(betInput.value) * 0.5);
+        betInput.value = Math.max(1, val);
+    } else if (mult === 2.0) {
+        let val = Math.floor(parseInt(betInput.value) * 2);
+        if (typeof cyberCredits !== 'undefined') {
+            val = Math.min(val, cyberCredits);
+        }
+        betInput.value = Math.max(1, val);
+    }
+};
 
 console.log("Cyber Casino Engine Loaded.");
