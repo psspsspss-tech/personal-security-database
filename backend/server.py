@@ -69,37 +69,46 @@ else:
 sys.path.insert(0, str(BASE_DIR))
 sys.path.insert(0, str(ROOT_DIR))
 
+print("[SERVER] Debug: Importing system_monitor...")
 import system_monitor as sysmon
+print("[SERVER] Debug: Importing network_scanner...")
 import network_scanner as netscanner
+print("[SERVER] Debug: Importing tarpit...")
 import tarpit
+print("[SERVER] Debug: Importing tripwire...")
 import tripwire
 
 # New modules — imported with graceful fallback
 try:
+    print("[SERVER] Debug: Importing event_log_analyzer...")
     import event_log_analyzer as evtlog
     HAS_EVTLOG = True
 except ImportError:
     HAS_EVTLOG = False
 
 try:
+    print("[SERVER] Debug: Importing dns_checker...")
     import dns_checker as dnschk
     HAS_DNS = True
 except ImportError:
     HAS_DNS = False
 
 try:
+    print("[SERVER] Debug: Importing process_monitor...")
     import process_monitor as procmon
     HAS_PROCMON = True
 except ImportError:
     HAS_PROCMON = False
 
 try:
+    print("[SERVER] Debug: Importing telegram_bot...")
     import telegram_bot as tgbot
     HAS_TG = True
 except ImportError:
     HAS_TG = False
 
 try:
+    print("[SERVER] Debug: Importing agent_manager...")
     import agent_manager as agentmgr
     HAS_AGENTS = True
 except ImportError:
@@ -107,6 +116,7 @@ except ImportError:
 
 
 try:
+    print("[SERVER] Debug: Importing offensive_tools...")
     import offensive_tools as offensive
     HAS_OFFENSIVE = True
 except ImportError:
