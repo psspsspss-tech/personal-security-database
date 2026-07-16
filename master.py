@@ -16,7 +16,6 @@ if getattr(sys, 'frozen', False):
 
 def run_server():
     try:
-        print("[MASTER] Step 1/4: Importing backend server modules...")
         from backend import server
         print("[MASTER] Step 2/4: Running server.startup()...")
         server.startup()
@@ -70,6 +69,11 @@ if __name__ == "__main__":
     print("      INITIALIZING SECURITY COMMAND CENTER")
     print("=" * 60)
     
+    # 1. Single-threaded import phase first to avoid Windows import lock / COM deadlocks
+    print("[MASTER] Step 1/4: Importing backend server modules...")
+    from backend import server
+    
+    # 2. Spawning helper threads now that imports are safely completed
     import threading
     
     # Start the Local Agent process in a background thread (waits for port 8765)
@@ -97,7 +101,7 @@ if __name__ == "__main__":
     browser_thread = threading.Thread(target=open_browser_delayed, daemon=True)
     browser_thread.start()
     
-    # Run the server in the main thread (blocking)
+    # 3. Run the server in the main thread (blocking)
     try:
         run_server()
     except KeyboardInterrupt:
