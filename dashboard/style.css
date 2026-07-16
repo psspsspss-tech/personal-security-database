@@ -2366,11 +2366,14 @@ input:checked + .slider-toggle:before {
    KALI TERMINAL PANEL
 ═══════════════════════════════════════════ */
 #panel-terminal {
-  display: flex;
   flex-direction: column;
   background: #0a0a0a;
   padding: 0;
   overflow: hidden;
+}
+
+#panel-terminal.active {
+  display: flex;
 }
 
 .term-shell-btn {
