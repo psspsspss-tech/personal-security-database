@@ -65,38 +65,30 @@ def get_lan_ip():
         return "127.0.0.1"
 
 if __name__ == "__main__":
-    # Required for Windows executables using multiprocessing
-    multiprocessing.freeze_support()
-    
     print("=" * 60)
     print("      INITIALIZING SECURITY COMMAND CENTER")
     print("=" * 60)
     
-    # Start the Server process
-    server_process = multiprocessing.Process(target=run_server)
-    server_process.daemon = True
-    server_process.start()
+    import threading
     
-    # Start the Local Agent process
-    agent_process = multiprocessing.Process(target=run_agent)
-    agent_process.daemon = True
-    agent_process.start()
+    # Start the Local Agent process in a background thread
+    agent_thread = threading.Thread(target=run_agent, daemon=True)
+    agent_thread.start()
     
     # Wait for server to boot, then open browser
-    time.sleep(2)
-    lan_ip = get_lan_ip()
-    print(f"\n[MASTER] Dashboard is running!")
-    print(f"[MASTER] To control from your iPhone, open: http://{lan_ip}:8765\n")
+    def open_browser_delayed():
+        time.sleep(2)
+        lan_ip = get_lan_ip()
+        print(f"\n[MASTER] Dashboard is running!")
+        print(f"[MASTER] To control from your iPhone, open: http://{lan_ip}:8765\n")
+        webbrowser.open('http://127.0.0.1:8765')
+        
+    browser_thread = threading.Thread(target=open_browser_delayed, daemon=True)
+    browser_thread.start()
     
-    # Open locally
-    webbrowser.open('http://127.0.0.1:8765')
-    
+    # Run the server in the main thread (blocking)
     try:
-        # Keep the main thread alive
-        while True:
-            time.sleep(1)
+        run_server()
     except KeyboardInterrupt:
         print("\n[MASTER] Shutting down...")
-        server_process.terminate()
-        agent_process.terminate()
         sys.exit(0)
