@@ -25,35 +25,59 @@ echo  =======================================================
 echo                 SECURITY SUITE MANAGER
 echo  =======================================================
 echo.
-echo   [1] Start Command Center + Agent (Port 8765 - Recommended)
+echo   [1] Start Command Center + WhatsApp Bot (All-in-One)
 echo   [2] Start Standalone Server (Port 8767/8768 - SSL Mode)
 echo   [3] Start Server in Background (Hidden - Port 8765)
 echo   [4] Stop Server (Kill all ports & instances)
 echo   [5] Enable Auto-Start on Boot
 echo   [6] Disable Auto-Start on Boot
 echo   [7] Re-install Dependencies
+echo   [8] Open Dashboard in Browser
 echo   [0] Exit
 echo.
 echo  =======================================================
 set /p choice=" Select an option: "
 
-if "%choice%"=="1" goto :start_master
+if "%choice%"=="1" goto :start_all
 if "%choice%"=="2" goto :start_standalone
 if "%choice%"=="3" goto :start_background
 if "%choice%"=="4" goto :stop_server
 if "%choice%"=="5" goto :enable_autostart
 if "%choice%"=="6" goto :disable_autostart
 if "%choice%"=="7" goto :install_deps
+if "%choice%"=="8" goto :open_browser
 if "%choice%"=="0" exit
 
 goto :menu
 
-:start_master
+:start_all
 cls
-echo  [*] Checking for old server instances...
+echo  =======================================================
+echo   STEP 1/3: Checking & clearing old server instances...
+echo  =======================================================
 call :kill_ports
-echo  [*] Starting Command Center and Telemetry Agent...
-python master.py
+timeout /t 1 >nul
+
+echo.
+echo  =======================================================
+echo   STEP 2/3: Starting WhatsApp Bot (jinn-bot via PM2)...
+echo  =======================================================
+cd /d "C:\Users\acer\Documents\bot"
+pm2 start src/baileys.js --name "jinn-bot"
+timeout /t 2 >nul
+
+echo.
+echo  =======================================================
+echo   STEP 3/3: Starting Security Command Center & Agent...
+echo  =======================================================
+cd /d "%~dp0"
+start "Security Suite Server" cmd /k "python master.py"
+timeout /t 2 >nul
+
+echo.
+echo  [OK] Both Command Center and WhatsApp Bot have been started!
+echo       The server output is running in the newly opened window.
+echo.
 pause
 goto :menu
 
@@ -112,6 +136,12 @@ cd /d "%~dp0backend"
 pip install -r requirements.txt
 echo  [OK] Done!
 pause
+goto :menu
+
+:open_browser
+cls
+echo  [*] Opening dashboard...
+start "" "http://127.0.0.1:8765"
 goto :menu
 
 :kill_ports
