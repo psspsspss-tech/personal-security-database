@@ -261,6 +261,10 @@ function showTab(tab) {
   if (tab === 'processes') loadProcesses();
   if (tab === 'setup')     loadSetupConfig();
   if (tab === 'connect')   loadConnect();
+  if (tab === 'terminal') {
+    // Slight delay so the panel is visible before xterm measures size
+    setTimeout(initTerminal, 80);
+  }
 }
 
 // ──────────────────────────────────────────────────────
@@ -4737,13 +4741,5 @@ function termClear() {
   if (_term.xterm) _term.xterm.clear();
 }
 
-// ── Hook into showTab so terminal inits on first open ─
-const _origShowTab = typeof showTab === 'function' ? showTab : null;
-function showTab(tab) {
-  if (_origShowTab) _origShowTab(tab);
-  if (tab === 'terminal') {
-    // Slight delay so the panel is visible before xterm measures size
-    setTimeout(initTerminal, 80);
-  }
-}
+// Terminal initialization hook is now merged directly into the main showTab function to prevent recursion crashes
 
