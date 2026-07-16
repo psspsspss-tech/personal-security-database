@@ -71,6 +71,10 @@ if __name__ == "__main__":
     
     # 1. Single-threaded import phase first to avoid Windows import lock / COM deadlocks
     print("[MASTER] Step 1/4: Importing backend server modules...")
+    import importlib.util
+    print("[MASTER] sys.path is:", sys.path)
+    spec = importlib.util.find_spec("backend.server")
+    print("[MASTER] Resolved backend.server spec to:", spec)
     from backend import server
     
     # 2. Spawning helper threads now that imports are safely completed
