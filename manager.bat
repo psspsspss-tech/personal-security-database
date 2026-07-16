@@ -25,32 +25,43 @@ echo  =======================================================
 echo                 SECURITY SUITE MANAGER
 echo  =======================================================
 echo.
-echo   [1] Start Server (Interactive)
-echo   [2] Start Server (Background / Hidden)
-echo   [3] Stop Server (Kill all instances)
-echo   [4] Enable Auto-Start on Boot
-echo   [5] Disable Auto-Start on Boot
-echo   [6] Re-install Dependencies
+echo   [1] Start Command Center + Agent (Port 8765 - Recommended)
+echo   [2] Start Standalone Server (Port 8767/8768 - SSL Mode)
+echo   [3] Start Server in Background (Hidden - Port 8765)
+echo   [4] Stop Server (Kill all ports & instances)
+echo   [5] Enable Auto-Start on Boot
+echo   [6] Disable Auto-Start on Boot
+echo   [7] Re-install Dependencies
 echo   [0] Exit
 echo.
 echo  =======================================================
 set /p choice=" Select an option: "
 
-if "%choice%"=="1" goto :start_interactive
-if "%choice%"=="2" goto :start_background
-if "%choice%"=="3" goto :stop_server
-if "%choice%"=="4" goto :enable_autostart
-if "%choice%"=="5" goto :disable_autostart
-if "%choice%"=="6" goto :install_deps
+if "%choice%"=="1" goto :start_master
+if "%choice%"=="2" goto :start_standalone
+if "%choice%"=="3" goto :start_background
+if "%choice%"=="4" goto :stop_server
+if "%choice%"=="5" goto :enable_autostart
+if "%choice%"=="6" goto :disable_autostart
+if "%choice%"=="7" goto :install_deps
 if "%choice%"=="0" exit
 
 goto :menu
 
-:start_interactive
+:start_master
 cls
 echo  [*] Checking for old server instances...
 call :kill_ports
-echo  [*] Starting server...
+echo  [*] Starting Command Center and Telemetry Agent...
+python master.py
+pause
+goto :menu
+
+:start_standalone
+cls
+echo  [*] Checking for old server instances...
+call :kill_ports
+echo  [*] Starting Standalone server...
 start "" "https://127.0.0.1:8767"
 cd /d "%~dp0backend"
 python server.py
@@ -61,11 +72,9 @@ goto :menu
 cls
 echo  [*] Starting server in background...
 call :kill_ports
-cd /d "%~dp0backend"
 :: Start using pythonw to hide console window
-start "" pythonw server.py
-echo  [OK] Server is now running silently in the background!
-start "" "https://127.0.0.1:8767"
+start "" pythonw master.py
+echo  [OK] Server is now running silently in the background on port 8765!
 timeout /t 2 >nul
 goto :menu
 
@@ -75,14 +84,14 @@ echo  [*] Stopping all Security Suite servers...
 call :kill_ports
 :: Also kill any hidden pythonw processes in case they are lingering
 taskkill /F /IM pythonw.exe >nul 2>&1
-echo  [OK] Servers stopped.
+echo  [OK] All servers and agents stopped.
 pause
 goto :menu
 
 :enable_autostart
 cls
 echo  [*] Adding Security Suite to Windows Startup...
-set "RUN_PATH=C:\Windows\System32\cmd.exe /c cd /d ^^^"%~dp0backend^^^" ^& pythonw server.py"
+set "RUN_PATH=C:\Windows\System32\cmd.exe /c cd /d ^^^"%~dp0^^^" ^& pythonw master.py"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "PersonalSecuritySuite" /t REG_SZ /d "%RUN_PATH%" /f >nul
 echo  [OK] Auto-Start enabled! The server will run silently on boot.
 pause
@@ -106,10 +115,16 @@ pause
 goto :menu
 
 :kill_ports
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8767" ^| findstr "LISTENING"') do (
+:: Kill port 8765 (Master API port)
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8765 " ^| findstr "LISTENING"') do (
     taskkill /F /PID %%a >nul 2>&1
 )
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8768" ^| findstr "LISTENING"') do (
+:: Kill port 8767 (Standalone server port)
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8767 " ^| findstr "LISTENING"') do (
+    taskkill /F /PID %%a >nul 2>&1
+)
+:: Kill port 8768 (Fallback server port)
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8768 " ^| findstr "LISTENING"') do (
     taskkill /F /PID %%a >nul 2>&1
 )
 exit /b
