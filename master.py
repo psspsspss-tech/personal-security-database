@@ -6,13 +6,6 @@ import webbrowser
 import socket
 import subprocess
 
-# Prevent subprocess from spawning console windows on Windows PyInstaller apps
-if sys.platform == "win32":
-    original_popen = subprocess.Popen
-    def patched_popen(*args, **kwargs):
-        kwargs['creationflags'] = kwargs.get('creationflags', 0) | 0x08000000 # CREATE_NO_WINDOW
-        return original_popen(*args, **kwargs)
-    subprocess.Popen = patched_popen
 
 # Ensure paths are correct for PyInstaller
 if getattr(sys, 'frozen', False):
