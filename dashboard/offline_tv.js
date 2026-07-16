@@ -176,6 +176,9 @@ async function checkConnection() {
     try {
         const res = await fetch("/api/status");
         if (res.ok) {
+            const statusLabel = document.querySelector(".tv-no-signal-sub");
+            if (statusLabel) statusLabel.textContent = "WAITING FOR BACKEND HEARTBEAT...";
+            
             tvDismissed = false; // Reset dismissal when back online
             // Only auto-close if we are not in manual override mode
             if (isOfflineMode && !tvManualMode) {
@@ -188,9 +191,13 @@ async function checkConnection() {
                 clearTimeout(tvControlsTimeout);
             }
         } else {
-            throw new Error("Server returned non-200");
+            throw new Error(`HTTP ${res.status} ${res.statusText}`);
         }
     } catch (e) {
+        const statusLabel = document.querySelector(".tv-no-signal-sub");
+        if (statusLabel) {
+            statusLabel.innerHTML = `<span style="color:#ff4757; font-weight:bold;">CONN ERROR:</span> ${e.message}<br><span style="font-size:10px; color:#555; margin-top:5px; display:inline-block;">Retrying connection every 2s...</span>`;
+        }
         triggerOffline();
     }
 }
