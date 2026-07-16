@@ -2375,14 +2375,13 @@ input:checked + .slider-toggle:before {
 }
 
 /* ═══════════════════════════════════════════
-   KALI TERMINAL PANEL
+   KALI TERMINAL PANEL — Neo-Brutalist Style
 ═══════════════════════════════════════════ */
 #panel-terminal {
   flex-direction: column;
-  background: #0a0a0a;
+  background: var(--bg-primary);
   padding: 0;
   overflow: hidden;
-  /* Ensure terminal fills the full available viewport height */
   min-height: calc(100vh - 100px);
 }
 
@@ -2390,56 +2389,238 @@ input:checked + .slider-toggle:before {
   display: flex;
 }
 
+/* ── Terminal Header Bar ── */
+#panel-terminal .panel-toolbar {
+  background: var(--bg-secondary) !important;
+  border-bottom: 3px solid var(--border) !important;
+  box-shadow: 0 4px 0 var(--border) !important;
+  padding: 10px 16px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Yellow accent stripe on the left of the toolbar */
+#panel-terminal .panel-toolbar::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: var(--yellow);
+  box-shadow: 2px 0 0 var(--border);
+}
+
+#panel-terminal .panel-toolbar .panel-title-group {
+  padding-left: 12px;
+}
+
+#panel-terminal .panel-heading {
+  font-family: var(--font-mono) !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 3px !important;
+  color: var(--text-primary) !important;
+  text-transform: uppercase;
+  text-shadow: none !important;
+}
+
+#panel-terminal .panel-sub {
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  color: var(--text-muted) !important;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ── Shell Selector Buttons ── */
 .term-shell-btn {
-  background: #111;
-  border: 1px solid #333;
-  color: #666;
-  padding: 6px 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  color: var(--text-secondary);
+  padding: 6px 16px;
   font-family: var(--font-mono);
   font-size: 11px;
+  font-weight: 700;
   cursor: pointer;
   letter-spacing: 1px;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 0;
+  transition: all 0.1s ease;
   white-space: nowrap;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--border);
 }
 
 .term-shell-btn:hover:not(:disabled) {
-  border-color: #00ff41;
-  color: #00ff41;
-  background: rgba(0,255,65,0.05);
+  background: var(--yellow);
+  color: #111;
+  border-color: var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  transform: translate(-1px, -1px);
+}
+
+.term-shell-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--border);
 }
 
 .term-shell-btn.active-shell {
-  background: rgba(0,255,65,0.1);
-  border-color: #00ff41;
-  color: #00ff41;
-  box-shadow: 0 0 8px rgba(0,255,65,0.2);
+  background: var(--yellow) !important;
+  color: #111 !important;
+  border-color: var(--border) !important;
+  box-shadow: 3px 3px 0 var(--border) !important;
+  font-weight: 900;
 }
 
 .term-shell-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+  box-shadow: 2px 2px 0 var(--border);
 }
 
-/* Make xterm.js fill the container */
+/* ── Action Buttons (RESTART / CLEAR) ── */
+#panel-terminal button[onclick="termRestart()"],
+#panel-terminal button[onclick="termClear()"] {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  border-radius: 0 !important;
+  border: 2px solid var(--border) !important;
+  box-shadow: 3px 3px 0 var(--border) !important;
+  padding: 6px 14px !important;
+  cursor: pointer !important;
+  transition: all 0.1s !important;
+}
+
+#panel-terminal button[onclick="termRestart()"] {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+#panel-terminal button[onclick="termRestart()"]:hover {
+  background: var(--green) !important;
+  color: #111 !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0 var(--border) !important;
+}
+
+#panel-terminal button[onclick="termClear()"] {
+  background: var(--bg-card) !important;
+  color: var(--text-muted) !important;
+}
+
+#panel-terminal button[onclick="termClear()"]:hover {
+  background: var(--red) !important;
+  color: #fff !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: 4px 4px 0 var(--border) !important;
+}
+
+#panel-terminal button:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 var(--border) !important;
+}
+
+/* ── Kali Status Pill ── */
+#term-kali-status {
+  font-family: var(--font-mono) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1px !important;
+  text-transform: uppercase !important;
+  padding: 5px 12px !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: var(--bg-card) !important;
+  box-shadow: 2px 2px 0 var(--border) !important;
+  color: var(--text-muted) !important;
+  white-space: nowrap;
+}
+
+#term-kali-status.kali-online {
+  background: var(--green) !important;
+  color: #111 !important;
+  border-color: var(--border) !important;
+}
+
+#term-kali-status.kali-offline {
+  background: var(--bg-card) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+
+/* ── xterm Container ── */
+#terminal-xterm-container {
+  background: #0d0d0d !important;
+  border-top: 2px solid var(--border);
+  position: relative;
+}
+
+/* Subtle scanline overlay for the cyber look */
+#terminal-xterm-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── xterm.js internals ── */
 #terminal-xterm .xterm {
   height: 100%;
 }
 
 #terminal-xterm .xterm-viewport {
   overflow-y: auto;
+  scrollbar-color: var(--yellow) #1a1a1a;
 }
 
-/* Kali status pill */
-#term-kali-status.kali-online {
-  color: #00ff41 !important;
-  border-color: #00ff41 !important;
-  background: rgba(0,255,65,0.05);
+#terminal-xterm .xterm-viewport::-webkit-scrollbar { width: 8px; }
+#terminal-xterm .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--yellow);
+  border: 2px solid #111;
+  border-radius: 0;
+}
+#terminal-xterm .xterm-viewport::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-left: 2px solid #111;
 }
 
-#term-kali-status.kali-offline {
-  color: #555 !important;
-  border-color: #333 !important;
+/* ── WSL2 Install Banner ── */
+#term-kali-install-banner {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  background: var(--bg-secondary) !important;
+  border-top: 3px solid var(--border) !important;
+  color: var(--text-muted) !important;
+  padding: 10px 20px !important;
+  letter-spacing: 0.5px;
+  box-shadow: 0 -3px 0 var(--border) !important;
 }
 
+#term-kali-install-banner span {
+  color: var(--yellow) !important;
+  font-weight: 900 !important;
+}
+
+#term-kali-install-banner code {
+  background: var(--bg-card) !important;
+  color: var(--green) !important;
+  padding: 2px 8px !important;
+  border: 2px solid var(--border) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-mono) !important;
+  box-shadow: 2px 2px 0 var(--border) !important;
+}
