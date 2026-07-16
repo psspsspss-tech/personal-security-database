@@ -56,14 +56,14 @@ echo  =======================================================
 echo   STEP 1/2: Checking and clearing old server instances...
 echo  =======================================================
 call :kill_ports
-timeout /t 1 >nul
+ping 127.0.0.1 -n 2 >nul
 
 echo.
 echo  =======================================================
 echo   STEP 2/2: Starting Security Command Center and Agent...
 echo  =======================================================
 start "Security Suite Server" cmd /k "python -u master.py"
-timeout /t 2 >nul
+ping 127.0.0.1 -n 3 >nul
 
 echo.
 echo  [OK] Command Center started!
@@ -90,7 +90,7 @@ call :kill_ports
 :: Start using pythonw to hide console window
 start "" pythonw master.py
 echo  [OK] Server is now running silently in the background on port 8765!
-timeout /t 2 >nul
+ping 127.0.0.1 -n 3 >nul
 goto :menu
 
 :stop_server
