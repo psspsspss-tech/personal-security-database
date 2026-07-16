@@ -22,15 +22,24 @@ if getattr(sys, 'frozen', False):
     sys.path.insert(0, str(ROOT_DIR))
 
 def run_server():
-    from backend import server
-    print("\n[MASTER] Starting backend server...")
-    server.startup()
-    # Suppress werkzeug logs if you want it cleaner
-    import logging
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
-    
-    server.app.run(host="0.0.0.0", port=8765, debug=False, use_reloader=False)
+    try:
+        print("[MASTER] Step 1/4: Importing backend server modules...")
+        from backend import server
+        print("[MASTER] Step 2/4: Running server.startup()...")
+        server.startup()
+        print("[MASTER] Step 3/4: Configuring logging...")
+        import logging
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+        print("[MASTER] Step 4/4: Starting Flask app.run on port 8765...")
+        server.app.run(host="0.0.0.0", port=8765, debug=False, use_reloader=False)
+    except Exception as e:
+        import traceback
+        with open("server_crash.log", "w") as f:
+            f.write(f"CRASH ERROR: {e}\n")
+            traceback.print_exc(file=f)
+        print(f"[MASTER] Server process crashed! Details written to server_crash.log")
+        raise
 
 def run_agent():
     # Give the server a few seconds to boot up
