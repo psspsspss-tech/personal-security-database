@@ -253,6 +253,9 @@ function showTab(tab) {
   document.getElementById(`tab-${tab}`)?.classList.add('active');
   document.getElementById(`panel-${tab}`)?.classList.add('active');
   document.getElementById(`drawer-tab-${tab}`)?.classList.add('active');
+  // Toggle terminal-mode on main so it removes padding when terminal is active
+  const mainEl = document.querySelector('main.main');
+  if (mainEl) mainEl.classList.toggle('terminal-mode', tab === 'terminal');
   if (tab === 'network')   loadDevices();
   if (tab === 'ports')     loadPorts();
   if (tab === 'alerts')    loadAlerts();

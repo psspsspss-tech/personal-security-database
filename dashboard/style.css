@@ -1465,13 +1465,19 @@ svg {
         width: calc(100vw - 80px) !important; 
         margin: 0 0 0 80px !important;
     }
-    /* Terminal panel: no extra padding, fill height */
-    main.main #panel-terminal.active {
-        margin: -28px !important;      /* cancel main's padding */
-        width: calc(100% + 56px) !important;
-        min-height: calc(100vh - 100px) !important;
+}
+
+/* ── Terminal Mode: zero-out main padding so terminal fills edge-to-edge ── */
+@media (min-width: 801px) {
+    main.main.terminal-mode {
+        padding: 0 !important;
     }
 }
+/* Mobile terminal mode too */
+main.main.terminal-mode {
+    padding-bottom: 0 !important;
+}
+
 
 /* ════════════════════════════════════════════════════════════════
    Neo-Brutalist High-Contrast Premium Design System Overrides
