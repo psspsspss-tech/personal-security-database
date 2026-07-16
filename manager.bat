@@ -62,7 +62,7 @@ echo.
 echo  =======================================================
 echo   STEP 2/2: Starting Security Command Center & Agent...
 echo  =======================================================
-start "Security Suite Server" cmd /k "python master.py"
+start "Security Suite Server" cmd /k "python -u master.py"
 timeout /t 2 >nul
 
 echo.
