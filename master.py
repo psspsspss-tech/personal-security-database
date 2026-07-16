@@ -35,10 +35,18 @@ def run_server():
         raise
 
 def run_agent():
-    # Give the server a few seconds to boot up
-    time.sleep(3)
-    
-    print("\n[MASTER] Starting local PC telemetry agent...")
+    # Wait for the Flask server to actually start listening on port 8765
+    import socket
+    while True:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(0.5)
+        result = s.connect_ex(('127.0.0.1', 8765))
+        s.close()
+        if result == 0:
+            break
+        time.sleep(1)
+        
+    print("\n[MASTER] Server online! Starting local PC telemetry agent...")
     import agent
     
     # Override server URL to point to localhost so it always connects locally
@@ -64,13 +72,23 @@ if __name__ == "__main__":
     
     import threading
     
-    # Start the Local Agent process in a background thread
+    # Start the Local Agent process in a background thread (waits for port 8765)
     agent_thread = threading.Thread(target=run_agent, daemon=True)
     agent_thread.start()
     
     # Wait for server to boot, then open browser
     def open_browser_delayed():
-        time.sleep(2)
+        import socket
+        # Wait for port 8765 to start listening
+        while True:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(0.5)
+            result = s.connect_ex(('127.0.0.1', 8765))
+            s.close()
+            if result == 0:
+                break
+            time.sleep(0.5)
+            
         lan_ip = get_lan_ip()
         print(f"\n[MASTER] Dashboard is running!")
         print(f"[MASTER] To control from your iPhone, open: http://{lan_ip}:8765\n")
