@@ -32,15 +32,7 @@ import hashlib
 import platform
 import subprocess
 
-# --- GLOBAL POPUP SUPPRESSOR ---
-# Force all subprocesses to hide their black CMD windows on Windows
-if platform.system() == "Windows":
-    _orig_popen_init = subprocess.Popen.__init__
-    def _patched_popen_init(self, *args, **kwargs):
-        kwargs['creationflags'] = 0x08000000
-        _orig_popen_init(self, *args, **kwargs)
-    subprocess.Popen.__init__ = _patched_popen_init
-# -------------------------------
+# Popup suppressor moved to startup() to prevent import-time deadlocks on Windows
 import imageio_ffmpeg
 from eventlet import tpool
 
@@ -2033,6 +2025,18 @@ def api_aegis_defender_scan():
 
 def startup():
     """Initialize background tasks on server start."""
+    # --- GLOBAL POPUP SUPPRESSOR ---
+    # Apply monkeypatch only after all imports have completed successfully
+    import platform
+    import subprocess
+    if platform.system() == "Windows":
+        _orig_popen_init = subprocess.Popen.__init__
+        def _patched_popen_init(self, *args, **kwargs):
+            kwargs['creationflags'] = kwargs.get('creationflags', 0) | 0x08000000
+            _orig_popen_init(self, *args, **kwargs)
+        subprocess.Popen.__init__ = _patched_popen_init
+    # -------------------------------
+
     ensure_node_torrent_service()
     lan_ip = get_local_ip()
     print("=" * 55)
