@@ -1434,10 +1434,11 @@ svg {
     }
     main.main { 
         width: calc(100vw - 320px) !important; 
-        margin-left: 320px !important;
-        margin-right: 0 !important;
+        margin: 0 0 0 320px !important;   /* Override the base margin:0 auto centering */
         max-width: none !important;
+        padding: 28px !important;
         padding-top: 100px !important; /* clear fixed header */
+        box-sizing: border-box !important;
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     
@@ -1460,7 +1461,16 @@ svg {
     .drawer.sidebar-collapsed .drawer-item .drawer-icon svg { width: 28px !important; height: 28px !important; margin: 0 !important; }
     .drawer.sidebar-collapsed .drawer-header { justify-content: center !important; }
     body.sidebar-collapsed .header { left: 80px !important; width: calc(100vw - 80px) !important; }
-    body.sidebar-collapsed main.main { width: calc(100vw - 80px) !important; margin-left: 80px !important; }
+    body.sidebar-collapsed main.main { 
+        width: calc(100vw - 80px) !important; 
+        margin: 0 0 0 80px !important;
+    }
+    /* Terminal panel: no extra padding, fill height */
+    main.main #panel-terminal.active {
+        margin: -28px !important;      /* cancel main's padding */
+        width: calc(100% + 56px) !important;
+        min-height: calc(100vh - 100px) !important;
+    }
 }
 
 /* ════════════════════════════════════════════════════════════════
