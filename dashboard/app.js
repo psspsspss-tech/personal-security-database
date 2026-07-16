@@ -1867,6 +1867,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawer = document.getElementById('more-drawer');
     if (drawer) drawer.classList.add('sidebar-collapsed');
     document.body.classList.add('sidebar-collapsed');
+    // Notify widgets of the initial layout after content settles
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
   }
 
   initLockScreen();
@@ -2149,6 +2151,8 @@ function toggleDrawer() {
       document.body.classList.add('sidebar-collapsed');
       localStorage.setItem('sidebarCollapsed', 'true');
     }
+    // Fire resize after CSS transition (250ms) so panels fill the new width
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 270);
   } else {
     // Mobile: open/close bottom drawer
     const drawer = document.getElementById('more-drawer');

@@ -1435,6 +1435,8 @@ svg {
     main.main { 
         width: calc(100vw - 320px) !important; 
         margin-left: 320px !important;
+        margin-right: 0 !important;
+        max-width: none !important;
         padding-top: 100px !important; /* clear fixed header */
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
@@ -2370,6 +2372,8 @@ input:checked + .slider-toggle:before {
   background: #0a0a0a;
   padding: 0;
   overflow: hidden;
+  /* Ensure terminal fills the full available viewport height */
+  min-height: calc(100vh - 100px);
 }
 
 #panel-terminal.active {
