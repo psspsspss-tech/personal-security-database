@@ -50,13 +50,7 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 
-# Fix Windows console encoding
-if sys.platform == "win32":
-    import io
-    if sys.stdout is not None:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    if sys.stderr is not None:
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+# Windows console encoding wrapper removed as it conflicts with unbuffered python (-u) stdout wrappers
 
 # Add parent dir to path so we can import sibling modules
 if getattr(sys, 'frozen', False):
@@ -2035,17 +2029,7 @@ def api_aegis_defender_scan():
 
 def startup():
     """Initialize background tasks on server start."""
-    # --- GLOBAL POPUP SUPPRESSOR ---
-    # Apply monkeypatch only after all imports have completed successfully
-    import platform
-    import subprocess
-    if platform.system() == "Windows":
-        _orig_popen_init = subprocess.Popen.__init__
-        def _patched_popen_init(self, *args, **kwargs):
-            kwargs['creationflags'] = kwargs.get('creationflags', 0) | 0x08000000
-            _orig_popen_init(self, *args, **kwargs)
-        subprocess.Popen.__init__ = _patched_popen_init
-    # -------------------------------
+    # Global subprocess.Popen monkeypatch removed to prevent deadlocks when spawning Node.js and other server utilities
 
     ensure_node_torrent_service()
     lan_ip = get_local_ip()
