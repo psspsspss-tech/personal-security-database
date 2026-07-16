@@ -2362,3 +2362,67 @@ input:checked + .slider-toggle:before {
     border-color: #444 !important;
 }
 
+/* ═══════════════════════════════════════════
+   KALI TERMINAL PANEL
+═══════════════════════════════════════════ */
+#panel-terminal {
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  padding: 0;
+  overflow: hidden;
+}
+
+.term-shell-btn {
+  background: #111;
+  border: 1px solid #333;
+  color: #666;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.term-shell-btn:hover:not(:disabled) {
+  border-color: #00ff41;
+  color: #00ff41;
+  background: rgba(0,255,65,0.05);
+}
+
+.term-shell-btn.active-shell {
+  background: rgba(0,255,65,0.1);
+  border-color: #00ff41;
+  color: #00ff41;
+  box-shadow: 0 0 8px rgba(0,255,65,0.2);
+}
+
+.term-shell-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Make xterm.js fill the container */
+#terminal-xterm .xterm {
+  height: 100%;
+}
+
+#terminal-xterm .xterm-viewport {
+  overflow-y: auto;
+}
+
+/* Kali status pill */
+#term-kali-status.kali-online {
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+  background: rgba(0,255,65,0.05);
+}
+
+#term-kali-status.kali-offline {
+  color: #555 !important;
+  border-color: #333 !important;
+}
+

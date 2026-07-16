@@ -1,5 +1,839 @@
 [
   {
+    "timestamp": "2026-07-17T03:09:49.533854",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T03:07:41.762563",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T03:05:33.736698",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T03:03:25.583052",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T03:01:15.595314",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:59:06.830182",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:56:58.254169",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:54:51.076255",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:52:43.392687",
+    "total_devices": 0,
+    "approved": 0,
+    "unknown": 0
+  },
+  {
+    "timestamp": "2026-07-17T02:50:58.121109",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:48:43.111219",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:46:30.859619",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:44:18.452501",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:42:05.958796",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:39:47.371042",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:37:32.986228",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:35:12.293328",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:32:58.242610",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T02:30:45.535724",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:28:25.575872",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:26:06.596019",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:23:48.774315",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:21:33.620907",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:19:18.382091",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:17:02.573940",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:14:47.070149",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:12:32.086687",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:10:04.937878",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:07:44.845143",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:05:31.385990",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:03:17.124448",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T02:01:03.914742",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:58:47.673083",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:56:30.333819",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:54:13.190084",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:51:54.921828",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:49:38.649070",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:47:20.090733",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:45:02.769825",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:42:45.416170",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:40:28.965534",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:38:12.718079",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:35:56.463063",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:33:38.498899",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:31:21.359242",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T01:29:04.681097",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:26:50.727018",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:24:38.597959",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:22:20.638872",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:20:07.335430",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:17:50.965679",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:15:35.952234",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:13:18.406672",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:11:02.455482",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:08:42.729860",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:06:26.150235",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:04:09.579784",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T01:01:57.441757",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:59:35.726657",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:57:16.599033",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:54:54.416362",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:52:32.126477",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:50:11.291921",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:47:52.512829",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:45:39.902461",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:43:26.228476",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:41:10.794764",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:38:57.905732",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:36:45.647455",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:34:32.806746",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:32:19.359724",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:30:01.310342",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:27:46.400979",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-17T00:25:30.552733",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:23:13.300642",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:20:54.921473",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:18:34.563563",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:16:16.466608",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:13:55.626292",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:11:35.901303",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-17T00:09:09.324136",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-17T00:06:46.894751",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-17T00:04:20.375629",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-17T00:02:04.537546",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:59:47.374032",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:57:30.231938",
+    "total_devices": 6,
+    "approved": 0,
+    "unknown": 6
+  },
+  {
+    "timestamp": "2026-07-16T23:55:14.754861",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:52:59.325736",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:50:31.509374",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:48:19.446766",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:46:01.012574",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:43:38.575864",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:41:20.719134",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:38:58.175397",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:36:40.445443",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:34:21.938628",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T23:31:57.605785",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T23:29:37.741414",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T23:27:17.857877",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T23:24:58.538444",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T23:22:37.632143",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:20:23.077992",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:18:08.958425",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:15:54.198502",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:13:35.176157",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:11:20.799976",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:09:05.968503",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:06:48.409556",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:04:32.805442",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:02:19.284915",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T23:00:04.256904",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:57:49.896101",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:55:36.616592",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:53:22.930374",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:51:08.462545",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:48:52.983322",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:46:31.013529",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:44:10.151749",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:41:48.950576",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:39:26.839442",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:37:04.597572",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:34:40.142222",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:32:17.944574",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:29:51.667002",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:27:26.938696",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:24:59.613314",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:22:26.345070",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:20:06.633843",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:17:49.445402",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:15:40.484382",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:13:29.035347",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:11:20.827223",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:09:11.605716",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:07:02.106461",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:04:54.020194",
+    "total_devices": 7,
+    "approved": 0,
+    "unknown": 7
+  },
+  {
+    "timestamp": "2026-07-16T22:02:44.937945",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T22:00:22.736037",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T21:58:09.186826",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
+    "timestamp": "2026-07-16T21:55:55.345005",
+    "total_devices": 8,
+    "approved": 0,
+    "unknown": 8
+  },
+  {
     "timestamp": "2026-06-12T00:27:09.210901",
     "total_devices": 7,
     "approved": 5,
@@ -2164,839 +2998,5 @@
     "total_devices": 0,
     "approved": 0,
     "unknown": 0
-  },
-  {
-    "timestamp": "2026-06-11T09:17:24.676826",
-    "total_devices": 0,
-    "approved": 0,
-    "unknown": 0
-  },
-  {
-    "timestamp": "2026-06-11T09:15:51.004560",
-    "total_devices": 0,
-    "approved": 0,
-    "unknown": 0
-  },
-  {
-    "timestamp": "2026-06-11T09:14:17.312547",
-    "total_devices": 0,
-    "approved": 0,
-    "unknown": 0
-  },
-  {
-    "timestamp": "2026-06-11T09:12:43.651138",
-    "total_devices": 0,
-    "approved": 0,
-    "unknown": 0
-  },
-  {
-    "timestamp": "2026-06-11T09:11:09.930995",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T09:09:05.060718",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T09:07:05.385581",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T09:05:05.212400",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T09:03:05.548445",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T09:01:03.963669",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:59:02.168370",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:57:02.675177",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:55:03.195575",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:53:03.704766",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:51:04.173299",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:49:04.640248",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:47:05.174766",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:45:05.639846",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:43:06.148299",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:41:06.626542",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:39:07.109179",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:37:07.509710",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:35:07.997608",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:33:06.189221",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:30:56.681604",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:28:51.836379",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:26:47.210897",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:24:38.465892",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:22:33.429598",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:20:28.694582",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:18:23.913084",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:16:24.340081",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T08:14:24.855302",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:12:15.546562",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:10:10.762324",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:08:06.022945",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:06:01.256275",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:03:56.543045",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T08:01:51.582017",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:59:46.775821",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:57:42.067416",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:55:37.156885",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:53:37.706221",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:51:28.431073",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:49:23.674977",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:47:18.644047",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:45:12.728616",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:43:06.293030",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:41:01.713000",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:38:56.915470",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:36:51.819468",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:34:46.747961",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:32:42.016764",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:30:37.273705",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:28:32.497805",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T07:26:27.693338",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:24:28.094801",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:22:28.495653",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:20:28.922647",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:18:29.241755",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:16:29.566670",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:14:29.964326",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:12:30.448695",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:10:30.874657",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:08:31.362082",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:06:31.855280",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:04:31.946434",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:02:32.209916",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T07:00:32.569522",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:58:32.924285",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:56:33.129275",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:54:33.523272",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:52:33.922656",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:50:34.281590",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:48:34.621620",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:46:35.139139",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:44:31.051824",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:42:31.379069",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:40:31.676510",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:38:22.302212",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:36:17.519488",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:34:12.768967",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:32:08.102909",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:30:03.251083",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:27:58.634970",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:25:59.069871",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:23:59.638009",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:22:00.065264",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:20:00.435268",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:18:00.729394",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:16:01.005294",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:14:01.528614",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T06:12:01.984930",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:09:52.598627",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:07:47.767359",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:05:38.474359",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:03:33.662098",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T06:01:28.901229",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:59:24.038975",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:57:18.905693",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:55:14.153225",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:53:09.479463",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:51:04.715996",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:48:59.926157",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:46:55.091006",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:44:50.175820",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:42:45.415122",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:40:40.650702",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:38:35.878757",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:36:31.079757",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:34:26.402238",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:32:21.536198",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:30:16.855509",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:28:17.273943",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:26:17.663735",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:24:18.058392",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:22:18.346764",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:20:18.606203",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:18:18.804863",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:16:19.068964",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:14:19.327195",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:12:19.583154",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:10:19.951219",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T05:08:20.284401",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:06:11.078513",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:04:06.259128",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T05:02:01.545459",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:59:56.764736",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:57:51.710102",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:55:46.995079",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:53:42.094808",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:51:37.432007",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:49:32.729386",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:47:28.000613",
-    "total_devices": 6,
-    "approved": 0,
-    "unknown": 6
-  },
-  {
-    "timestamp": "2026-06-11T04:45:23.132145",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:43:23.617348",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:41:24.077109",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:39:24.480652",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
-  },
-  {
-    "timestamp": "2026-06-11T04:37:24.889756",
-    "total_devices": 5,
-    "approved": 0,
-    "unknown": 5
   }
 ]

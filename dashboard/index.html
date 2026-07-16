@@ -1924,6 +1924,10 @@
       <div class="drawer-icon" style="color:var(--cyan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
       <span>GhostTrack OSINT</span>
     </button>
+    <button class="drawer-item" id="drawer-tab-terminal" onclick="showTab('terminal'); closeDrawer()">
+      <div class="drawer-icon" style="color:#00ff41"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+      <span>⚡ Kali Terminal</span>
+    </button>
     <button class="drawer-item" id="drawer-tab-setup" onclick="showTab('setup'); closeDrawer()">
       <div class="drawer-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg></div>
       <span>Settings</span>
@@ -2040,7 +2044,57 @@
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
 </style>
 
-<!-- 8-Bit Offline TV Overlay -->
+<!-- ══ TERMINAL PANEL ══ -->
+<section id="panel-terminal" class="panel">
+  <div class="panel-toolbar" style="background:#0a0a0a; border-bottom: 2px solid #00ff41;">
+    <div class="panel-title-group">
+      <h1 class="panel-heading" style="color:#00ff41; font-family:var(--font-mono); letter-spacing:3px;">⚡ KALI TERMINAL</h1>
+      <span class="panel-sub" style="color:#555;">Live shell — PowerShell · CMD · Kali Linux (WSL2)</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div id="term-shell-selector" style="display:flex; gap:6px;">
+        <button id="term-btn-powershell" class="term-shell-btn active-shell" onclick="termSelectShell('powershell')" title="Windows PowerShell">
+          <span style="color:#5bc0eb;">PS</span> PowerShell
+        </button>
+        <button id="term-btn-cmd" class="term-shell-btn" onclick="termSelectShell('cmd')" title="CMD">
+          <span style="color:#f7b731;">$_</span> CMD
+        </button>
+        <button id="term-btn-kali" class="term-shell-btn" onclick="termSelectShell('kali')" title="Kali Linux WSL2" disabled>
+          <span style="color:#268bd2;">🐉</span> Kali Linux
+        </button>
+      </div>
+      <div id="term-kali-status" style="font-family:var(--font-mono); font-size:11px; color:#444; padding: 4px 10px; border: 1px solid #222; border-radius:4px;">
+        🔴 Kali: Checking...
+      </div>
+      <button onclick="termRestart()" style="background:transparent; border:1px solid #333; color:#00ff41; padding:6px 14px; font-family:var(--font-mono); font-size:11px; cursor:pointer; letter-spacing:1px;" title="Kill and restart current shell">
+        ↺ RESTART
+      </button>
+      <button onclick="termClear()" style="background:transparent; border:1px solid #333; color:#888; padding:6px 14px; font-family:var(--font-mono); font-size:11px; cursor:pointer; letter-spacing:1px;">
+        ✕ CLEAR
+      </button>
+    </div>
+  </div>
+
+  <!-- xterm.js container -->
+  <div id="terminal-xterm-container" style="
+    background: #0a0a0a;
+    flex: 1;
+    height: calc(100vh - 140px);
+    padding: 8px;
+    overflow: hidden;
+    position: relative;
+  ">
+    <div id="terminal-xterm" style="height: 100%; width: 100%;"></div>
+  </div>
+
+  <!-- WSL2 Install Banner (shown when Kali unavailable) -->
+  <div id="term-kali-install-banner" style="display:none; background: #0d1117; border-top: 2px solid #268bd2; padding: 14px 20px; font-family: var(--font-mono); font-size: 12px; color: #888;">
+    <span style="color:#268bd2; font-weight:bold;">🐉 KALI WSL2 NOT INSTALLED</span>
+    &nbsp;— Run <code style="background:#111; color:#00ff41; padding:2px 6px;">Install-Kali-WSL.bat</code> as Administrator from your Sec Suite folder, then restart the dashboard.
+  </div>
+</section>
+
+<!-- ══ 8-Bit Offline TV Overlay ══ -->
 <div id="offline-tv" style="display: none;">
 
   <!-- ══ NEO-BRUTALIST TOP BAR ══ -->

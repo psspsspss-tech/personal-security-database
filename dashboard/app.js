@@ -4555,3 +4555,195 @@ async function aegisTriggerScan() {
     showToast(`Error triggering scan: ${e.message}`, 'error');
   }
 }
+
+// ══════════════════════════════════════════════════════
+//  ⚡ KALI TERMINAL CONTROLLER
+//  xterm.js + polling loop → Flask /api/terminal/*
+// ══════════════════════════════════════════════════════
+
+const _term = {
+  xterm: null,
+  fitAddon: null,
+  sessionId: 'main-' + Math.random().toString(36).slice(2, 8),
+  shell: 'powershell',
+  pollTimer: null,
+  pollInterval: 120,   // ms — fast polling for snappy feel
+  started: false,
+  kaliAvailable: false,
+};
+
+// ── Init (called when terminal tab opens) ──────────────
+async function initTerminal() {
+  if (_term.started) {
+    if (_term.fitAddon) _term.fitAddon.fit();
+    return;
+  }
+
+  const container = document.getElementById('terminal-xterm');
+  if (!container || typeof Terminal === 'undefined') return;
+
+  // Build xterm instance
+  _term.xterm = new Terminal({
+    theme: {
+      background:   '#0a0a0a',
+      foreground:   '#00ff41',
+      cursor:       '#00ff41',
+      cursorAccent: '#000',
+      black:        '#0a0a0a',
+      green:        '#00ff41',
+      brightGreen:  '#39ff14',
+      cyan:         '#00e5cc',
+      blue:         '#268bd2',
+      yellow:       '#f7b731',
+      red:          '#ff4757',
+      white:        '#cccccc',
+      brightWhite:  '#ffffff',
+    },
+    fontFamily: '"Cascadia Code", "Fira Code", "Consolas", monospace',
+    fontSize: 13,
+    lineHeight: 1.25,
+    cursorBlink: true,
+    cursorStyle: 'block',
+    allowTransparency: true,
+    scrollback: 5000,
+  });
+
+  _term.fitAddon = new FitAddon.FitAddon();
+  _term.xterm.loadAddon(_term.fitAddon);
+  _term.xterm.open(container);
+  _term.fitAddon.fit();
+
+  // Resize observer — keep terminal fitting the container
+  const ro = new ResizeObserver(() => {
+    if (_term.fitAddon) _term.fitAddon.fit();
+  });
+  ro.observe(container);
+
+  // Keyboard input → POST to /api/terminal/input
+  _term.xterm.onData(async (data) => {
+    await fetch(`${API}/terminal/input`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: _term.sessionId, data }),
+    });
+  });
+
+  _term.started = true;
+
+  // Check Kali availability
+  await termCheckKaliStatus();
+
+  // Start the shell
+  await termStartShell();
+
+  // Start output polling
+  _termStartPolling();
+
+  _term.xterm.writeln('\x1b[1;32m⚡ Terminal ready. Type a command and press Enter.\x1b[0m');
+}
+
+// ── Check if Kali WSL2 is available ───────────────────
+async function termCheckKaliStatus() {
+  try {
+    const res  = await fetch(`${API}/terminal/status`);
+    const data = await res.json();
+    _term.kaliAvailable = data.kali_available || false;
+
+    const statusEl = document.getElementById('term-kali-status');
+    const kaliBtn  = document.getElementById('term-btn-kali');
+    const banner   = document.getElementById('term-kali-install-banner');
+
+    if (_term.kaliAvailable) {
+      if (statusEl) { statusEl.textContent = '🟢 Kali: Online'; statusEl.className = 'kali-online'; }
+      if (kaliBtn)  kaliBtn.disabled = false;
+      if (banner)   banner.style.display = 'none';
+    } else {
+      if (statusEl) { statusEl.textContent = '🔴 Kali: Not installed'; statusEl.className = 'kali-offline'; }
+      if (kaliBtn)  kaliBtn.disabled = true;
+      if (banner)   banner.style.display = 'block';
+    }
+  } catch (e) {
+    console.warn('[Terminal] Status check failed:', e);
+  }
+}
+
+// ── Start / restart a shell session ───────────────────
+async function termStartShell(shell) {
+  if (shell) _term.shell = shell;
+  try {
+    const res  = await fetch(`${API}/terminal/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: _term.sessionId, shell: _term.shell }),
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      _term.xterm.writeln(`\x1b[1;31m✗ Failed to start ${_term.shell}: ${data.error}\x1b[0m`);
+    } else {
+      _term.xterm.writeln(`\x1b[2;32m[Shell: ${_term.shell} | Session: ${_term.sessionId}]\x1b[0m`);
+    }
+  } catch (e) {
+    _term.xterm.writeln(`\x1b[1;31m✗ Cannot reach terminal backend: ${e.message}\x1b[0m`);
+  }
+}
+
+// ── Poll for output ────────────────────────────────────
+function _termStartPolling() {
+  if (_term.pollTimer) clearInterval(_term.pollTimer);
+  _term.pollTimer = setInterval(async () => {
+    try {
+      const res  = await fetch(`${API}/terminal/output?session_id=${_term.sessionId}`);
+      const data = await res.json();
+      if (data.data && data.data.length > 0) {
+        _term.xterm.write(data.data);
+      }
+    } catch (_) { /* ignore network blips */ }
+  }, _term.pollInterval);
+}
+
+// ── Shell selector UI ─────────────────────────────────
+async function termSelectShell(shell) {
+  if (shell === _term.shell) return;
+
+  // Kill existing session
+  await fetch(`${API}/terminal/kill`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: _term.sessionId }),
+  });
+
+  // Update UI buttons
+  document.querySelectorAll('.term-shell-btn').forEach(b => b.classList.remove('active-shell'));
+  const btn = document.getElementById(`term-btn-${shell}`);
+  if (btn) btn.classList.add('active-shell');
+
+  _term.xterm.writeln(`\x1b[2;33m\r\n[Switching to ${shell}...]\x1b[0m`);
+  await termStartShell(shell);
+}
+
+// ── Restart current shell ─────────────────────────────
+async function termRestart() {
+  _term.xterm.writeln('\x1b[2;33m\r\n[Restarting shell...]\x1b[0m');
+  await fetch(`${API}/terminal/kill`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: _term.sessionId }),
+  });
+  await termStartShell();
+}
+
+// ── Clear screen ──────────────────────────────────────
+function termClear() {
+  if (_term.xterm) _term.xterm.clear();
+}
+
+// ── Hook into showTab so terminal inits on first open ─
+const _origShowTab = typeof showTab === 'function' ? showTab : null;
+function showTab(tab) {
+  if (_origShowTab) _origShowTab(tab);
+  if (tab === 'terminal') {
+    // Slight delay so the panel is visible before xterm measures size
+    setTimeout(initTerminal, 80);
+  }
+}
+

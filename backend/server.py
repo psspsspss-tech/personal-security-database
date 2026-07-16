@@ -129,7 +129,13 @@ try:
     HAS_OSINT = True
 except ImportError:
     HAS_OSINT = False
-    
+
+try:
+    import terminal_service as terminal
+    HAS_TERMINAL = True
+except ImportError:
+    HAS_TERMINAL = False
+
 CONFIG_FILE = BASE_DIR / "config.json"
 
 
@@ -3410,3 +3416,88 @@ if __name__ == "__main__":
     else:
         print("  [SSL] Certificates not found. Falling back to ad-hoc self-signed SSL context.")
         app.run(host="0.0.0.0", port=8767, debug=False, use_reloader=False, ssl_context='adhoc')
+
+
+# ─────────────────────────────────────────────
+# TERMINAL WebSocket API (Long-poll fallback)
+# Uses Server-Sent Events + regular POST for input since
+# Flask standard edition doesn't have native WebSocket.
+# ─────────────────────────────────────────────
+
+_terminal_output_buffers = {}   # session_id -> list of output strings
+_terminal_output_lock = threading.Lock()
+
+def _terminal_emit(session_id, data):
+    """Called by terminal_service to push output into the SSE buffer."""
+    with _terminal_output_lock:
+        if session_id not in _terminal_output_buffers:
+            _terminal_output_buffers[session_id] = []
+        _terminal_output_buffers[session_id].append(data)
+        # Cap buffer size
+        if len(_terminal_output_buffers[session_id]) > 500:
+            _terminal_output_buffers[session_id] = _terminal_output_buffers[session_id][-200:]
+
+
+@app.route('/api/terminal/status')
+def terminal_status():
+    """Returns available shells and Kali availability."""
+    if not HAS_TERMINAL:
+        return jsonify({'ok': False, 'error': 'Terminal service unavailable'}), 503
+    return jsonify({
+        'ok': True,
+        'kali_available': terminal.is_kali_available(),
+        'wsl_available': terminal.is_wsl_available(),
+        'shells': ['powershell', 'cmd', 'kali'] if terminal.is_kali_available() else ['powershell', 'cmd']
+    })
+
+
+@app.route('/api/terminal/start', methods=['POST'])
+def terminal_start():
+    """Start a new terminal session."""
+    if not HAS_TERMINAL:
+        return jsonify({'ok': False, 'error': 'Terminal service unavailable'}), 503
+    data = request.get_json() or {}
+    session_id = data.get('session_id', 'default')
+    shell = data.get('shell', 'powershell')
+    ok = terminal.create_session(session_id, shell=shell, emit_fn=_terminal_emit)
+    if ok:
+        with _terminal_output_lock:
+            _terminal_output_buffers[session_id] = []
+        return jsonify({'ok': True, 'session_id': session_id, 'shell': shell})
+    else:
+        return jsonify({'ok': False, 'error': f'Failed to start {shell}. Is it installed?'}), 500
+
+
+@app.route('/api/terminal/input', methods=['POST'])
+def terminal_input():
+    """Send keyboard input to a running terminal session."""
+    if not HAS_TERMINAL:
+        return jsonify({'ok': False}), 503
+    data = request.get_json() or {}
+    session_id = data.get('session_id', 'default')
+    text = data.get('data', '')
+    terminal.write_to_session(session_id, text)
+    return jsonify({'ok': True})
+
+
+@app.route('/api/terminal/output')
+def terminal_output():
+    """Poll for pending terminal output (long-poll style)."""
+    session_id = request.args.get('session_id', 'default')
+    with _terminal_output_lock:
+        chunks = _terminal_output_buffers.get(session_id, [])
+        _terminal_output_buffers[session_id] = []
+    return jsonify({'ok': True, 'data': ''.join(chunks)})
+
+
+@app.route('/api/terminal/kill', methods=['POST'])
+def terminal_kill():
+    """Kill a terminal session."""
+    if not HAS_TERMINAL:
+        return jsonify({'ok': False}), 503
+    data = request.get_json() or {}
+    session_id = data.get('session_id', 'default')
+    terminal.kill_session(session_id)
+    with _terminal_output_lock:
+        _terminal_output_buffers.pop(session_id, None)
+    return jsonify({'ok': True})
