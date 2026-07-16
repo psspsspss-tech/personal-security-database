@@ -25,7 +25,7 @@ echo  =======================================================
 echo                 SECURITY SUITE MANAGER
 echo  =======================================================
 echo.
-echo   [1] Start Command Center + WhatsApp Bot (All-in-One)
+echo   [1] Start Command Center + Telemetry Agent (Recommended)
 echo   [2] Start Standalone Server (Port 8767/8768 - SSL Mode)
 echo   [3] Start Server in Background (Hidden - Port 8765)
 echo   [4] Stop Server (Kill all ports & instances)
@@ -38,7 +38,7 @@ echo.
 echo  =======================================================
 set /p choice=" Select an option: "
 
-if "%choice%"=="1" goto :start_all
+if "%choice%"=="1" goto :start_master
 if "%choice%"=="2" goto :start_standalone
 if "%choice%"=="3" goto :start_background
 if "%choice%"=="4" goto :stop_server
@@ -50,32 +50,23 @@ if "%choice%"=="0" exit
 
 goto :menu
 
-:start_all
+:start_master
 cls
 echo  =======================================================
-echo   STEP 1/3: Checking & clearing old server instances...
+echo   STEP 1/2: Checking & clearing old server instances...
 echo  =======================================================
 call :kill_ports
 timeout /t 1 >nul
 
 echo.
 echo  =======================================================
-echo   STEP 2/3: Starting WhatsApp Bot (jinn-bot via PM2)...
+echo   STEP 2/2: Starting Security Command Center & Agent...
 echo  =======================================================
-cd /d "C:\Users\acer\Documents\bot"
-pm2 start src/baileys.js --name "jinn-bot"
-timeout /t 2 >nul
-
-echo.
-echo  =======================================================
-echo   STEP 3/3: Starting Security Command Center & Agent...
-echo  =======================================================
-cd /d "%~dp0"
 start "Security Suite Server" cmd /k "python master.py"
 timeout /t 2 >nul
 
 echo.
-echo  [OK] Both Command Center and WhatsApp Bot have been started!
+echo  [OK] Command Center started!
 echo       The server output is running in the newly opened window.
 echo.
 pause
