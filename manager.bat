@@ -28,7 +28,7 @@ echo.
 echo   [1] Start Command Center + Telemetry Agent (Recommended)
 echo   [2] Start Standalone Server (Port 8767/8768 - SSL Mode)
 echo   [3] Start Server in Background (Hidden - Port 8765)
-echo   [4] Stop Server (Kill all ports & instances)
+echo   [4] Stop Server (Kill all ports and instances)
 echo   [5] Enable Auto-Start on Boot
 echo   [6] Disable Auto-Start on Boot
 echo   [7] Re-install Dependencies
@@ -53,14 +53,14 @@ goto :menu
 :start_master
 cls
 echo  =======================================================
-echo   STEP 1/2: Checking & clearing old server instances...
+echo   STEP 1/2: Checking and clearing old server instances...
 echo  =======================================================
 call :kill_ports
 timeout /t 1 >nul
 
 echo.
 echo  =======================================================
-echo   STEP 2/2: Starting Security Command Center & Agent...
+echo   STEP 2/2: Starting Security Command Center and Agent...
 echo  =======================================================
 start "Security Suite Server" cmd /k "python -u master.py"
 timeout /t 2 >nul
