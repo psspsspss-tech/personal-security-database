@@ -34,7 +34,24 @@ import subprocess
 
 # Popup suppressor moved to startup() to prevent import-time deadlocks on Windows
 import imageio_ffmpeg
-from eventlet import tpool
+
+try:
+    # eventlet has known compatibility issues on Python 3.13+ (GreenSocket missing sendmsg attribute)
+    if sys.version_info >= (3, 13):
+        raise ImportError("Python 3.13+ detected, forcing tpool fallback")
+    from eventlet import tpool
+except (ImportError, AttributeError, TypeError, NameError):
+    tpool = None
+
+if tpool is None:
+    from concurrent.futures import ThreadPoolExecutor
+    class ThreadPoolWrapper:
+        def __init__(self):
+            # 20 workers to handle concurrent command execution and port scans
+            self._executor = ThreadPoolExecutor(max_workers=20)
+        def execute(self, func, *args, **kwargs):
+            return self._executor.submit(func, *args, **kwargs).result()
+    tpool = ThreadPoolWrapper()
 
 # ─────────────────────────────────────────────
 # Server version — changes every restart.

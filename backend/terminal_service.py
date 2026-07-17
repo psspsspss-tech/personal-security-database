@@ -20,12 +20,26 @@ _sessions_lock = threading.Lock()
 class TerminalSession:
     """Manages a single interactive shell process with non-blocking I/O."""
 
-    SHELL_COMMANDS = {
-        'powershell': ['powershell.exe', '-NoLogo', '-NoProfile'],
-        'cmd': ['cmd.exe'],
-        'kali': ['wsl.exe', '-d', 'kali-linux'],
-        'wsl': ['wsl.exe'],
-    }
+    import shutil
+    if sys.platform == 'win32':
+        SHELL_COMMANDS = {
+            'powershell': ['powershell.exe', '-NoLogo', '-NoProfile'],
+            'cmd': ['cmd.exe'],
+            'kali': ['wsl.exe', '-d', 'kali-linux'],
+            'wsl': ['wsl.exe'],
+        }
+    else:
+        # Determine default Linux shells (Zsh is default on modern Kali)
+        default_shell = '/bin/bash'
+        if os.path.exists('/bin/zsh'):
+            default_shell = '/bin/zsh'
+            
+        SHELL_COMMANDS = {
+            'powershell': ['pwsh'] if shutil.which('pwsh') else [default_shell],
+            'cmd': ['/bin/sh'],
+            'kali': [default_shell],
+            'wsl': [default_shell],
+        }
 
     def __init__(self, session_id, shell='powershell', emit_fn=None):
         self.session_id = session_id
@@ -147,7 +161,18 @@ def kill_session(session_id):
 
 
 def is_kali_available():
-    """Check if Kali WSL distro is installed and available."""
+    """Check if Kali is available (either natively or via WSL)."""
+    if sys.platform != 'win32':
+        # Check if the host OS is Kali Linux
+        try:
+            if os.path.exists('/etc/os-release'):
+                with open('/etc/os-release') as f:
+                    if 'kali' in f.read().lower():
+                        return True
+        except Exception:
+            pass
+        return False
+
     try:
         result = subprocess.run(
             ['wsl.exe', '-d', 'kali-linux', '--', 'echo', 'ok'],
@@ -161,6 +186,8 @@ def is_kali_available():
 
 def is_wsl_available():
     """Check if WSL is installed at all."""
+    if sys.platform != 'win32':
+        return False
     try:
         result = subprocess.run(
             ['wsl.exe', '--list'],

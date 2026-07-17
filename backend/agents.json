@@ -41,31 +41,62 @@
     "platform_version": "10.0.26200",
     "python_version": "3.14.5",
     "ip": "192.168.1.10",
-    "cpu_percent": 19.8,
-    "memory_percent": 88.5,
-    "memory_used_gb": 6.85,
+    "cpu_percent": 15.1,
+    "memory_percent": 88.4,
+    "memory_used_gb": 6.84,
     "memory_total_gb": 7.75,
-    "disk_percent": 98.5,
-    "disk_free_gb": 2.1,
-    "listening_ports": 49,
+    "disk_percent": 94.7,
+    "disk_free_gb": 7.3,
+    "listening_ports": 55,
     "wifi_ssid": "vijay",
     "battery": {
-      "percent": 98,
+      "percent": 97,
       "plugged": true,
       "charging": true
     },
     "network_io": {
-      "bytes_sent_mb": 556.8,
-      "bytes_recv_mb": 5980.5
+      "bytes_sent_mb": 181.3,
+      "bytes_recv_mb": 190.0
     },
-    "uptime_hours": 5.3,
-    "timestamp": "2026-07-17T03:10:45.454911",
+    "uptime_hours": 0.7,
+    "timestamp": "2026-07-17T08:19:03.831349",
     "agent_version": "1.0.1",
     "security": {
       "firewall_on": true
     },
-    "last_seen": "2026-07-17T03:10:45.638748",
+    "last_seen": "2026-07-17T08:19:03.943580",
     "status": "online",
     "registered_at": "2026-06-11T21:10:48.532526"
+  },
+  "853d0da1-c040-55a3-8e7f-852acc070f8c": {
+    "device_id": "853d0da1-c040-55a3-8e7f-852acc070f8c",
+    "hostname": "masterbloodfallen",
+    "platform": "Linux",
+    "platform_version": "#1 SMP PREEMPT_DYNAMIC Kali 6.19.14-1+kali1 (2026-",
+    "python_version": "3.13.12",
+    "ip": "192.168.1.10",
+    "cpu_percent": 5.2,
+    "memory_percent": 37.7,
+    "memory_used_gb": 2.83,
+    "memory_total_gb": 7.5,
+    "disk_percent": 47.8,
+    "disk_free_gb": 19.7,
+    "listening_ports": 8,
+    "wifi_ssid": null,
+    "battery": {
+      "percent": 97.0,
+      "plugged": null,
+      "charging": null
+    },
+    "network_io": {
+      "bytes_sent_mb": 92.7,
+      "bytes_recv_mb": 598.8
+    },
+    "uptime_hours": 0.4,
+    "timestamp": "2026-07-17T08:45:08.775265",
+    "agent_version": "1.0.1",
+    "last_seen": "2026-07-17T08:45:08.776909",
+    "status": "online",
+    "registered_at": "2026-07-17T08:40:12.530026"
   }
 }
