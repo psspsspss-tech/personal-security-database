@@ -2142,22 +2142,15 @@ async function checkBreach() {
   }
 }
 
-// --- DESKTOP LAYOUT: direct inline styles (bypasses all CSS cascade issues) ---
+// --- DESKTOP LAYOUT: CSS custom property --sidebar-w drives everything ---
 function _applyDesktopLayout(collapsed) {
   if (window.innerWidth < 801) return;
-  const main   = document.querySelector('main.main');
-  const header = document.querySelector('.header');
   const w = collapsed ? '80px' : '320px';
-  if (main) {
-    main.style.marginLeft  = w;
-    main.style.width       = `calc(100vw - ${w})`;
-    main.style.maxWidth    = 'none';
-    main.style.boxSizing   = 'border-box';
-  }
-  if (header) {
-    header.style.left  = w;
-    header.style.width = `calc(100vw - ${w})`;
-  }
+  // Set the CSS custom property — drives main margin, header left, drawer width via CSS
+  document.documentElement.style.setProperty('--sidebar-w', w);
+  // Also force drawer width directly (belt & suspenders)
+  const drawer = document.getElementById('more-drawer');
+  if (drawer) drawer.style.width = w;
   // Notify xterm and charts to reflow
   setTimeout(() => window.dispatchEvent(new Event('resize')), 270);
 }

@@ -1403,10 +1403,10 @@ svg {
         display: block !important;
         position: fixed !important;
         left: 0 !important;
-        right: auto !important; /* Cancels original right: 0 */
+        right: auto !important;
         top: 0 !important;
         bottom: 0 !important;
-        width: 320px !important;
+        width: var(--sidebar-w, 320px) !important;
         height: 100vh !important;
         max-height: 100vh !important;
         border-top: none !important;
@@ -1423,23 +1423,32 @@ svg {
         transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     
-    /* Shift header and main content to the right */
+    /* Header and main driven by --sidebar-w */
     .header { 
-        width: calc(100vw - 320px) !important; 
-        left: 320px !important;
+        left: var(--sidebar-w, 320px) !important;
+        width: calc(100vw - var(--sidebar-w, 320px)) !important;
         position: fixed !important;
         top: 0 !important;
         z-index: 990 !important;
         transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     main.main { 
-        width: calc(100vw - 320px) !important; 
-        margin: 0 0 0 320px !important;   /* Override the base margin:0 auto centering */
+        margin-left: var(--sidebar-w, 320px) !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        width: calc(100vw - var(--sidebar-w, 320px)) !important;
         max-width: none !important;
         padding: 28px !important;
-        padding-top: 100px !important; /* clear fixed header */
+        padding-top: 100px !important;
         box-sizing: border-box !important;
         transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Terminal mode: remove padding so it fills edge-to-edge */
+    main.main.terminal-mode {
+        padding: 0 !important;
+        padding-top: 100px !important;
     }
     
     .drawer-handle { display: none !important; }
@@ -1450,8 +1459,8 @@ svg {
         gap: 15px !important; 
     }
 
-    /* Sidebar Collapsed States */
-    .drawer.sidebar-collapsed { width: 80px !important; overflow-x: hidden; }
+    /* Sidebar Collapsed States (visual changes only — layout driven by --sidebar-w) */
+    .drawer.sidebar-collapsed { overflow-x: hidden; }
     .drawer.sidebar-collapsed .drawer-title, 
     .drawer.sidebar-collapsed .drawer-item span,
     .drawer.sidebar-collapsed .drawer-item .badge { display: none !important; }
@@ -1460,20 +1469,9 @@ svg {
     .drawer.sidebar-collapsed .drawer-item svg,
     .drawer.sidebar-collapsed .drawer-item .drawer-icon svg { width: 28px !important; height: 28px !important; margin: 0 !important; }
     .drawer.sidebar-collapsed .drawer-header { justify-content: center !important; }
-    body.sidebar-collapsed .header { left: 80px !important; width: calc(100vw - 80px) !important; }
-    body.sidebar-collapsed main.main { 
-        width: calc(100vw - 80px) !important; 
-        margin: 0 0 0 80px !important;
-    }
 }
 
-/* ── Terminal Mode: zero-out main padding so terminal fills edge-to-edge ── */
-@media (min-width: 801px) {
-    main.main.terminal-mode {
-        padding: 0 !important;
-    }
-}
-/* Mobile terminal mode too */
+/* Mobile terminal mode */
 main.main.terminal-mode {
     padding-bottom: 0 !important;
 }
