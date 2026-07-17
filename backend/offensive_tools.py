@@ -9,12 +9,19 @@ import threading
 import time
 from queue import Queue
 
-try:
-    from scapy.all import ARP, send, conf
-    conf.verb = 0  # Disable scapy verbose output
-    SCAPY_AVAILABLE = True
-except ImportError:
-    SCAPY_AVAILABLE = False
+SCAPY_AVAILABLE = None
+
+def _check_scapy():
+    global SCAPY_AVAILABLE
+    if SCAPY_AVAILABLE is not None:
+        return SCAPY_AVAILABLE
+    try:
+        from scapy.all import conf
+        conf.verb = 0
+        SCAPY_AVAILABLE = True
+    except ImportError:
+        SCAPY_AVAILABLE = False
+    return SCAPY_AVAILABLE
 
 
 # ─────────────────────────────────────────────
@@ -122,9 +129,10 @@ _block_lock = threading.Lock()
 
 def arp_poison_loop(target_ip, target_mac, gateway_ip, stop_event):
     """Continuously send spoofed ARP packets."""
-    if not SCAPY_AVAILABLE:
+    if not _check_scapy():
         return
         
+    from scapy.all import ARP, send
     # We tell the Target that WE are the Gateway
     packet = ARP(op=2, pdst=target_ip, hwdst=target_mac, psrc=gateway_ip)
     
@@ -140,7 +148,7 @@ def arp_block(target_ip, target_mac, gateway_ip):
     """
     Start blocking a device via ARP spoofing.
     """
-    if not SCAPY_AVAILABLE:
+    if not _check_scapy():
         return {"ok": False, "error": "Scapy library not installed or requires admin privileges/Npcap."}
         
     if not gateway_ip:
