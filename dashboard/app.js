@@ -1865,13 +1865,16 @@ function startPolling() {
 // Init
 // ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Restore sidebar collapsed preference on desktop
-  if (window.innerWidth >= 801 && localStorage.getItem('sidebarCollapsed') === 'true') {
+  // Restore sidebar collapsed preference on desktop using direct inline styles
+  if (window.innerWidth >= 801) {
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
     const drawer = document.getElementById('more-drawer');
-    if (drawer) drawer.classList.add('sidebar-collapsed');
-    document.body.classList.add('sidebar-collapsed');
-    // Notify widgets of the initial layout after content settles
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 300);
+    if (isCollapsed && drawer) {
+      drawer.classList.add('sidebar-collapsed');
+      document.body.classList.add('sidebar-collapsed');
+    }
+    // Apply layout immediately (no waiting for CSS cascade)
+    _applyDesktopLayout(isCollapsed);
   }
 
   initLockScreen();
@@ -2139,6 +2142,26 @@ async function checkBreach() {
   }
 }
 
+// --- DESKTOP LAYOUT: direct inline styles (bypasses all CSS cascade issues) ---
+function _applyDesktopLayout(collapsed) {
+  if (window.innerWidth < 801) return;
+  const main   = document.querySelector('main.main');
+  const header = document.querySelector('.header');
+  const w = collapsed ? '80px' : '320px';
+  if (main) {
+    main.style.marginLeft  = w;
+    main.style.width       = `calc(100vw - ${w})`;
+    main.style.maxWidth    = 'none';
+    main.style.boxSizing   = 'border-box';
+  }
+  if (header) {
+    header.style.left  = w;
+    header.style.width = `calc(100vw - ${w})`;
+  }
+  // Notify xterm and charts to reflow
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 270);
+}
+
 // --- DRAWER NAVIGATION ---
 function toggleDrawer() {
   if (window.innerWidth >= 801) {
@@ -2149,13 +2172,13 @@ function toggleDrawer() {
       drawer.classList.remove('sidebar-collapsed');
       document.body.classList.remove('sidebar-collapsed');
       localStorage.setItem('sidebarCollapsed', 'false');
+      _applyDesktopLayout(false);
     } else {
       drawer.classList.add('sidebar-collapsed');
       document.body.classList.add('sidebar-collapsed');
       localStorage.setItem('sidebarCollapsed', 'true');
+      _applyDesktopLayout(true);
     }
-    // Fire resize after CSS transition (250ms) so panels fill the new width
-    setTimeout(() => window.dispatchEvent(new Event('resize')), 270);
   } else {
     // Mobile: open/close bottom drawer
     const drawer = document.getElementById('more-drawer');
