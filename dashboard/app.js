@@ -2142,17 +2142,11 @@ async function checkBreach() {
   }
 }
 
-// --- DESKTOP LAYOUT: CSS custom property --sidebar-w drives everything ---
-function _applyDesktopLayout(collapsed) {
+// --- DESKTOP LAYOUT: Notify widgets (like xterm/charts) to recalculate layout after drawer changes ---
+function _applyDesktopLayout() {
   if (window.innerWidth < 801) return;
-  const w = collapsed ? '80px' : '320px';
-  // Set the CSS custom property — drives main margin, header left, drawer width via CSS
-  document.documentElement.style.setProperty('--sidebar-w', w);
-  // Also force drawer width directly (belt & suspenders)
-  const drawer = document.getElementById('more-drawer');
-  if (drawer) drawer.style.width = w;
-  // Notify xterm and charts to reflow
-  setTimeout(() => window.dispatchEvent(new Event('resize')), 270);
+  // Trigger window resize event to let charts and xterm fit their containers
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 250);
 }
 
 // --- DRAWER NAVIGATION ---
