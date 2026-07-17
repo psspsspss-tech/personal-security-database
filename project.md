@@ -477,3 +477,18 @@ multi-byte UTF-8 sequences when files were saved through the editor.
 - **Aegis Shield**: Successfully merged the standalone Aegis Shield Antivirus code into the main Security Suite. Added backend endpoints (/api/aegis/*) for scanning processes, removing startup items, clearing temp folders, and triggering Windows Defender scans.
 - **UI Updates**: Injected the Aegis Shield tab and panel cleanly into the Neo-Brutalist dashboard without breaking recent modules (Hackerman, CRT Monitor).
 - **start.bat Fixes**: Rewrote start.bat to correctly check for existing servers on the active ports (8767, 8768) and requested Administrator privileges natively using a PowerShell elevation check to ensure the server always boots with high-integrity rights.
+
+### V. Dashboard Layout & Terminal Nesting Fixes (July 17, 2026)
+
+#### Class-Based Responsive Layout Migration
+- **Replaced CSS custom property driven layout**: Replaced temporary CSS properties (`--sidebar-w`) and dynamic JS inline margin/width forcing with a robust, class-based CSS layout.
+- **Pure CSS transitions**: Configured the drawer width, main margin-left, and header left transitions to be driven natively by classes (`body.sidebar-collapsed`, `.drawer.sidebar-collapsed`), eliminating layout stuttering and layout caching issues.
+- **Zero inline styles**: Cleaned up `_applyDesktopLayout` in `app.js` to only trigger resize events for charts/terminals instead of modifying element styling directly.
+
+#### Terminal Panel Nesting & Layout Fix
+- **Relocated panel-terminal inside main container**: Moved the Kali Terminal panel (`#panel-terminal`) inside the `<main class="main">` block in `index.html`. This ensures it automatically respects layout margins and transitions without floating underneath the sidebar.
+- **Fixed Aegis Shield closing tag typo**: Repaired a missing `</section>` tag that closed `#panel-aegis`, preventing `#panel-terminal` from being nested inside Aegis and disappearing when Aegis was inactive.
+
+#### Backend Scapy Import Safe-Guards
+- **Deferred Scapy imports**: Wrapped imports inside a deferred `_check_scapy()` wrapper in `backend/offensive_tools.py` to prevent server boot-time crashes on environments lacking Scapy or Npcap.
+
