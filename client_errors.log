@@ -1,0 +1,4 @@
+{"timestamp": "2026-07-24T14:46:59.967172", "message": "TypeError: can't access property \"style\", document.getElementById(...) is null", "source": "http://127.0.0.1:8765/tetris.js", "lineno": 387, "colno": 18, "stack": "quitTetrisGame@http://127.0.0.1:8765/tetris.js:387:18\nswitchCasinoGame@http://127.0.0.1:8765/casino_engine.js:82:16\n@http://127.0.0.1:8765/casino_engine.js:133:21\n"}
+{"timestamp": "2026-07-27T18:28:29.334279", "message": "Script error.", "source": "unknown", "lineno": "?", "colno": "?", "stack": ""}
+{"timestamp": "2026-07-27T18:34:49.479332", "message": "Script error.", "source": "unknown", "lineno": "?", "colno": "?", "stack": ""}
+{"timestamp": "2026-07-27T18:35:08.760487", "message": "Script error.", "source": "unknown", "lineno": "?", "colno": "?", "stack": ""}

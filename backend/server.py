@@ -201,6 +201,55 @@ def add_no_cache_headers(response):
     return response
 
 # ─────────────────────────────────────────────
+# Real-Time Multi-Device Event Broadcaster (SSE)
+# ─────────────────────────────────────────────
+_sse_listeners = []
+_sse_lock = threading.Lock()
+
+def broadcast_event(event_name="state_update", data=None):
+    """Broadcast an instant event to all connected devices/browsers."""
+    if data is None:
+        data = {}
+    data["timestamp"] = datetime.datetime.now().isoformat()
+    msg = f"event: {event_name}\ndata: {json.dumps(data)}\n\n"
+    
+    with _sse_lock:
+        to_remove = []
+        for q in _sse_listeners:
+            try:
+                q.append(msg)
+            except Exception:
+                to_remove.append(q)
+        for q in to_remove:
+            if q in _sse_listeners:
+                _sse_listeners.remove(q)
+
+@app.route("/api/events")
+def sse_events():
+    def event_stream():
+        q = []
+        with _sse_lock:
+            _sse_listeners.append(q)
+        # Send initial connection event
+        yield f"event: connected\ndata: {json.dumps({'ok': True, 'version': SERVER_VERSION})}\n\n"
+        try:
+            while True:
+                if q:
+                    msg = q.pop(0)
+                    yield msg
+                else:
+                    time.sleep(0.1)
+        except GeneratorExit:
+            with _sse_lock:
+                if q in _sse_listeners:
+                    _sse_listeners.remove(q)
+
+    return Response(event_stream(), content_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no"
+    })
+
+# ─────────────────────────────────────────────
 # Cache to avoid hammering the system
 # ─────────────────────────────────────────────
 _cache = {}
@@ -677,6 +726,7 @@ def api_trigger_scan():
     try:
         result = netscanner.scan_and_check()
         netscanner._last_scan_result = result
+        broadcast_event("scan_complete", {"devices_count": len(result.get("devices", []))})
         return jsonify({"ok": True, "data": result})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -703,6 +753,8 @@ def api_whitelist_add():
         if not mac:
             return jsonify({"ok": False, "error": "MAC address required"}), 400
         success = netscanner.add_to_whitelist(mac, name, notes)
+        if success:
+            broadcast_event("whitelist_updated", {"mac": mac, "action": "add"})
         return jsonify({"ok": success})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -717,6 +769,8 @@ def api_whitelist_remove():
         if not mac:
             return jsonify({"ok": False, "error": "MAC address required"}), 400
         success = netscanner.remove_from_whitelist(mac)
+        if success:
+            broadcast_event("whitelist_updated", {"mac": mac, "action": "remove"})
         return jsonify({"ok": success})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -745,6 +799,7 @@ def api_acknowledge_alert():
         alerts_file = BASE_DIR / "alerts.json"
         with open(alerts_file, "w") as f:
             json.dump(alerts, f, indent=2)
+        broadcast_event("alert_acknowledged", {"id": alert_id})
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -3555,3 +3610,16 @@ def terminal_kill():
     with _terminal_output_lock:
         _terminal_output_buffers.pop(session_id, None)
     return jsonify({'ok': True})
+
+
+@app.route('/api/terminal/resize', methods=['POST'])
+def terminal_resize():
+    """Resize the PTY window to match the browser terminal dimensions."""
+    if not HAS_TERMINAL:
+        return jsonify({'ok': False}), 503
+    data = request.get_json() or {}
+    session_id = data.get('session_id', 'default')
+    rows = int(data.get('rows', 24))
+    cols = int(data.get('cols', 80))
+    terminal.resize_session(session_id, rows, cols)
+    return jsonify({'ok': True, 'rows': rows, 'cols': cols})

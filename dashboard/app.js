@@ -48,6 +48,39 @@ async function checkForUpdates() {
   }
 }
 
+// ──────────────────────────────────────────────────────
+// REAL-TIME MULTI-DEVICE SSE SYNC
+// Listens to live server events to update all clients in real-time
+// ──────────────────────────────────────────────────────
+let _eventSource = null;
+function initRealtimeSync() {
+  if (_eventSource) return;
+  try {
+    _eventSource = new EventSource(`${API}/events`);
+    _eventSource.onmessage = function(e) {
+      try {
+        const payload = JSON.parse(e.data);
+        console.log('[Realtime Sync] Event received:', payload);
+        if (_isAuthenticated) {
+          // Trigger instant refresh of status and active tab
+          fetchStatus();
+          if (_currentTab === 'network') loadDevices();
+          if (_currentTab === 'ports') loadPorts();
+          if (_currentTab === 'alerts') loadAlerts();
+          if (_currentTab === 'eventlog') loadEventLog();
+          if (_currentTab === 'processes') loadProcesses();
+        }
+      } catch (err) {}
+    };
+    _eventSource.onerror = function() {
+      console.warn('[Realtime Sync] SSE connection error. Retrying...');
+    };
+  } catch (err) {
+    console.warn('[Realtime Sync] EventSource not supported in browser.');
+  }
+}
+initRealtimeSync();
+
 function showUpdateBanner() {
   // Remove any existing banner
   document.getElementById('update-banner')?.remove();
@@ -4634,11 +4667,22 @@ async function initTerminal() {
   _term.xterm.open(container);
   _term.fitAddon.fit();
 
-  // Resize observer — keep terminal fitting the container
+  // Resize observer — keep terminal fitting the container and sync PTY size
   const ro = new ResizeObserver(() => {
-    if (_term.fitAddon) _term.fitAddon.fit();
+    if (_term.fitAddon) {
+      _term.fitAddon.fit();
+    }
   });
   ro.observe(container);
+
+  // When xterm.js reports a resize (triggered by fitAddon), sync PTY dimensions
+  _term.xterm.onResize(async ({ rows, cols }) => {
+    await fetch(`${API}/terminal/resize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: _term.sessionId, rows, cols }),
+    });
+  });
 
   // Keyboard input → POST to /api/terminal/input
   _term.xterm.onData(async (data) => {
@@ -4678,6 +4722,14 @@ async function termCheckKaliStatus() {
       if (statusEl) { statusEl.textContent = '🟢 Kali: Online'; statusEl.className = 'kali-online'; }
       if (kaliBtn)  kaliBtn.disabled = false;
       if (banner)   banner.style.display = 'none';
+      
+      // Dynamic default shell setting for native Linux/Kali platforms
+      if (data.ok && !data.wsl_available) {
+        _term.shell = 'kali';
+        document.querySelectorAll('.term-shell-btn').forEach(b => b.classList.remove('active-shell'));
+        const kBtn = document.getElementById('term-btn-kali');
+        if (kBtn) kBtn.classList.add('active-shell');
+      }
     } else {
       if (statusEl) { statusEl.textContent = '🔴 Kali: Not installed'; statusEl.className = 'kali-offline'; }
       if (kaliBtn)  kaliBtn.disabled = true;

@@ -1,0 +1,15 @@
+{"level":"info","time":"2026-07-28T07:00:27Z","message":"Thank you for trying Cloudflare Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment and try it out. However, be aware that these account-less Tunnels have no uptime guarantee, are subject to the Cloudflare Online Services Terms of Use (https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right to investigate your use of Tunnels for violations of such terms. If you intend to use Tunnels in production you should use a pre-created named tunnel by following: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps"}
+{"level":"info","time":"2026-07-28T07:00:27Z","message":"Requesting new quick Tunnel on trycloudflare.com..."}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"+--------------------------------------------------------------------------------------------+"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"|  Your quick Tunnel has been created! Visit it at (it may take some time to be reachable):  |"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"|  https://eventually-katie-nature-realm.trycloudflare.com                                   |"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"+--------------------------------------------------------------------------------------------+"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"Cannot determine default configuration path. No file [config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp]"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"Version 2026.6.1 (Checksum 5253e66f1f493c4e13539749f1aa86fd0c61e3072900fec29a44ba046a6d97e2)"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"GOOS: windows, GOVersion: go1.26.4, GoArch: amd64"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"Settings: map[ha-connections:1 logfile:C:\\Users\\acer\\Desktop\\Sec Suite\\backend\\cloudflared.log protocol:quic url:http://localhost:8767]"}
+{"level":"info","time":"2026-07-28T07:00:32Z","message":"cloudflared will not automatically update on Windows systems."}
+{"level":"info","time":"2026-07-28T07:00:33Z","message":"Generated Connector ID: 109d4d67-5f1c-40c7-8e97-4ceed2f1d7f2"}
+{"level":"info","time":"2026-07-28T07:00:33Z","message":"Initial protocol quic"}
+{"level":"info","time":"2026-07-28T07:00:33Z","message":"ICMP proxy will use 192.168.1.8 as source for IPv4"}
+{"level":"info","time":"2026-07-28T07:00:33Z","message":"ICMP proxy will use fe80::a071:a50d:7f68:30f5 in zone Wi-Fi as source for IPv6"}

@@ -40,31 +40,31 @@
     "platform": "Windows",
     "platform_version": "10.0.26200",
     "python_version": "3.14.5",
-    "ip": "192.168.1.10",
-    "cpu_percent": 15.1,
-    "memory_percent": 88.4,
-    "memory_used_gb": 6.84,
+    "ip": "192.168.1.8",
+    "cpu_percent": 42.4,
+    "memory_percent": 78.3,
+    "memory_used_gb": 6.06,
     "memory_total_gb": 7.75,
-    "disk_percent": 94.7,
-    "disk_free_gb": 7.3,
-    "listening_ports": 55,
+    "disk_percent": 99.1,
+    "disk_free_gb": 1.2,
+    "listening_ports": 45,
     "wifi_ssid": "vijay",
     "battery": {
-      "percent": 97,
+      "percent": 100,
       "plugged": true,
-      "charging": true
+      "charging": false
     },
     "network_io": {
-      "bytes_sent_mb": 181.3,
-      "bytes_recv_mb": 190.0
+      "bytes_sent_mb": 265.3,
+      "bytes_recv_mb": 436.7
     },
-    "uptime_hours": 0.7,
-    "timestamp": "2026-07-17T08:19:03.831349",
+    "uptime_hours": 0.3,
+    "timestamp": "2026-07-28T12:41:24.518453",
     "agent_version": "1.0.1",
     "security": {
       "firewall_on": true
     },
-    "last_seen": "2026-07-17T08:19:03.943580",
+    "last_seen": "2026-07-28T12:41:24.666875",
     "status": "online",
     "registered_at": "2026-06-11T21:10:48.532526"
   },
@@ -75,27 +75,27 @@
     "platform_version": "#1 SMP PREEMPT_DYNAMIC Kali 6.19.14-1+kali1 (2026-",
     "python_version": "3.13.12",
     "ip": "192.168.1.10",
-    "cpu_percent": 5.2,
-    "memory_percent": 37.7,
-    "memory_used_gb": 2.83,
+    "cpu_percent": 9.5,
+    "memory_percent": 43.1,
+    "memory_used_gb": 3.23,
     "memory_total_gb": 7.5,
-    "disk_percent": 47.8,
-    "disk_free_gb": 19.7,
-    "listening_ports": 8,
+    "disk_percent": 48.0,
+    "disk_free_gb": 19.6,
+    "listening_ports": 9,
     "wifi_ssid": null,
     "battery": {
-      "percent": 97.0,
-      "plugged": null,
-      "charging": null
+      "percent": 96.0,
+      "plugged": true,
+      "charging": true
     },
     "network_io": {
-      "bytes_sent_mb": 92.7,
-      "bytes_recv_mb": 598.8
+      "bytes_sent_mb": 681.7,
+      "bytes_recv_mb": 965.4
     },
-    "uptime_hours": 0.4,
-    "timestamp": "2026-07-17T08:45:08.775265",
+    "uptime_hours": 8.6,
+    "timestamp": "2026-07-17T17:00:22.531667",
     "agent_version": "1.0.1",
-    "last_seen": "2026-07-17T08:45:08.776909",
+    "last_seen": "2026-07-17T17:00:22.533489",
     "status": "online",
     "registered_at": "2026-07-17T08:40:12.530026"
   }

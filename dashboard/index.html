@@ -460,25 +460,25 @@
     </div>
 
     <!-- The Infinite Tarpit -->
-    <div class="card" style="border: 1px solid #bb86fc; box-shadow: 0 4px 15px rgba(187,134,252,0.1); margin-top:20px;">
-      <div style="font-size:16px; font-weight:700; color:#bb86fc; margin-bottom:12px; display:flex; justify-content:space-between;">
+    <div class="card" style="border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); margin-top:20px;">
+      <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
         <span>The Infinite Tarpit</span>
-        <button onclick="refreshTarpitLogs()" style="background:#bb86fc; color:#000; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">↻ Refresh</button>
+        <button onclick="refreshTarpitLogs()" class="btn-primary" style="padding:4px 10px; font-size:11px;">↻ Refresh</button>
       </div>
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Active defense fake SSH server. Automated port scanners getting trapped will be displayed here.</p>
-      <div id="tarpit-logs" style="background:#000; padding:10px; border-radius:8px; border:1px solid #333; height:200px; overflow-y:auto; font-family:monospace; font-size:12px; color:#bb86fc;">
+      <div id="tarpit-logs" style="background:#111; padding:10px; border:2px solid var(--border); height:200px; overflow-y:auto; -webkit-overflow-scrolling:touch; font-family:'JetBrains Mono',monospace; font-size:12px; color:#33ccff; box-shadow: 2px 2px 0 var(--border);">
         Waiting for victims...
       </div>
     </div>
 
     <!-- Ransomware Tripwire -->
-    <div class="card" style="border: 1px solid #cf6679; box-shadow: 0 4px 15px rgba(207,102,121,0.1); margin-top:20px;">
-      <div style="font-size:16px; font-weight:700; color:#cf6679; margin-bottom:12px; display:flex; justify-content:space-between;">
+    <div class="card" style="border: 2px solid var(--border); box-shadow: 4px 4px 0 var(--border); margin-top:20px;">
+      <div style="font-size:16px; font-weight:800; color:var(--text-primary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
         <span>Ransomware Tripwire</span>
-        <span id="tripwire-badge" style="background:var(--green); color:#000; padding:2px 8px; border-radius:12px; font-size:10px; font-weight:bold;">ARMED</span>
+        <span id="tripwire-badge" style="background:var(--green); color:#111; border: 1px solid #111; padding:2px 8px; font-size:10px; font-weight:800;">ARMED</span>
       </div>
       <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Monitoring the Honey File <code>Desktop\\Passwords_DO_NOT_OPEN</code>. If a rogue process touches it, the alarm sounds.</p>
-      <div id="tripwire-logs" style="background:#000; padding:10px; border-radius:8px; border:1px solid #333; height:200px; overflow-y:auto; font-family:monospace; font-size:12px; color:var(--green);">
+      <div id="tripwire-logs" style="background:#111; padding:10px; border:2px solid var(--border); height:200px; overflow-y:auto; -webkit-overflow-scrolling:touch; font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--green); box-shadow: 2px 2px 0 var(--border);">
         [System] Tripwire armed and monitoring file hashes.
       </div>
     </div>
